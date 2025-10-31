@@ -1,5 +1,3 @@
-// backend/src/services/email/emailService.js
-
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 
@@ -60,13 +58,33 @@ const transporter = createTransport();
 // -------------------------
 // Generic sendEmail (never throws fatally)
 // -------------------------
-export const sendEmail = async ({ to, subject, html }) => {
+/**
+ * @param {Object} opts
+ * @param {string|string[]} opts.to
+ * @param {string} opts.subject
+ * @param {string} opts.html
+ * @param {Array<{filename:string, content:Buffer, contentType?:string}>} [opts.attachments]
+ * @param {string} [opts.replyTo]
+ */
+export const sendEmail = async ({
+  to,
+  subject,
+  html,
+  attachments,
+  replyTo,
+}) => {
   try {
     const from = process.env.EMAIL_FROM || "no-reply@localhost";
-    const info = await transporter.sendMail({ from, to, subject, html });
+    const info = await transporter.sendMail({
+      from,
+      to,
+      subject,
+      html,
+      attachments,
+      replyTo,
+    });
 
     if (IS_DEV) {
-      // In dev jsonTransport prints the message; MailHog shows in UI
       console.log(
         `[email] Sent to ${to} | subject: ${subject} | id: ${
           info?.messageId || "-"

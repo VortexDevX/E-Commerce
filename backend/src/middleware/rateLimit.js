@@ -122,6 +122,7 @@ const isLocalIp = (ip) =>
   ip.startsWith("::ffff:127.0.0.1");
 
 // ---- Base windows (seconds) ----
+const ONE_MIN = 60;
 const FIFTEEN_MIN = 15 * 60;
 const ONE_HOUR = 60 * 60;
 const DAY = 24 * 60 * 60;
@@ -203,6 +204,17 @@ const resetIpCfg = pick(
   { points: 120, duration: FIFTEEN_MIN, blockDuration: 60 }
 );
 
+// Contact form
+const contactIpCfg = pick(
+  {
+    keyPrefix: "rl:contact:ip",
+    points: 5, // 5 requests
+    duration: ONE_MIN, // per minute
+    blockDuration: ONE_MIN, // block for 1 minute
+  },
+  { points: 60, duration: ONE_MIN, blockDuration: 30 }
+);
+
 // ---- Middlewares ----
 const bypassIfDisabledOrLocal = (req) => {
   if (RL_DISABLED) return true;
@@ -252,5 +264,12 @@ export const limitResetPassword = async (req, res, next) => {
   if (bypassIfDisabledOrLocal(req)) return next();
   const ip = ipOf(req);
   if (!(await consumeOrBlock(req, res, resetIpCfg, ip))) return;
+  next();
+};
+
+export const limitContact = async (req, res, next) => {
+  if (bypassIfDisabledOrLocal(req)) return next();
+  const ip = ipOf(req);
+  if (!(await consumeOrBlock(req, res, contactIpCfg, ip))) return;
   next();
 };

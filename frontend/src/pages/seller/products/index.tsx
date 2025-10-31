@@ -44,6 +44,18 @@ function SellerProductsPage() {
   );
   const [loading, setLoading] = useState(true);
 
+  // Bulk upload state
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [zipFile, setZipFile] = useState<File | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [result, setResult] = useState<{
+    summary: { rows: number; created: number; updated: number; errors: number };
+    errors: Array<{ row: number; sku?: string; title?: string; error: string }>;
+  } | null>(null);
+
+  // Help/guide
+  const [showGuide, setShowGuide] = useState(false);
+
   const fetchMine = async () => {
     if (!canRead) return;
     setLoading(true);
@@ -117,6 +129,84 @@ function SellerProductsPage() {
     );
   };
 
+  // Bulk upload helpers
+  const downloadTemplate = async () => {
+    try {
+      const res = await api.get("/seller/bulk-products/template", {
+        responseType: "blob",
+      });
+      const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "luxora_seller_products_template.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || "Failed to download template");
+    }
+  };
+
+  const downloadCategoriesCsv = async () => {
+    try {
+      const { data } = await api.get("/categories");
+      const rows = (data || []).map((c: any) => ({
+        id: c._id,
+        name: c.name,
+        slug: c.slug,
+        active: c.active ? "yes" : "no",
+      }));
+      downloadCSV("categories.csv", rows, {
+        id: "ID",
+        name: "Name",
+        slug: "Slug",
+        active: "Active",
+      });
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || "Failed to fetch categories");
+    }
+  };
+
+  const handleImport = async () => {
+    if (!csvFile) {
+      toast.error("Please select a CSV file.");
+      return;
+    }
+    if (zipFile && zipFile.size > 50 * 1024 * 1024) {
+      toast.error("ZIP must be 50MB or less.");
+      return;
+    }
+
+    setImporting(true);
+    setResult(null);
+    try {
+      const fd = new FormData();
+      fd.append("csv", csvFile);
+      if (zipFile) fd.append("media", zipFile);
+
+      const { data } = await api.post("/seller/bulk-products/import", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setResult(data);
+      toast.success("Import finished.");
+      fetchMine();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || "Import failed");
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const downloadErrorsCsv = () => {
+    if (!result?.errors?.length) return;
+    downloadCSV("bulk-errors.csv", result.errors, {
+      row: "Row",
+      sku: "SKU",
+      title: "Title",
+      error: "Error",
+    });
+  };
+
   return (
     <ProtectedRoute roles={["seller", "admin"]}>
       <SellerLayout>
@@ -151,6 +241,236 @@ function SellerProductsPage() {
               </PermissionGate>
             </div>
           </div>
+
+          {/* Bulk Upload */}
+          <PermissionGate scope="seller" perm="seller:products:write">
+            <div className="card p-4 mt-4 space-y-4">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Bulk Upload (CSV + ZIP)
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={downloadTemplate}
+                    className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                  >
+                    Download Template
+                  </button>
+                  <button
+                    onClick={downloadCategoriesCsv}
+                    className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                    title="Use this to find category IDs or slugs"
+                  >
+                    Download Categories
+                  </button>
+                  <button
+                    onClick={() => setShowGuide((s) => !s)}
+                    className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                  >
+                    {showGuide ? "Hide Guide" : "How to format CSV"}
+                  </button>
+                </div>
+              </div>
+
+              {showGuide && (
+                <div className="border border-gray-200 rounded-md bg-gray-50 p-3 text-sm text-gray-700 space-y-2">
+                  <div className="font-medium text-gray-900">
+                    CSV/Excel formatting guide
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>
+                      Required columns: <strong>title</strong>,{" "}
+                      <strong>price</strong>, <strong>stock</strong>, and either{" "}
+                      <strong>category_id</strong> or{" "}
+                      <strong>category_slug</strong> (ID takes precedence).
+                    </li>
+                    <li>
+                      Optional columns: description, sku, brand, discountPrice,
+                      tags (comma separated), attributes (JSON or
+                      key=value|key2=value2), seoTitle, seoDescription,
+                      shipWeight, shipLength, shipWidth, shipHeight, images
+                      (pipe-delimited), video (single).
+                    </li>
+                    <li>
+                      Categories: download <em>categories.csv</em> to find IDs
+                      and slugs. Unknown category → row error (no auto-create).
+                    </li>
+                    <li>
+                      Media: up to <strong>5 images</strong> (pipe-delimited)
+                      plus <strong>1 video</strong> per product.
+                      <br />
+                      Each item can be an absolute URL or a filename that exists
+                      in your uploaded ZIP.
+                    </li>
+                    <li>
+                      ZIP: max size <strong>50MB</strong>. Allowed image types:
+                      jpg/jpeg/png/webp/gif; video: mp4/webm/mov/mkv.
+                    </li>
+                    <li>
+                      Updates: if <strong>sku</strong> matches an existing item,
+                      that product is updated. New images are{" "}
+                      <strong>appended</strong>; video is replaced only if you
+                      provide one in the CSV/ZIP.
+                    </li>
+                  </ul>
+                  <div className="mt-2">
+                    <div className="font-medium text-gray-900">
+                      Example (header + one row)
+                    </div>
+                    <pre className="overflow-auto bg-white border border-gray-200 rounded p-2 text-xs">
+                      {`title,price,stock,category_id,category_slug,description,sku,brand,discountPrice,tags,attributes,seoTitle,seoDescription,shipWeight,shipLength,shipWidth,shipHeight,images,video
+"Wireless Noise-Cancelling Headphones","4999","25","","accessories","Immersive sound with ANC","WH-1000XM-sku","Luxora","4499","featured, limited","{\\"color\\":\\"Black\\",\\"battery\\":\\"30h\\"}","Premium ANC Headphones","Best-in-class noise cancellation","0.45","20","18","5","image1.jpg|https://cdn.example.com/hero.png","demo.mp4"`}
+                    </pre>
+                  </div>
+                  <div className="mt-1">
+                    <div className="font-medium text-gray-900">
+                      Tips for Excel/Numbers/Sheets
+                    </div>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>
+                        Format <strong>SKU</strong> column as{" "}
+                        <strong>Text</strong> to preserve leading zeros.
+                      </li>
+                      <li>
+                        Save as <strong>CSV (UTF‑8)</strong>. Avoid XLS/XLSX
+                        when uploading.
+                      </li>
+                      <li>
+                        Don’t include currency symbols in price; use plain
+                        numbers (e.g., 4999).
+                      </li>
+                      <li>Avoid extra commas or line breaks inside cells.</li>
+                    </ul>
+                  </div>
+                  <div className="mt-1">
+                    <div className="font-medium text-gray-900">
+                      Common errors & fixes
+                    </div>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>
+                        Unknown category → use valid category_id or
+                        category_slug from categories.csv.
+                      </li>
+                      <li>
+                        Images exceed limit → only first 5 used; extras ignored.
+                      </li>
+                      <li>
+                        Referenced filename missing in ZIP → ensure the exact
+                        filename is included.
+                      </li>
+                      <li>
+                        Invalid price/stock → use non‑negative numbers only.
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1">
+                    CSV ZIP
+                  </label>
+                  <input
+                    type="file"
+                    id="csv-upload"
+                    accept=".csv,text/csv"
+                    onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
+                    className="sr-only"
+                  />
+                  <label
+                    htmlFor="csv-upload"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+                  >
+                    <svg
+                      className="w-4 h-4 text-gray-500"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M4 3a2 2 0 00-2 2v2h2V5h12v10H4v-2H2v2a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4z" />
+                      <path d="M9 7v3H6l4 4 4-4h-3V7H9z" />
+                    </svg>
+                    Choose file
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Required: title, price, stock, and category_id or
+                    category_slug.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1">
+                    Media ZIP (optional)
+                  </label>
+                  <input
+                    type="file"
+                    id="zip-upload"
+                    accept=".zip,application/zip"
+                    onChange={(e) => setZipFile(e.target.files?.[0] || null)}
+                    className="sr-only"
+                  />
+                  <label
+                    htmlFor="zip-upload"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+                  >
+                    <svg
+                      className="w-4 h-4 text-gray-500"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M4 3a2 2 0 00-2 2v2h2V5h12v10H4v-2H2v2a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4z" />
+                      <path d="M9 7v3H6l4 4 4-4h-3V7H9z" />
+                    </svg>
+                    Choose file
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Up to 5 images and 1 video per product. Max 50MB.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={handleImport}
+                  disabled={importing || !csvFile}
+                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-500 disabled:opacity-50"
+                >
+                  {importing ? "Importing..." : "Import"}
+                </button>
+                {result?.errors?.length ? (
+                  <button
+                    onClick={downloadErrorsCsv}
+                    className="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                  >
+                    Download errors CSV
+                  </button>
+                ) : null}
+              </div>
+
+              {result && (
+                <div className="text-sm text-gray-700">
+                  <div>
+                    Processed: {result.summary.rows} · Created:{" "}
+                    {result.summary.created} · Updated: {result.summary.updated}{" "}
+                    · Errors: {result.summary.errors}
+                  </div>
+                  {result.errors?.length > 0 && (
+                    <ul className="mt-2 list-disc pl-5 space-y-1">
+                      {result.errors.slice(0, 5).map((e, idx) => (
+                        <li key={idx}>
+                          Row {e.row}: {e.error}
+                          {e.sku ? ` (SKU: ${e.sku})` : ""}
+                          {e.title ? ` — ${e.title}` : ""}
+                        </li>
+                      ))}
+                      {result.errors.length > 5 && (
+                        <li>...and {result.errors.length - 5} more</li>
+                      )}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
+          </PermissionGate>
 
           {/* Filters */}
           <div className="card p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 mt-4">

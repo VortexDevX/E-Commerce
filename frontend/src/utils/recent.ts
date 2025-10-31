@@ -1,4 +1,3 @@
-// frontend/src/utils/recent.ts
 export type RecentProduct = {
   _id: string;
   title: string;

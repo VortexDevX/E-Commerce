@@ -139,9 +139,26 @@ function SellerApplyPage() {
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <input
               type="file"
+              id="media-upload"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
               onChange={(e) => setDocFile(e.target.files?.[0] || null)}
-              className="block"
+              className="sr-only"
             />
+            <label
+              htmlFor="media-upload"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+            >
+              <svg
+                className="w-4 h-4 text-gray-500"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M4 3a2 2 0 00-2 2v2h2V5h12v10H4v-2H2v2a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4z" />
+                <path d="M9 7v3H6l4 4 4-4h-3V7H9z" />
+              </svg>
+              Choose file
+            </label>
             <button
               onClick={uploadDoc}
               disabled={!docFile || uploading}

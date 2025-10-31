@@ -5,17 +5,42 @@ import mongoose from "mongoose";
 import User from "../models/User.js";
 import PriceAlertLog from "../models/PriceAlertLog.js";
 import { sendPriceDropEmail } from "../services/email/emailService.js";
+import SponsoredPlacement from "../models/SponsoredPlacement.js";
+import AnalyticsEvent from "../models/AnalyticsEvent.js";
 
-// ---------------- Customers Also Bought ----------------
+// ---------------- Helpers ----------------
 const ALSO_BOUGHT_TTL = 10 * 60 * 1000; // 10 minutes
 const alsoBoughtCache = new Map(); // key: `${productId}:${limit}` -> { expires, items }
 
+const clientIp = (req) =>
+  (Array.isArray(req.headers["x-forwarded-for"])
+    ? req.headers["x-forwarded-for"][0]
+    : req.headers["x-forwarded-for"] || req.ip || ""
+  )
+    .toString()
+    .split(",")[0]
+    .trim() || "unknown";
+
+const sessionOf = (req) => {
+  const ua = (req.get("user-agent") || "").slice(0, 128);
+  return (
+    req.cookies?.sid || req.cookies?.rt || `${clientIp(req)}|${ua.slice(0, 32)}`
+  );
+};
+
+const ymdUTC = (d = new Date()) => {
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+// ---------------- Customers Also Bought ----------------
 export const getAlsoBought = async (req, res) => {
   try {
     const idOrSlug = req.params.id;
     const limit = Math.min(20, Math.max(1, parseInt(req.query.limit || "8")));
 
-    // Resolve product id from id or slug
     const product =
       (await Product.findById(idOrSlug)) ||
       (await Product.findOne({ slug: idOrSlug }));
@@ -24,13 +49,11 @@ export const getAlsoBought = async (req, res) => {
     const productId = new mongoose.Types.ObjectId(product._id);
     const cacheKey = `${productId.toString()}:${limit}`;
 
-    // Cache hit
     const cached = alsoBoughtCache.get(cacheKey);
     if (cached && cached.expires > Date.now()) {
       return res.json({ items: cached.items });
     }
 
-    // Aggregate co-purchases from orders (exclude cancelled)
     const agg = await Order.aggregate([
       { $match: { status: { $ne: "cancelled" }, "items.product": productId } },
       { $unwind: "$items" },
@@ -55,7 +78,6 @@ export const getAlsoBought = async (req, res) => {
       return res.json({ items: [] });
     }
 
-    // Fetch active products and keep the ranking order from agg
     const prods = await Product.find({
       _id: { $in: ids },
       status: "active",
@@ -71,17 +93,104 @@ export const getAlsoBought = async (req, res) => {
       if (ordered.length >= limit) break;
     }
 
-    const payload = ordered;
     alsoBoughtCache.set(cacheKey, {
       expires: Date.now() + ALSO_BOUGHT_TTL,
-      items: payload,
+      items: ordered,
     });
 
-    res.json({ items: payload });
+    res.json({ items: ordered });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
+// ---------------- Helpers (Sponsored) ----------------
+function slugify(text = "") {
+  return String(text)
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
+
+async function fetchSponsoredForListing(
+  filter,
+  limitNum,
+  sortBy,
+  currentCategorySlug
+) {
+  const now = new Date();
+
+  const baseMatch = {
+    status: "approved",
+    $and: [
+      {
+        $or: [
+          { startAt: { $exists: false } },
+          { startAt: null },
+          { startAt: { $lte: now } },
+        ],
+      },
+      {
+        $or: [
+          { endAt: { $exists: false } },
+          { endAt: null },
+          { endAt: { $gte: now } },
+        ],
+      },
+    ],
+  };
+
+  const targeted = currentCategorySlug
+    ? await SponsoredPlacement.find({
+        ...baseMatch,
+        targetCategorySlug: currentCategorySlug,
+      })
+        .sort({ priority: -1, updatedAt: -1, createdAt: -1 })
+        .lean()
+    : [];
+
+  const general = await SponsoredPlacement.find({
+    ...baseMatch,
+    $or: [
+      { targetCategorySlug: { $exists: false } },
+      { targetCategorySlug: null },
+      { targetCategorySlug: "" },
+    ],
+  })
+    .sort({ priority: -1, updatedAt: -1, createdAt: -1 })
+    .lean();
+
+  const placements = [...targeted, ...general];
+  if (placements.length === 0) return { items: [], usedPlacementIds: [] };
+
+  const ids = placements.map((p) => p.product);
+  const prodFilter = { ...filter, _id: { $in: ids }, status: "active" };
+
+  const prods = await Product.find(prodFilter)
+    .sort(sortBy)
+    .limit(limitNum * 3)
+    .lean();
+
+  const used = new Set();
+  const byProduct = new Map(prods.map((p) => [String(p._id), p]));
+  const items = [];
+  const usedPlacementIds = [];
+
+  for (const pl of placements) {
+    const pid = String(pl.product);
+    if (used.has(pid)) continue;
+    const p = byProduct.get(pid);
+    if (p) {
+      items.push({ ...p, isSponsored: true, sPlacementId: String(pl._id) });
+      usedPlacementIds.push(String(pl._id));
+      used.add(pid);
+      if (items.length >= limitNum) break;
+    }
+  }
+
+  return { items, usedPlacementIds };
+}
 
 // ---------------- Create Products (Seller/Admin) ----------------
 export const createProduct = async (req, res) => {
@@ -108,14 +217,12 @@ export const createProduct = async (req, res) => {
       return res.status(403).json({ message: "Seller not approved" });
     }
 
-    // category
     if (!categoryId)
       return res.status(400).json({ message: "categoryId required" });
     const cat = await Category.findById(categoryId);
     if (!cat || !cat.active)
       return res.status(400).json({ message: "Invalid category" });
 
-    // files (images + video)
     let imageObjs = [];
     let uploadedVideoUrl;
 
@@ -138,7 +245,6 @@ export const createProduct = async (req, res) => {
       }
     }
 
-    // body video URL
     const bodyVideoUrl =
       typeof req.body.videoUrl === "string" && req.body.videoUrl.trim()
         ? req.body.videoUrl.trim()
@@ -146,7 +252,6 @@ export const createProduct = async (req, res) => {
 
     const finalVideoUrl = uploadedVideoUrl || bodyVideoUrl;
 
-    // attributes
     let parsedAttributes = [];
     if (attributes) {
       if (typeof attributes === "string") {
@@ -162,7 +267,6 @@ export const createProduct = async (req, res) => {
         .map(({ key, value }) => ({ key: String(key), value: String(value) }));
     }
 
-    // seo
     let parsedSeo;
     if (seo) {
       if (typeof seo === "string") {
@@ -177,7 +281,6 @@ export const createProduct = async (req, res) => {
         };
     }
 
-    // shipping
     let parsedShipping;
     if (shipping) {
       if (typeof shipping === "string") {
@@ -242,7 +345,6 @@ export const createProduct = async (req, res) => {
 };
 
 // ---------------- List Products ----------------
-
 export const listProducts = async (req, res) => {
   try {
     const {
@@ -255,11 +357,12 @@ export const listProducts = async (req, res) => {
       page = 1,
       limit = 12,
       owner,
+      minRating,
+      inStock,
     } = req.query;
 
     const filter = { status: "active" };
 
-    // ✅ Search across title, description, category, brand, tags
     if (q) {
       const regex = new RegExp(q, "i");
       filter.$or = [
@@ -273,7 +376,6 @@ export const listProducts = async (req, res) => {
       ];
     }
 
-    // ✅ Category filter (exact, for sidebar selection)
     if (category) filter.category = category;
 
     if (minPrice != null || maxPrice != null) {
@@ -291,6 +393,16 @@ export const listProducts = async (req, res) => {
 
     if (owner) filter.owner = owner;
 
+    if (String(inStock) === "true") {
+      filter.stock = { $gt: 0 };
+    }
+
+    const mr = parseFloat(minRating);
+    if (!Number.isNaN(mr) && isFinite(mr)) {
+      filter.avgRating = { $gte: mr };
+      filter.ratingsCount = { $gt: 0 };
+    }
+
     if (
       req.user &&
       req.user.role === "admin" &&
@@ -299,32 +411,147 @@ export const listProducts = async (req, res) => {
       delete filter.status;
     }
 
-    const [field, direction] = String(sort).split(":");
-    const sortBy = { [field]: direction?.toLowerCase() === "asc" ? 1 : -1 };
+    // Safe sort defaults
+    const [fieldRaw, directionRaw] = String(sort).split(":");
+    const field = fieldRaw && fieldRaw.trim() ? fieldRaw.trim() : "createdAt";
+    const direction = (directionRaw || "desc").toLowerCase() === "asc" ? 1 : -1;
+    const sortBy = { [field]: direction };
 
     const pageNum = Math.max(1, parseInt(page));
     const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
     const skip = (pageNum - 1) * limitNum;
 
-    const [items, total] = await Promise.all([
-      Product.find(filter).sort(sortBy).skip(skip).limit(limitNum),
+    const [organicSlice, total] = await Promise.all([
+      Product.find(filter).sort(sortBy).skip(skip).limit(limitNum).lean(),
       Product.countDocuments(filter),
     ]);
 
+    // Sponsored blending: skip when searching (q present) to avoid heavy work during search
+    const isSearching = Boolean(q);
+    const envRatio = Number(process.env.SPONSORED_RATIO || 0.25);
+    const ratio = isSearching ? 0 : Math.max(0, Math.min(0.5, envRatio));
+    const targetSponsored = Math.floor(limitNum * ratio);
+
+    let finalItems = organicSlice;
+    if (targetSponsored > 0) {
+      try {
+        const currentCategorySlug = category ? slugify(String(category)) : null;
+        const { items: sponsoredItems, usedPlacementIds } =
+          await fetchSponsoredForListing(
+            filter,
+            targetSponsored,
+            sortBy,
+            currentCategorySlug
+          );
+
+        // Remove organic items that are sponsored (avoid duplicates)
+        const sponsoredIds = new Set(sponsoredItems.map((s) => String(s._id)));
+        const organic = organicSlice.filter(
+          (o) => !sponsoredIds.has(String(o._id))
+        );
+
+        // Interleave
+        const slot = ratio > 0 ? Math.max(2, Math.round(1 / ratio)) : Infinity;
+        finalItems = [];
+        let oi = 0;
+        let si = 0;
+
+        // Push one targeted-first if category is chosen
+        if (currentCategorySlug && sponsoredItems.length > 0) {
+          finalItems.push(sponsoredItems[si++]);
+        }
+
+        while (
+          finalItems.length < limitNum &&
+          (oi < organic.length || si < sponsoredItems.length)
+        ) {
+          if (oi < organic.length) finalItems.push(organic[oi++]);
+          if (
+            finalItems.length % slot === slot - 1 &&
+            si < sponsoredItems.length
+          ) {
+            finalItems.push(sponsoredItems[si++]);
+          }
+        }
+        while (finalItems.length < limitNum && oi < organic.length)
+          finalItems.push(organic[oi++]);
+        while (finalItems.length < limitNum && si < sponsoredItems.length)
+          finalItems.push(sponsoredItems[si++]);
+
+        // Record impressions (server-side) for placements used, de-duped per session/day
+        if (usedPlacementIds.length) {
+          try {
+            const sid = sessionOf(req);
+            const ymd = ymdUTC();
+
+            const existing = await AnalyticsEvent.find({
+              sessionId: sid,
+              event: "sponsored_impression",
+              ymd,
+              "meta.placementId": { $in: usedPlacementIds.map(String) },
+            })
+              .select({ "meta.placementId": 1 })
+              .lean();
+
+            const seen = new Set(
+              existing
+                .map((e) => e?.meta?.placementId)
+                .filter(Boolean)
+                .map(String)
+            );
+
+            const incIds = usedPlacementIds
+              .map(String)
+              .filter((id) => !seen.has(id));
+
+            if (incIds.length) {
+              await SponsoredPlacement.updateMany(
+                { _id: { $in: incIds } },
+                { $inc: { impressions: 1 } }
+              );
+              const now = new Date();
+              try {
+                await AnalyticsEvent.insertMany(
+                  incIds.map((pid) => ({
+                    sessionId: sid,
+                    userId: req.user?._id,
+                    event: "sponsored_impression",
+                    meta: { placementId: pid },
+                    ip: clientIp(req),
+                    ua: req.get("user-agent"),
+                    createdAt: now,
+                  })),
+                  { ordered: false }
+                );
+              } catch {}
+            }
+          } catch (e) {
+            console.error(
+              "[sponsored] impressions update failed:",
+              e?.message || e
+            );
+          }
+        }
+      } catch (e) {
+        console.error("[sponsored] blend failed:", e?.message || e);
+        finalItems = organicSlice; // graceful fallback
+      }
+    }
+
     res.json({
-      items,
+      items: finalItems,
       page: pageNum,
       limit: limitNum,
       total,
       pages: Math.ceil(total / limitNum),
     });
   } catch (err) {
+    console.error("[listProducts] failed:", err?.message || err);
     res.status(500).json({ message: err.message });
   }
 };
 
 // ---------------- Get Product by ID/Slug ----------------
-
 export const getProduct = async (req, res) => {
   try {
     const idOrSlug = req.params.id;

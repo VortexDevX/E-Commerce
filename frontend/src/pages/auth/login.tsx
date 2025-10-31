@@ -82,7 +82,7 @@ export default function LoginPage() {
     if (mfa.mode === "enroll" && mfa.challenge) {
       (async () => {
         const res: any = await dispatch(
-          enrollInit2FA({ challenge: mfa.challenge })
+          enrollInit2FA({ challenge: mfa.challenge || "" })
         );
         if (enrollInit2FA.fulfilled.match(res)) {
           setEnrollInfo({

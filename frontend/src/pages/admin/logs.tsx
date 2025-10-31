@@ -33,7 +33,9 @@ type AdminAction = {
     | "coupon"
     | "media"
     | "emailTemplate"
-    | "sellerRequest";
+    | "sellerRequest"
+    | "banner"
+    | "sponsored";
   entityId: string;
   summary?: string;
   before?: any;
@@ -68,6 +70,8 @@ const entityTypes = [
   "media",
   "emailTemplate",
   "sellerRequest",
+  "banner",
+  "sponsored",
 ] as const;
 
 function Pill({ text, color }: { text: string; color: string }) {

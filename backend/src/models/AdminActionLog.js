@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const adminActionLogSchema = new mongoose.Schema(
   {
-    action: { type: String, required: true, index: true }, // e.g., "user.role.update"
+    action: { type: String, required: true, index: true }, // e.g., "banner_create"
     entityType: {
       type: String,
       enum: [
@@ -13,12 +13,15 @@ const adminActionLogSchema = new mongoose.Schema(
         "media",
         "emailTemplate",
         "sellerRequest",
+        // NEW types
+        "banner",
+        "sponsored",
       ],
       required: true,
       index: true,
     },
-    entityId: { type: String, required: true, index: true }, // store as string for flexibility
-    summary: { type: String }, // human-readable
+    entityId: { type: String, required: true, index: true },
+    summary: { type: String },
     before: { type: mongoose.Schema.Types.Mixed },
     after: { type: mongoose.Schema.Types.Mixed },
     note: { type: String },
@@ -37,7 +40,6 @@ const adminActionLogSchema = new mongoose.Schema(
   { timestamps: false }
 );
 
-// Helpful compound index for analytics/reporting
 adminActionLogSchema.index({ action: 1, createdAt: -1 });
 
 const AdminActionLog = mongoose.model("AdminActionLog", adminActionLogSchema);

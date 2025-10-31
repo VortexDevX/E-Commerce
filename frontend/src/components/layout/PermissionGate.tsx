@@ -44,6 +44,9 @@ const roleMatches = (userRoleRaw: string | undefined, required: Role[]) => {
 type Props = {
   children: ReactNode;
   roles?: Role[]; // if omitted, any authenticated user can access
+  perm?: string; // optional, so existing code doesn’t break
+  fallback?: ReactNode;
+  scope?: string; // optional, so existing code doesn’t break
 };
 
 export default function ProtectedRoute({ children, roles }: Props) {

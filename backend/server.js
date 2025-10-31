@@ -24,6 +24,11 @@ import adminCouponRoutes from "./src/routes/adminCouponRoutes.js";
 import testEmailRoutes from "./src/routes/testEmail.js";
 import analyticsRoutes from "./src/routes/analyticsRoutes.js";
 import searchRoutes from "./src/routes/searchRoutes.js";
+import contactRoutes from "./src/routes/contactRoutes.js";
+import adminBannerRoutes from "./src/routes/adminBannerRoutes.js";
+import bannerRoutes from "./src/routes/bannerRoutes.js";
+import adminSponsoredRoutes from "./src/routes/adminSponsoredRoutes.js";
+import sponsoredRoutes from "./src/routes/sponsoredRoutes.js";
 
 // Load environment variables silently
 dotenv.config({ path: ".env" });
@@ -64,8 +69,12 @@ app.use("/api/admin/media", adminMediaRoutes);
 app.use("/api/admin/coupons", adminCouponRoutes);
 app.use("/api/test-email", testEmailRoutes);
 app.use("/api/auth", authRoutes);
-// New analytics tracking
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/contact", contactRoutes);
+app.use("/api/admin/banners", adminBannerRoutes);
+app.use("/api/banners", bannerRoutes);
+app.use("/api/admin/sponsored", adminSponsoredRoutes);
+app.use("/api/sponsored", sponsoredRoutes);
 
 // Serve uploads
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

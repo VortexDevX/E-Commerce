@@ -11,7 +11,17 @@ const AnalyticsEventSchema = new mongoose.Schema(
     },
     event: {
       type: String,
-      enum: ["view", "cart", "checkout", "search"], // ✅ added "search"
+      enum: [
+        "view",
+        "cart",
+        "checkout",
+        "search",
+        // Ad events
+        "banner_impression",
+        "banner_click",
+        "sponsored_impression",
+        "sponsored_click",
+      ],
       required: true,
       index: true,
     },
@@ -21,7 +31,7 @@ const AnalyticsEventSchema = new mongoose.Schema(
       default: null,
     },
     page: { type: String, default: null },
-    meta: { type: Object, default: {} }, // ✅ will store search.query here
+    meta: { type: Object, default: {} },
     ip: { type: String, default: "" },
     ua: { type: String, default: "" },
     ymd: { type: String, index: true }, // YYYY-MM-DD UTC
@@ -43,5 +53,19 @@ AnalyticsEventSchema.pre("save", function (next) {
 
 AnalyticsEventSchema.index({ ymd: 1, event: 1 });
 AnalyticsEventSchema.index({ createdAt: 1, event: 1 });
+
+// De-dupe helpers
+AnalyticsEventSchema.index({
+  ymd: 1,
+  event: 1,
+  "meta.bannerId": 1,
+  sessionId: 1,
+});
+AnalyticsEventSchema.index({
+  ymd: 1,
+  event: 1,
+  "meta.placementId": 1,
+  sessionId: 1,
+});
 
 export default mongoose.model("AnalyticsEvent", AnalyticsEventSchema);

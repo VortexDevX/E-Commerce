@@ -54,6 +54,10 @@ productSchema.index({ title: "text", description: "text" });
 productSchema.index({ price: 1 });
 productSchema.index({ owner: 1 });
 
+// NEW: indexes for filters
+productSchema.index({ avgRating: -1, ratingsCount: -1 });
+productSchema.index({ stock: 1 });
+
 function slugify(text) {
   return text
     .toString()

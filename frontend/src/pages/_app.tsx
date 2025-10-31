@@ -129,6 +129,89 @@ function InitWishlist() {
   return null;
 }
 
+// PWA: register SW and show install prompt
+function PWARegister() {
+  const [installEvent, setInstallEvent] = useState<any>(null);
+  const [showPrompt, setShowPrompt] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if ("serviceWorker" in navigator) {
+      if (process.env.NODE_ENV === "production") {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+      } else {
+        // In dev, ensure no SW is controlling the page (prevents HMR loops)
+        navigator.serviceWorker
+          .getRegistrations?.()
+          .then((regs) => regs.forEach((r) => r.unregister()))
+          .catch(() => {});
+      }
+    }
+
+    const onBeforeInstall = (e: any) => {
+      e.preventDefault();
+      setInstallEvent(e);
+      setShowPrompt(true);
+    };
+    const onInstalled = () => {
+      setInstallEvent(null);
+      setShowPrompt(false);
+    };
+
+    window.addEventListener("beforeinstallprompt", onBeforeInstall);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstall);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
+  }, []);
+
+  const triggerInstall = async () => {
+    if (!installEvent) return;
+    try {
+      installEvent.prompt();
+      await installEvent.userChoice;
+    } finally {
+      setInstallEvent(null);
+      setShowPrompt(false);
+    }
+  };
+
+  if (!showPrompt) return null;
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50">
+      <div className="rounded-lg shadow-lg border border-gray-200 bg-white text-gray-900 p-3 flex items-center gap-3">
+        <img
+          src="/ecommerce-favicon.ico"
+          alt="App icon"
+          className="w-6 h-6 rounded"
+          onError={(e) =>
+            ((e.currentTarget as HTMLImageElement).style.display = "none")
+          }
+        />
+        <div className="text-sm">
+          <div className="font-medium">Install Luxora</div>
+          <div className="text-gray-600">Add to your home screen</div>
+        </div>
+        <button
+          onClick={triggerInstall}
+          className="ml-2 px-3 py-1.5 rounded-md bg-purple-600 text-white text-sm hover:bg-purple-500"
+        >
+          Install
+        </button>
+        <button
+          onClick={() => setShowPrompt(false)}
+          className="ml-1 px-3 py-1.5 rounded-md bg-gray-100 text-gray-700 text-sm hover:bg-gray-200"
+        >
+          Not now
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <Provider store={store}>
@@ -158,6 +241,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
           <ClientOnly>
             <Footer />
+          </ClientOnly>
+
+          {/* PWA registration + install prompt */}
+          <ClientOnly>
+            <PWARegister />
           </ClientOnly>
         </div>
       </ThemeProvider>

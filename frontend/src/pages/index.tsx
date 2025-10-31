@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState, AppDispatch } from "../store";
 import { fetchProducts } from "../store/slices/productSlice";
@@ -11,18 +11,57 @@ import {
   TruckIcon,
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
+import api from "../utils/api";
+import BannerHero from "../components/BannerHero";
+
+type Banner = {
+  _id: string;
+  title?: string;
+  altText?: string;
+  imageUrl: string;
+  linkUrl?: string;
+  placement: "home_hero" | "category_header";
+  layout?: "image_full" | "split_asym";
+  imagePosition?: "left" | "right";
+  imageFit?: "contain" | "cover";
+  headline?: string;
+  subheadline?: string;
+  ctaLabel?: string;
+};
 
 export default function Home() {
   const dispatch = useDispatch<AppDispatch>();
   const { list, loading } = useSelector((s: RootState) => s.products);
 
+  const [banner, setBanner] = useState<Banner | null>(null);
+  const impressionSent = useRef(false);
+
   useEffect(() => {
     dispatch(fetchProducts({ limit: 8 }));
   }, [dispatch]);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get("banners/active", {
+          params: { placement: "home_hero" },
+        });
+        setBanner(data?.banner || null);
+      } catch {
+        setBanner(null);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!banner || impressionSent.current) return;
+    impressionSent.current = true;
+    api.post(`banners/${banner._id}/impression`).catch(() => {});
+  }, [banner]);
+
   return (
     <div className="space-y-16">
-      {/* Hero (light, soft gradient) */}
+      {/* Original Hero (kept) */}
       <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50 via-white to-blue-50 border border-gray-200">
         <img
           src="/pattern.svg"
@@ -75,6 +114,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Admin-Managed Banner (brand-safe) */}
+      {banner ? <BannerHero banner={banner as any} /> : null}
+
       {/* Featured Categories */}
       <section className="max-w-6xl mx-auto px-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -89,7 +131,7 @@ export default function Home() {
           ].map((c) => (
             <Link
               key={c.name}
-              href="/products"
+              href={{ pathname: "/products", query: { search: c.name } }}
               className="group rounded-2xl border border-gray-200 bg-white p-6 text-center font-semibold hover:shadow-md hover:-translate-y-0.5 transition"
             >
               <div className="text-2xl mb-2">{c.emoji}</div>
@@ -102,7 +144,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Continue browsing (recently viewed) */}
+      {/* Continue browsing */}
       <section className="max-w-6xl mx-auto px-6">
         <RecentlyViewed title="Continue browsing" />
       </section>
@@ -136,7 +178,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* Promo banner */}
+      {/* Promo banner (kept) */}
       <section className="max-w-6xl mx-auto px-6">
         <div className="rounded-2xl border border-gray-200 bg-white p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
@@ -153,40 +195,6 @@ export default function Home() {
           >
             Grab the deal
           </Link>
-        </div>
-      </section>
-
-      {/* Why Choose Luxora */}
-      <section className="border-t border-gray-200 py-16">
-        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-8 text-center">
-          {[
-            {
-              icon: ShieldCheckIcon,
-              title: "Secure Payments",
-              desc: "Your data stays private with bank-level security.",
-            },
-            {
-              icon: TruckIcon,
-              title: "Fast Shipping",
-              desc: "Get your orders at lightning speed, always.",
-            },
-            {
-              icon: SparklesIcon,
-              title: "Premium Quality",
-              desc: "Every product handpicked & quality-checked.",
-            },
-          ].map((f) => (
-            <div
-              key={f.title}
-              className="p-8 rounded-2xl border border-gray-200 bg-white hover:shadow-md transition"
-            >
-              <f.icon className="w-12 h-12 mx-auto mb-4 text-purple-600" />
-              <h3 className="text-xl font-bold mb-2 text-gray-900">
-                {f.title}
-              </h3>
-              <p className="text-gray-600">{f.desc}</p>
-            </div>
-          ))}
         </div>
       </section>
     </div>

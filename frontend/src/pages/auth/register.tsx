@@ -32,6 +32,9 @@ export default function RegisterPage() {
   const [captchaKey, setCaptchaKey] = useState(0); // re-mount to reset
   const siteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || "";
 
+  // Policies acceptance
+  const [acceptedPolicies, setAcceptedPolicies] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalError(null);
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -43,6 +46,8 @@ export default function RegisterPage() {
     if (form.password.length < 6)
       return "Password must be at least 6 characters";
     if (form.password !== form.confirmPassword) return "Passwords do not match";
+    if (!acceptedPolicies)
+      return "Please accept the Terms of Service and Privacy Policy";
     return null;
   };
 
@@ -216,11 +221,42 @@ export default function RegisterPage() {
           </div>
         )}
 
+        {/* Explicit legal acceptance */}
+        <div className="flex items-start gap-2">
+          <input
+            id="accept-policies"
+            type="checkbox"
+            className="mt-0.5"
+            checked={acceptedPolicies}
+            onChange={(e) => {
+              setAcceptedPolicies(e.target.checked);
+              if (e.target.checked) setLocalError(null);
+            }}
+          />
+          <label htmlFor="accept-policies" className="text-sm text-gray-700">
+            I agree to the{" "}
+            <Link
+              href="/policies/terms"
+              className="text-purple-700 hover:text-purple-600 font-medium"
+            >
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/policies/privacy"
+              className="text-purple-700 hover:text-purple-600 font-medium"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </label>
+        </div>
+
         {localError && <p className="text-sm text-red-600">{localError}</p>}
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || !acceptedPolicies}
           className="w-full inline-flex justify-center items-center bg-purple-600 hover:bg-purple-500 disabled:opacity-60 text-white font-medium rounded-md px-4 py-2"
         >
           {submitting ? "Creating account..." : "Register"}

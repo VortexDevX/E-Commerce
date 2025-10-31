@@ -1,4 +1,3 @@
-// src/pages/checkout.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -114,6 +113,7 @@ function CheckoutInner() {
   const grandTotal = effectiveSubtotal + shippingCost + tax;
 
   const [placing, setPlacing] = useState(false);
+  const [acceptedPolicies, setAcceptedPolicies] = useState(false);
 
   const formatAddress = (a: Address) =>
     [a.label, a.line1, a.line2, a.city, a.state, a.zip, a.country, a.phone]
@@ -133,6 +133,10 @@ function CheckoutInner() {
   const placeOrder = async () => {
     if (!canPlaceOrder) {
       toast.error("Please select or enter a valid address.");
+      return;
+    }
+    if (!acceptedPolicies) {
+      toast.error("Please accept the Terms and Privacy Policy to continue.");
       return;
     }
 
@@ -426,9 +430,40 @@ function CheckoutInner() {
               </p>
             </div>
 
+            {/* Explicit legal acceptance */}
+            <div className="flex items-start gap-2">
+              <input
+                id="accept-policies"
+                type="checkbox"
+                className="mt-0.5"
+                checked={acceptedPolicies}
+                onChange={(e) => setAcceptedPolicies(e.target.checked)}
+              />
+              <label
+                htmlFor="accept-policies"
+                className="text-xs text-gray-600"
+              >
+                I agree to the{" "}
+                <Link
+                  href="/policies/terms"
+                  className="underline text-gray-700 hover:text-gray-900"
+                >
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/policies/privacy"
+                  className="underline text-gray-700 hover:text-gray-900"
+                >
+                  Privacy Policy
+                </Link>
+                .
+              </label>
+            </div>
+
             <button
               onClick={placeOrder}
-              disabled={placing || !canPlaceOrder}
+              disabled={placing || !canPlaceOrder || !acceptedPolicies}
               className="w-full bg-purple-600 text-white py-3 rounded-md shadow hover:bg-purple-500 disabled:opacity-50"
             >
               {placing ? "Placing Order..." : "Place Order (COD)"}

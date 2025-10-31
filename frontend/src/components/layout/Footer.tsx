@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="bg-white border-t border-gray-200 mt-12">
       <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8">
           {/* Brand */}
           <div>
             <div className="text-xl font-bold text-gray-900">Luxora</div>
@@ -59,6 +59,60 @@ export default function Footer() {
               <li>
                 <Link href="/profile" className="hover:text-gray-900">
                   Profile
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900">Company</h3>
+            <ul className="mt-3 space-y-2 text-sm text-gray-600">
+              <li>
+                <Link href="/about" className="hover:text-gray-900">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-gray-900">
+                  Contact Us
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Policies */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900">Policies</h3>
+            <ul className="mt-3 space-y-2 text-sm text-gray-600">
+              <li>
+                <Link href="/policies/terms" className="hover:text-gray-900">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link href="/policies/privacy" className="hover:text-gray-900">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/policies/shipping" className="hover:text-gray-900">
+                  Shipping Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/policies/returns" className="hover:text-gray-900">
+                  Returns
+                </Link>
+              </li>
+              <li>
+                <Link href="/policies/cookies" className="hover:text-gray-900">
+                  Cookies Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/policies/payments" className="hover:text-gray-900">
+                  Payments
                 </Link>
               </li>
             </ul>

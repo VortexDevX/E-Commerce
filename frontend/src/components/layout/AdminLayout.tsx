@@ -22,6 +22,7 @@ import {
   ClipboardDocumentListIcon as ClipboardCheckIcon,
   DocumentMagnifyingGlassIcon,
   CurrencyDollarIcon,
+  MegaphoneIcon,
 } from "@heroicons/react/24/outline";
 
 export default function AdminLayout({
@@ -110,6 +111,16 @@ export default function AdminLayout({
       label: "Media",
       icon: PhotoIcon,
       perm: "media:read",
+    },
+    {
+      href: "/admin/banners",
+      label: "Banners",
+      icon: PhotoIcon,
+    },
+    {
+      href: "/admin/sponsored",
+      label: "Sponsored",
+      icon: MegaphoneIcon,
     },
     {
       href: "/admin/logs",
@@ -216,7 +227,7 @@ export default function AdminLayout({
           <div className="absolute inset-0 bg-black/40 transition-opacity" />
           <div
             ref={panelRef}
-            className="absolute left-0 top-0 bottom-0 w-80 max-w-[85%] bg-white border-r border-gray-200 p-4 overflow-y-auto shadow-xl
+            className="absolute left-0 top-16 bottom-0 w-80 max-w-[85%] bg-white border-r border-gray-200 p-4 overflow-y-auto shadow-xl
                        transform transition-transform duration-200 ease-out translate-x-0"
             onClick={(e) => e.stopPropagation()}
           >

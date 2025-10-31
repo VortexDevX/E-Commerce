@@ -7,6 +7,32 @@ import { fetchProducts } from "../../store/slices/productSlice";
 import ProductCard from "../../components/products/ProductCard";
 import ProductCardSkeleton from "../../components/products/ProductCardSkeleton";
 import { Listbox, Dialog, Transition } from "@headlessui/react";
+import api from "../../utils/api";
+import BannerHero from "../../components/BannerHero";
+
+type Banner = {
+  _id: string;
+  title?: string;
+  altText?: string;
+  imageUrl: string;
+  linkUrl?: string;
+  placement: "home_hero" | "category_header";
+  layout?: "image_full" | "split_asym";
+  imagePosition?: "left" | "right";
+  imageFit?: "contain" | "cover";
+  headline?: string;
+  subheadline?: string;
+  ctaLabel?: string;
+};
+
+function slugify(text: string) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
 
 export default function ProductsPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -20,6 +46,14 @@ export default function ProductsPage() {
   const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
+  // NEW: Ratings + Availability
+  const [minRating, setMinRating] = useState<number>(0);
+  const [inStock, setInStock] = useState<boolean>(false);
+
+  // NEW: Category banner state
+  const [categoryBanner, setCategoryBanner] = useState<Banner | null>(null);
+  const catBannerImpressionRef = useRef<string | null>(null);
+
   const lastParamsRef = useRef<any>(null);
 
   const sortOptions = [
@@ -29,31 +63,48 @@ export default function ProductsPage() {
     { value: "newest", label: "Newest" },
   ];
 
+  const ratingOptions = [
+    { value: 0, label: "Any rating" },
+    { value: 1, label: "1★ & up" },
+    { value: 2, label: "2★ & up" },
+    { value: 3, label: "3★ & up" },
+    { value: 4, label: "4★ & up" },
+  ];
+
   const buildParams = () => {
     const params: any = {};
     if (searchParam) params.q = searchParam;
     if (sort) params.sort = sort;
     if (category) params.category = category;
     if (priceRange) params.priceRange = priceRange.join(",");
+    if (minRating > 0) params.minRating = minRating;
+    if (inStock) params.inStock = true;
     return params;
   };
 
-  // Clear search when category changes
+  // Initialize category from URL query (e.g., /products?category=Electronics)
+  useEffect(() => {
+    if (!router.isReady) return;
+    const c = router.query.category;
+    if (typeof c === "string") {
+      setCategory(c);
+    }
+  }, [router.isReady, router.query.category]);
+
+  // Selecting a category updates URL and clears search
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
-    // Remove search param from URL when selecting a category
-    if (searchParam) {
-      router.push("/products", undefined, { shallow: true });
-    }
+    const query: any = { category: newCategory };
+    router.push({ pathname: "/products", query }, undefined, { shallow: true });
   };
 
-  // refetch when search param or filters change
+  // Fetch products when filters change
   useEffect(() => {
     const params = buildParams();
     lastParamsRef.current = params;
     dispatch(fetchProducts(params));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParam, sort, category, priceRange]);
+  }, [searchParam, sort, category, priceRange, minRating, inStock]);
 
   useEffect(() => {
     if (list.length === 0) {
@@ -64,19 +115,50 @@ export default function ProductsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // NEW: Fetch category_header banner whenever category changes
+  useEffect(() => {
+    const run = async () => {
+      if (!category) {
+        setCategoryBanner(null);
+        catBannerImpressionRef.current = null;
+        return;
+      }
+      try {
+        const slug = slugify(category);
+        const { data } = await api.get("banners/active", {
+          params: { placement: "category_header", categorySlug: slug },
+        });
+        setCategoryBanner(data?.banner || null);
+      } catch {
+        setCategoryBanner(null);
+      }
+      catBannerImpressionRef.current = null;
+    };
+    run();
+  }, [category]);
+
+  // NEW: Send impression for category banner once per banner id
+  useEffect(() => {
+    if (!categoryBanner) return;
+    if (catBannerImpressionRef.current === categoryBanner._id) return;
+    catBannerImpressionRef.current = categoryBanner._id;
+    api.post(`banners/${categoryBanner._id}/impression`).catch(() => {});
+  }, [categoryBanner]);
+
   const onClearFilters = () => {
     setCategory("");
     setPriceRange(null);
     setSort("");
-    // Also clear search param
-    if (searchParam) {
-      router.push("/products", undefined, { shallow: true });
-    }
+    setMinRating(0);
+    setInStock(false);
+    setCategoryBanner(null);
+    catBannerImpressionRef.current = null;
+    // Clear category/search from URL
+    router.push("/products", undefined, { shallow: true });
   };
 
   const isInitialLoading = loading && list.length === 0;
 
-  // Show search info if searching
   const searchInfo = searchParam ? (
     <div className="mb-4 p-3 bg-purple-50 rounded-md flex items-center justify-between">
       <span className="text-sm text-gray-700">
@@ -93,7 +175,7 @@ export default function ProductsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 grid md:grid-cols-4 gap-8">
-      {/* Sidebar (desktop) */}
+      {/* Sidebar */}
       <aside className="hidden md:block space-y-6 card p-6 h-fit">
         <button
           onClick={onClearFilters}
@@ -142,6 +224,43 @@ export default function ProductsPage() {
             </button>
           ))}
         </div>
+
+        {/* Ratings */}
+        <div>
+          <h3 className="font-semibold mb-2 text-gray-900">Ratings</h3>
+          {[
+            { value: 0, label: "Any rating" },
+            { value: 1, label: "1★ & up" },
+            { value: 2, label: "2★ & up" },
+            { value: 3, label: "3★ & up" },
+            { value: 4, label: "4★ & up" },
+          ].map((o) => (
+            <button
+              key={o.value}
+              onClick={() => setMinRating(o.value)}
+              className={`block w-full text-left px-3 py-1 rounded ${
+                minRating === o.value
+                  ? "bg-purple-600 text-white"
+                  : "hover:bg-gray-50 text-gray-700"
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Availability */}
+        <div>
+          <h3 className="font-semibold mb-2 text-gray-900">Availability</h3>
+          <label className="flex items-center gap-2 text-gray-700">
+            <input
+              type="checkbox"
+              checked={inStock}
+              onChange={(e) => setInStock(e.target.checked)}
+            />
+            In stock only
+          </label>
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -153,10 +272,22 @@ export default function ProductsPage() {
           <Listbox value={sort} onChange={setSort}>
             <div className="relative w-48">
               <Listbox.Button className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm text-left text-gray-900">
-                {sortOptions.find((o) => o.value === sort)?.label || "Sort by"}
+                {["", "priceAsc", "priceDesc", "newest"].includes(sort)
+                  ? {
+                      "": "Sort by",
+                      priceAsc: "Price: Low → High",
+                      priceDesc: "Price: High → Low",
+                      newest: "Newest",
+                    }[sort as "" | "priceAsc" | "priceDesc" | "newest"]
+                  : "Sort by"}
               </Listbox.Button>
-              <Listbox.Options className="absolute mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                {sortOptions.map((o) => (
+              <Listbox.Options className="absolute mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                {[
+                  { value: "", label: "Sort by" },
+                  { value: "priceAsc", label: "Price: Low → High" },
+                  { value: "priceDesc", label: "Price: High → Low" },
+                  { value: "newest", label: "Newest" },
+                ].map((o) => (
                   <Listbox.Option
                     key={o.value}
                     value={o.value}
@@ -177,6 +308,9 @@ export default function ProductsPage() {
         >
           Show Filters
         </button>
+
+        {/* NEW: Category Header Banner */}
+        {categoryBanner ? <BannerHero banner={categoryBanner as any} /> : null}
 
         {/* Mobile Filters Modal */}
         <Transition show={showFilters} as={Fragment}>
@@ -262,6 +396,41 @@ export default function ProductsPage() {
                         {r.label}
                       </button>
                     ))}
+                  </div>
+
+                  {/* Ratings */}
+                  <div>
+                    <h3 className="font-semibold mb-2 text-gray-900">
+                      Ratings
+                    </h3>
+                    {ratingOptions.map((o) => (
+                      <button
+                        key={o.value}
+                        onClick={() => setMinRating(o.value)}
+                        className={`block w-full text-left px-3 py-2 rounded ${
+                          minRating === o.value
+                            ? "bg-purple-600 text-white"
+                            : "hover:bg-gray-50 text-gray-700"
+                        }`}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Availability */}
+                  <div>
+                    <h3 className="font-semibold mb-2 text-gray-900">
+                      Availability
+                    </h3>
+                    <label className="flex items-center gap-2 text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={inStock}
+                        onChange={(e) => setInStock(e.target.checked)}
+                      />
+                      In stock only
+                    </label>
                   </div>
 
                   <div className="flex justify-between gap-4 pt-4 border-t border-gray-200">

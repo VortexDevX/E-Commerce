@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 import { protect } from "../middleware/authMiddleware.js";
 import {
   withSellerScope,
@@ -16,6 +17,10 @@ import {
   getSellerTopProducts,
   getSellerReviewsAnalytics,
 } from "../controllers/analyticsController.js";
+import {
+  downloadTemplate as bulkTemplate,
+  importBulk as bulkImport,
+} from "../controllers/sellerBulkProductController.js";
 
 const router = express.Router();
 
@@ -32,6 +37,29 @@ router.get(
   "/products/:id",
   requireSellerPermissions("seller:products:read"),
   getMyProductDetail
+);
+
+// Bulk products (seller-only flow)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB per file (ZIP)
+    files: 2,
+  },
+});
+router.get(
+  "/bulk-products/template",
+  requireSellerPermissions("seller:products:write"),
+  bulkTemplate
+);
+router.post(
+  "/bulk-products/import",
+  requireSellerPermissions("seller:products:write"),
+  upload.fields([
+    { name: "csv", maxCount: 1 },
+    { name: "media", maxCount: 1 }, // optional ZIP with images/videos
+  ]),
+  bulkImport
 );
 
 // Orders

@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../../utils/api';
-import { ReactNode } from 'react';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import api from "../../utils/api";
+import { ReactNode } from "react";
 
 // Keep this flexible to match backend payloads
 export type ProductImage = string | { url?: string; alt?: string };
@@ -16,12 +16,12 @@ export type Product = {
   videoUrl: string | undefined;
   avgRating?: number;
   stock?: number;
-  // new fields
   sku?: string;
   brand?: string;
   tags?: string[];
   attributes?: ProductAttribute[];
   seo?: { title?: string; description?: string };
+  isSponsored?: boolean;
 };
 
 type State = {
@@ -39,21 +39,21 @@ const initialState: State = {
 };
 
 export const fetchProducts = createAsyncThunk(
-  'products/fetch',
+  "products/fetch",
   async (params?: Record<string, any>) => {
     const query: Record<string, any> = { ...params };
 
     // Map frontend sort values to backend "field:direction"
     if (query.sort) {
       switch (query.sort) {
-        case 'priceAsc':
-          query.sort = 'price:asc';
+        case "priceAsc":
+          query.sort = "price:asc";
           break;
-        case 'priceDesc':
-          query.sort = 'price:desc';
+        case "priceDesc":
+          query.sort = "price:desc";
           break;
-        case 'newest':
-          query.sort = 'createdAt:desc';
+        case "newest":
+          query.sort = "createdAt:desc";
           break;
         default:
           delete query.sort;
@@ -61,24 +61,27 @@ export const fetchProducts = createAsyncThunk(
     }
 
     if (query.priceRange) {
-      const [min, max] = String(query.priceRange).split(',');
+      const [min, max] = String(query.priceRange).split(",");
       if (min) query.minPrice = min;
       if (max) query.maxPrice = max;
       delete query.priceRange;
     }
 
-    const { data } = await api.get('/products', { params: query });
+    const { data } = await api.get("/products", { params: query });
     return data.items || data.products || [];
   }
 );
 
-export const fetchProductById = createAsyncThunk('products/fetchOne', async (id: string) => {
-  const { data } = await api.get(`/products/${id}`);
-  return data as Product;
-});
+export const fetchProductById = createAsyncThunk(
+  "products/fetchOne",
+  async (id: string) => {
+    const { data } = await api.get(`/products/${id}`);
+    return data as Product;
+  }
+);
 
 const slice = createSlice({
-  name: 'products',
+  name: "products",
   initialState,
   reducers: {},
   extraReducers: (b) => {
@@ -92,7 +95,7 @@ const slice = createSlice({
     });
     b.addCase(fetchProducts.rejected, (s, a) => {
       s.loading = false;
-      s.error = a.error.message || 'Failed';
+      s.error = a.error.message || "Failed";
     });
     b.addCase(fetchProductById.fulfilled, (s, a) => {
       s.current = a.payload as Product;

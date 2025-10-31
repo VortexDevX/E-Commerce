@@ -104,7 +104,7 @@
         └── 📁public
             ├── empty-cart.svg
             ├── fallback.png
-            ├── favicon.ico
+            ├── ecommerce-favicon.ico
             ├── file.svg
             ├── globe.svg
             ├── luxora-1.png

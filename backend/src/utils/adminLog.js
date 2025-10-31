@@ -12,6 +12,20 @@ const ipOf = (req) =>
   req?.connection?.remoteAddress ||
   "unknown";
 
+const mapEntityType = (t) => {
+  if (!t) return t;
+  if (t === "Banner" || t === "banner") return "banner";
+  if (
+    t === "SponsoredPlacement" ||
+    t === "sponsoredPlacement" ||
+    t === "Sponsored" ||
+    t === "sponsored"
+  ) {
+    return "sponsored";
+  }
+  return t;
+};
+
 export const logAdminAction = async (
   req,
   { action, entityType, entityId, summary, before, after, note }
@@ -20,7 +34,7 @@ export const logAdminAction = async (
     const admin = req?.user;
     await AdminActionLog.create({
       action,
-      entityType,
+      entityType: mapEntityType(entityType),
       entityId: String(entityId),
       summary: summary?.slice(0, 500),
       before,
