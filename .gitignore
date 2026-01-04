@@ -36,3 +36,6 @@ Thumbs.db
 *.pem
 *.tsbuildinfo
 .vercel/
+
+desktop.ini
+frontend/public/luxoraICO.ico
