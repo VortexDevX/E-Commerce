@@ -35,7 +35,7 @@ export const createCoupon = async (req, res) => {
     if (String(err?.code) === "11000") {
       return res.status(400).json({ message: "Code already exists" });
     }
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -45,7 +45,7 @@ export const listCoupons = async (req, res) => {
     const list = await Coupon.find().sort({ createdAt: -1 });
     res.json(list);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -56,7 +56,7 @@ export const getCoupon = async (req, res) => {
     if (!c) return res.status(404).json({ message: "Not found" });
     res.json(c);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -94,7 +94,7 @@ export const updateCoupon = async (req, res) => {
     if (String(err?.code) === "11000") {
       return res.status(400).json({ message: "Code already exists" });
     }
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -121,6 +121,7 @@ export const deleteCoupon = async (req, res) => {
     });
     res.json({ message: "Deleted" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+

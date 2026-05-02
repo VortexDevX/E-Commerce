@@ -5,14 +5,16 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   async rewrites() {
+    const backendBase =
+      process.env.NEXT_PUBLIC_BACKEND_ORIGIN || "http://localhost:8080";
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:8080/api/:path*",
+        destination: `${backendBase}/api/:path*`,
       },
       {
         source: "/uploads/:path*",
-        destination: "http://localhost:8080/uploads/:path*",
+        destination: `${backendBase}/uploads/:path*`,
       },
     ];
   },

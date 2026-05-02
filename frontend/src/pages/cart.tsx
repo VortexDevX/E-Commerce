@@ -33,21 +33,28 @@ export default function CartPage() {
   if (!items || items.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-6 py-16 text-center">
-        <img
-          src="/empty-cart.svg"
-          alt="Empty cart"
-          className="w-40 mx-auto mb-6 opacity-80"
-          onError={(e) =>
-            ((e.currentTarget as HTMLImageElement).src = "/fallback.png")
-          }
-        />
-        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-          Your cart is empty
-        </h2>
-        <p className="text-gray-600 mb-6">Add items to get started.</p>
-        <Link href="/products" className="btn btn-primary">
-          Continue Shopping
-        </Link>
+        <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-12 max-w-xl mx-auto flex flex-col items-center">
+          <img
+            src="/empty-cart.svg"
+            alt="Empty cart"
+            className="w-40 mx-auto mb-8 opacity-90"
+            onError={(e) =>
+              ((e.currentTarget as HTMLImageElement).src = "/fallback.png")
+            }
+          />
+          <h2 className="text-3xl font-black uppercase tracking-widest text-foreground mb-4">
+            Your cart is empty
+          </h2>
+          <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-8">
+            Add products to review pricing, delivery, and checkout.
+          </p>
+          <Link
+            href="/products"
+            className="px-8 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 block max-w-xs mx-auto text-center"
+          >
+            Shop products
+          </Link>
+        </div>
       </div>
     );
   }
@@ -76,17 +83,17 @@ export default function CartPage() {
     if (!code.trim()) return;
     const action = await dispatch(applyCoupon(code.trim().toUpperCase()));
     if (applyCoupon.fulfilled.match(action)) {
-      toast.success("Coupon applied");
+      toast.success("Discount applied");
       setCode("");
       dispatch(fetchCart());
     } else {
-      toast.error((action.payload as any) || "Invalid coupon");
+      toast.error((action.payload as any) || "Enter a valid code");
     }
   };
 
   const onRemoveCoupon = async () => {
     await dispatch(removeCoupon());
-    toast.success("Coupon removed");
+    toast.success("Discount removed");
     dispatch(fetchCart());
   };
 
@@ -95,22 +102,22 @@ export default function CartPage() {
       {/* Cart Items */}
       <div className="md:col-span-2 space-y-4">
         {items.map((i) => (
-          <div key={i._id} className="card p-4">
-            <div className="grid grid-cols-[72px,1fr] sm:grid-cols-[96px,1fr,auto] gap-3 sm:gap-4 items-start sm:items-center">
+          <div key={i._id} className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-4 group">
+            <div className="grid grid-cols-[72px,1fr] sm:grid-cols-[112px,1fr,auto] gap-4 items-start sm:items-center">
               <img
                 src={getImageUrl(i.product.images?.[0])}
                 alt={i.product.title}
-                className="w-18 h-18 sm:w-24 sm:h-24 object-cover rounded-lg border border-gray-200"
+                className="w-20 h-20 sm:w-28 sm:h-28 object-cover rounded-none border-[3px] border-border shadow-[2px_2px_0px_#111]"
                 onError={(e) =>
                   ((e.currentTarget as HTMLImageElement).src = "/fallback.png")
                 }
               />
 
-              <div className="min-w-0">
-                <h3 className="font-semibold text-gray-900 truncate">
+              <div className="min-w-0 pr-2">
+                <h3 className="font-black uppercase tracking-widest text-foreground text-lg truncate group-hover:underline underline-offset-4 decoration-[3px]">
                   {i.product.title}
                 </h3>
-                <p className="text-gray-600 text-sm">
+                <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm mt-1">
                   {currency(i.priceAtAdd ?? i.product.price)} each
                 </p>
 
@@ -119,33 +126,33 @@ export default function CartPage() {
                   <button
                     aria-label="Decrease quantity"
                     onClick={() => onDecrease(i._id, i.qty)}
-                    className="w-9 h-9 flex items-center justify-center rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                    className="w-10 h-10 flex items-center justify-center rounded-none border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all focus:outline-none"
                   >
-                    -
+                    <span className="font-black text-foreground">-</span>
                   </button>
-                  <span className="px-3 text-gray-900">{i.qty}</span>
+                  <span className="w-10 text-center text-foreground font-black text-lg">{i.qty}</span>
                   <button
                     aria-label="Increase quantity"
                     onClick={() => onIncrease(i._id, i.qty)}
-                    className="w-9 h-9 flex items-center justify-center rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                    className="w-10 h-10 flex items-center justify-center rounded-none border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all focus:outline-none"
                   >
-                    +
+                    <span className="font-black text-foreground">+</span>
                   </button>
                 </div>
               </div>
 
               {/* Price + Remove */}
-              <div className="flex sm:block items-center justify-between gap-3 sm:gap-2 mt-2 sm:mt-0">
-                <p className="font-bold text-gray-900">
+              <div className="flex sm:block items-center justify-between gap-3 sm:gap-2 mt-4 sm:mt-0 sm:self-start sm:text-right">
+                <p className="font-black text-2xl text-foreground">
                   {currency((i.priceAtAdd ?? i.product.price) * i.qty)}
                 </p>
                 <button
                   aria-label="Remove item"
                   onClick={() => onRemove(i._id)}
-                  className="text-rose-600 hover:text-rose-500 inline-flex items-center gap-1 text-sm"
+                  className="mt-2 text-rose-600 hover:text-rose-500 hover:underline underline-offset-4 decoration-2 inline-flex items-center gap-1 text-sm font-bold uppercase tracking-widest"
                 >
                   <TrashIcon className="w-4 h-4" />
-                  <span className="hidden sm:inline">Remove</span>
+                  <span className="hidden sm:inline">Remove item</span>
                 </button>
               </div>
             </div>
@@ -154,15 +161,15 @@ export default function CartPage() {
       </div>
 
       {/* Summary */}
-      <aside className="card p-6 h-fit md:sticky md:top-24 space-y-4">
-        <h2 className="text-xl font-semibold text-gray-900">Order Summary</h2>
+      <aside className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 h-fit md:sticky md:top-24 space-y-6">
+        <h2 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4">Order Summary</h2>
 
         {/* Coupon UI */}
         <div className="space-y-2">
           {appliedCoupon ? (
-            <div className="flex items-center justify-between bg-purple-50 border border-purple-200 text-purple-800 rounded px-3 py-2">
-              <span className="font-medium">Coupon: {appliedCoupon.code}</span>
-              <button onClick={onRemoveCoupon} className="text-sm underline">
+            <div className="flex items-center justify-between bg-emerald-300 border-[3px] border-emerald-950 text-emerald-950 px-3 py-2 font-black uppercase tracking-widest shadow-[4px_4px_0px_#111]">
+              <span>Code: {appliedCoupon.code}</span>
+              <button onClick={onRemoveCoupon} className="text-xs hover:underline decoration-2 underline-offset-2">
                 Remove
               </button>
             </div>
@@ -171,47 +178,49 @@ export default function CartPage() {
               <input
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="Promo code"
-                className="flex-1 bg-white border border-gray-300 rounded px-3 py-2 text-gray-900"
+                placeholder="Enter discount code"
+                className="flex-1 bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[2px_2px_0px_#111] focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-all uppercase placeholder:text-muted-foreground/50"
               />
               <button
                 onClick={onApply}
-                className="px-4 py-2 rounded-md bg-gray-900 text-white hover:bg-gray-800"
+                className="px-4 py-2 border-[3px] border-foreground bg-foreground text-background font-black uppercase tracking-widest shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
               >
                 Apply
               </button>
             </div>
           )}
           {couponError && (
-            <p className="text-sm text-rose-600">{couponError}</p>
+            <p className="text-sm font-bold text-rose-600 mt-2">{couponError}</p>
           )}
         </div>
 
-        <p className="flex justify-between text-gray-700">
-          <span>Subtotal</span>
-          <span>{currency(subtotal)}</span>
-        </p>
-        {discount > 0 && (
-          <p className="flex justify-between text-gray-700">
-            <span>Discount</span>
-            <span>-{currency(discount)}</span>
+        <div className="space-y-3 pb-4 border-b-[3px] border-border font-bold uppercase tracking-widest text-sm">
+          <p className="flex justify-between text-muted-foreground">
+            <span>Subtotal</span>
+            <span>{currency(subtotal)}</span>
           </p>
-        )}
-        <p className="flex justify-between text-gray-700">
-          <span>Estimated Tax</span>
-          <span>{currency(tax)}</span>
-        </p>
-        <hr className="border-gray-200" />
-        <p className="flex justify-between font-semibold text-lg text-gray-900">
+          {discount > 0 && (
+            <p className="flex justify-between text-emerald-600">
+              <span>Discount</span>
+              <span>-{currency(discount)}</span>
+            </p>
+          )}
+          <p className="flex justify-between text-muted-foreground">
+            <span>Estimated tax</span>
+            <span className="text-foreground">{currency(tax)}</span>
+          </p>
+        </div>
+        
+        <p className="flex justify-between font-black uppercase tracking-widest text-2xl text-foreground">
           <span>Total</span>
           <span>{currency(total)}</span>
         </p>
 
         <Link
           href="/checkout"
-          className="w-full inline-block text-center btn btn-primary"
+          className="w-full text-center px-6 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 block mt-4"
         >
-          Proceed to Checkout
+          Continue to checkout
         </Link>
       </aside>
     </div>

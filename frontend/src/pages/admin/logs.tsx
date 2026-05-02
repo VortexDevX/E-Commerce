@@ -104,13 +104,13 @@ const statusColor = (s?: string | null) => {
 const ctxColor = (c?: string) => {
   switch (c) {
     case "admin":
-      return "bg-purple-100 text-purple-800";
+      return "bg-purple-100 text-purple-950 border-purple-500";
     case "seller":
-      return "bg-orange-100 text-orange-800";
+      return "bg-orange-100 text-orange-950 border-orange-500";
     case "user":
-      return "bg-teal-100 text-teal-800";
+      return "bg-teal-100 text-teal-950 border-teal-500";
     default:
-      return "bg-gray-100 text-gray-700";
+      return "bg-gray-100 text-gray-900 border-gray-400";
   }
 };
 
@@ -253,25 +253,25 @@ export default function AdminLogsPage() {
   return (
     <ProtectedRoute roles={["admin"]}>
       <AdminLayout>
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <h1 className="text-2xl font-semibold text-gray-900">Logs</h1>
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6 flex-wrap gap-4">
+          <h1 className="text-3xl text-foreground">Logs</h1>
+          <div className="flex items-center gap-4">
             <button
               onClick={() => setTab("orders")}
-              className={`px-3 py-1.5 rounded-md border ${
+              className={`px-4 py-2 border-[3px] shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none text-xs font-bold uppercase tracking-widest ${
                 tab === "orders"
-                  ? "bg-purple-600 text-white border-purple-600"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  ? "bg-primary border-primary text-primary-foreground"
+                  : "bg-card border-border text-foreground"
               }`}
             >
               Order Status
             </button>
             <button
               onClick={() => setTab("actions")}
-              className={`px-3 py-1.5 rounded-md border ${
+              className={`px-4 py-2 border-[3px] shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none text-xs font-bold uppercase tracking-widest ${
                 tab === "actions"
-                  ? "bg-purple-600 text-white border-purple-600"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  ? "bg-primary border-primary text-primary-foreground"
+                  : "bg-card border-border text-foreground"
               }`}
             >
               Admin Actions
@@ -281,14 +281,14 @@ export default function AdminLogsPage() {
 
         {/* Orders tab */}
         {tab === "orders" && (
-          <div className="space-y-4">
-            <div className="bg-white border border-gray-200 rounded-xl p-4">
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">
+          <div className="space-y-8">
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6">
+              <h2 className="text-xl font-black uppercase tracking-widest text-foreground mb-6">
                 Order Status Logs
               </h2>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
                     Order ID
                   </label>
                   <input
@@ -297,24 +297,24 @@ export default function AdminLogsPage() {
                       setOFilters((f) => ({ ...f, orderId: e.target.value }))
                     }
                     placeholder="e.g., 65f...d2a"
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
-                    Changed By (email or ID)
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                    Changed By
                   </label>
                   <input
                     value={oFilters.changedBy}
                     onChange={(e) =>
                       setOFilters((f) => ({ ...f, changedBy: e.target.value }))
                     }
-                    placeholder="john@doe.com"
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    placeholder="Email or ID"
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
                     To Status
                   </label>
                   <select
@@ -322,7 +322,7 @@ export default function AdminLogsPage() {
                     onChange={(e) =>
                       setOFilters((f) => ({ ...f, toStatus: e.target.value }))
                     }
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                   >
                     <option value="">All</option>
                     {orderStatuses.map((s) => (
@@ -333,7 +333,7 @@ export default function AdminLogsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
                     Context
                   </label>
                   <select
@@ -341,7 +341,7 @@ export default function AdminLogsPage() {
                     onChange={(e) =>
                       setOFilters((f) => ({ ...f, context: e.target.value }))
                     }
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                   >
                     <option value="">All</option>
                     {contexts.map((c) => (
@@ -352,7 +352,7 @@ export default function AdminLogsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
                     From
                   </label>
                   <input
@@ -361,24 +361,24 @@ export default function AdminLogsPage() {
                     onChange={(e) =>
                       setOFilters((f) => ({ ...f, from: e.target.value }))
                     }
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">To</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">To</label>
                   <input
                     type="date"
                     value={oFilters.to}
                     onChange={(e) =>
                       setOFilters((f) => ({ ...f, to: e.target.value }))
                     }
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                   />
                 </div>
-                <div className="flex gap-2 items-end">
+                <div className="flex gap-4 items-end lg:col-span-2">
                   <button
                     onClick={() => fetchOrderLogs(1)}
-                    className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-500"
+                    className="flex-1 px-4 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
                   >
                     Apply
                   </button>
@@ -394,7 +394,7 @@ export default function AdminLogsPage() {
                       });
                       fetchOrderLogs(1);
                     }}
-                    className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    className="flex-1 px-4 py-2 border-[3px] border-border bg-card text-foreground font-black uppercase tracking-widest text-xs shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
                   >
                     Reset
                   </button>
@@ -402,112 +402,111 @@ export default function AdminLogsPage() {
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-gray-50 text-gray-600">
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead className="bg-muted border-b-[3px] border-border">
+                  <tr className="text-left font-black uppercase tracking-widest text-foreground text-[10px]">
+                    <th className="px-5 py-4 border-r-[3px] border-border">Date</th>
+                    <th className="px-5 py-4 border-r-[3px] border-border">Order</th>
+                    <th className="px-5 py-4 border-r-[3px] border-border">From → To</th>
+                    <th className="px-5 py-4 border-r-[3px] border-border">Context</th>
+                    <th className="px-5 py-4 border-r-[3px] border-border">Changed By</th>
+                    <th className="px-5 py-4 border-r-[3px] border-border">Note</th>
+                    <th className="px-5 py-4 border-r-[3px] border-border">IP</th>
+                    <th className="px-5 py-4 border-r-[3px] border-border">UA</th>
+                    <th className="px-5 py-4 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y-[3px] divide-border bg-card">
+                  {oLoading && (
                     <tr>
-                      <th className="text-left px-4 py-3">Date</th>
-                      <th className="text-left px-4 py-3">Order</th>
-                      <th className="text-left px-4 py-3">From → To</th>
-                      <th className="text-left px-4 py-3">Context</th>
-                      <th className="text-left px-4 py-3">Changed By</th>
-                      <th className="text-left px-4 py-3">Note</th>
-                      <th className="text-left px-4 py-3">IP</th>
-                      <th className="text-left px-4 py-3">UA</th>
-                      <th className="px-4 py-3"></th>
+                      <td
+                        colSpan={9}
+                        className="px-5 py-8 text-center text-muted-foreground font-bold tracking-widest uppercase"
+                      >
+                        Loading...
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {oLoading && (
-                      <tr>
-                        <td
-                          colSpan={9}
-                          className="px-4 py-6 text-center text-gray-500"
-                        >
-                          Loading...
+                  )}
+                  {!oLoading && oResp.data.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={9}
+                        className="px-5 py-8 text-center text-muted-foreground font-bold tracking-widest uppercase"
+                      >
+                        No logs found.
+                      </td>
+                    </tr>
+                  )}
+                  {!oLoading &&
+                    oResp.data.map((a) => (
+                      <tr key={a._id} className="hover:bg-muted/50 transition-colors">
+                        <td className="px-5 py-4 border-r-[3px] border-border text-foreground font-bold text-[10px] whitespace-nowrap">
+                          {new Date(a.createdAt).toLocaleString()}
                         </td>
-                      </tr>
-                    )}
-                    {!oLoading && oResp.data.length === 0 && (
-                      <tr>
-                        <td
-                          colSpan={9}
-                          className="px-4 py-6 text-center text-gray-500"
-                        >
-                          No logs found.
+                        <td className="px-5 py-4 border-r-[3px] border-border font-black text-foreground">
+                          <span title={a.order}>
+                            {shortId(a.order)}
+                          </span>
                         </td>
-                      </tr>
-                    )}
-                    {!oLoading &&
-                      oResp.data.map((a) => (
-                        <tr key={a._id} className="border-t border-gray-100">
-                          <td className="px-4 py-3 text-gray-900">
-                            {new Date(a.createdAt).toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3">
-                            <span title={a.order} className="font-mono">
-                              {shortId(a.order)}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              {a.fromStatus ? (
-                                <Pill
-                                  text={a.fromStatus}
-                                  color={statusColor(a.fromStatus)}
-                                />
-                              ) : (
-                                <span className="text-xs text-gray-500">—</span>
-                              )}
-                              <span className="text-gray-400">→</span>
+                        <td className="px-5 py-4 border-r-[3px] border-border">
+                          <div className="flex items-center gap-3">
+                            {a.fromStatus ? (
                               <Pill
-                                text={a.toStatus}
-                                color={statusColor(a.toStatus)}
+                                text={a.fromStatus}
+                                color={statusColor(a.fromStatus)}
                               />
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <Pill
-                              text={a.context}
-                              color={ctxColor(a.context)}
-                            />
-                          </td>
-                          <td className="px-4 py-3">
-                            {a.changedBy ? (
-                              <div className="flex flex-col">
-                                <span className="text-gray-900">
-                                  {a.changedBy.name || a.changedBy.email}
-                                </span>
-                                <span className="text-gray-500 text-xs">
-                                  {a.changedBy.email}
-                                </span>
-                                <span className="text-gray-500 text-xs capitalize">
-                                  {a.changedBy.role}
-                                </span>
-                              </div>
                             ) : (
-                              <span className="text-gray-500">system</span>
+                              <span className="text-muted-foreground font-black">—</span>
                             )}
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className="line-clamp-2 max-w-[220px] text-gray-800">
+                            <span className="text-foreground font-black">→</span>
+                            <Pill
+                              text={a.toStatus}
+                              color={statusColor(a.toStatus)}
+                            />
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 border-r-[3px] border-border">
+                          <Pill
+                            text={a.context}
+                            color={ctxColor(a.context)}
+                          />
+                        </td>
+                        <td className="px-5 py-4 border-r-[3px] border-border">
+                          {a.changedBy ? (
+                            <div className="flex flex-col">
+                              <span className="text-foreground font-black text-xs truncate max-w-[150px]">
+                                {a.changedBy.name || a.changedBy.email}
+                              </span>
+                              <span className="text-muted-foreground text-[10px] font-bold tracking-widest mt-1 truncate max-w-[150px]">
+                                {a.changedBy.email}
+                              </span>
+                              <span className="bg-primary/10 text-primary border-[2px] border-primary px-1 font-bold uppercase tracking-widest text-[8px] w-fit mt-2">
+                                {a.changedBy.role}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground font-bold tracking-widest uppercase text-[10px]">system</span>
+                          )}
+                        </td>
+                          <td className="px-5 py-4 border-r-[3px] border-border text-foreground font-bold text-xs">
+                            <span className="line-clamp-2 max-w-[200px]" title={a.note}>
                               {a.note || "—"}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-gray-700">
+                          <td className="px-5 py-4 border-r-[3px] border-border text-foreground font-black text-[10px] tracking-widest whitespace-nowrap">
                             {a.meta?.ip || "—"}
                           </td>
                           <td
-                            className="px-4 py-3 text-gray-500 truncate max-w-[220px]"
+                            className="px-5 py-4 border-r-[3px] border-border text-muted-foreground font-bold text-[10px] truncate max-w-[150px]"
                             title={a.meta?.ua}
                           >
                             {a.meta?.ua || "—"}
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-5 py-4 text-center">
                             <button
                               onClick={() => setODetail(a)}
-                              className="px-3 py-1.5 text-sm rounded-md border border-gray-300 hover:bg-gray-50"
+                              className="px-3 py-1.5 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all whitespace-nowrap"
                             >
                               Details
                             </button>
@@ -518,117 +517,114 @@ export default function AdminLogsPage() {
                 </table>
               </div>
 
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-                <div className="text-sm text-gray-600">
+              <div className="flex items-center justify-between px-6 py-4 border-t-[3px] border-border bg-muted">
+                <div className="text-[10px] font-black uppercase tracking-widest text-foreground">
                   Page {oResp.page} of{" "}
                   {Math.max(1, Math.ceil(oResp.total / oResp.limit))}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     onClick={oPrev}
                     disabled={oLoading || oPage <= 1}
-                    className="px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 disabled:opacity-50"
+                    className="px-3 py-1.5 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[2px_2px_0px_#111]"
                   >
-                    Previous
+                    Prev
                   </button>
                   <button
                     onClick={oNext}
                     disabled={oLoading || !oResp.hasNext}
-                    className="px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 disabled:opacity-50"
+                    className="px-3 py-1.5 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[2px_2px_0px_#111]"
                   >
                     Next
                   </button>
                 </div>
               </div>
-            </div>
-
             {/* Order log details modal */}
             {oDetail && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-                <div className="w-full max-w-lg rounded-xl bg-white shadow-xl">
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-900">
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <div className="w-full max-w-2xl rounded-none bg-card border-[3px] border-border shadow-[12px_12px_0px_#111] max-h-[90vh] flex flex-col">
+                  <div className="flex items-center justify-between px-6 py-4 border-b-[3px] border-border bg-primary/10 shrink-0">
+                    <h3 className="text-xl font-black uppercase tracking-widest text-foreground">
                       Log Details
                     </h3>
                     <button
                       onClick={() => setODetail(null)}
-                      className="px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
+                      className="px-3 py-1.5 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-xs shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
                     >
                       Close
                     </button>
                   </div>
-                  <div className="p-4 space-y-3 text-sm">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <div className="text-gray-500">Date</div>
-                        <div className="text-gray-900">
+                  <div className="p-6 overflow-y-auto space-y-6 text-sm">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-muted p-3 border-[3px] border-border">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Date</div>
+                        <div className="text-foreground font-black tracking-widest text-xs">
                           {new Date(oDetail.createdAt).toLocaleString()}
                         </div>
                       </div>
-                      <div>
-                        <div className="text-gray-500">Order</div>
-                        <div className="font-mono">{oDetail.order}</div>
+                      <div className="bg-muted p-3 border-[3px] border-border">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Order</div>
+                        <div className="text-foreground font-black tracking-widest text-xs">{oDetail.order}</div>
                       </div>
-                      <div>
-                        <div className="text-gray-500">From → To</div>
-                        <div className="flex items-center gap-2">
+                      <div className="col-span-2 bg-muted p-4 border-[3px] border-border flex flex-col items-center justify-center gap-3">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">From → To</div>
+                        <div className="flex items-center gap-4">
                           {oDetail.fromStatus ? (
                             <Pill
                               text={oDetail.fromStatus}
                               color={statusColor(oDetail.fromStatus)}
                             />
                           ) : (
-                            <span className="text-xs text-gray-500">—</span>
+                            <span className="text-muted-foreground font-black tracking-widest">—</span>
                           )}
-                          <span className="text-gray-400">→</span>
+                          <span className="text-foreground font-black tracking-widest">→</span>
                           <Pill
                             text={oDetail.toStatus}
                             color={statusColor(oDetail.toStatus)}
                           />
                         </div>
                       </div>
-                      <div>
-                        <div className="text-gray-500">Context</div>
+                      <div className="bg-muted p-3 border-[3px] border-border">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Context</div>
                         <Pill
                           text={oDetail.context}
                           color={ctxColor(oDetail.context)}
                         />
                       </div>
-                    </div>
-
-                    <div>
-                      <div className="text-gray-500">Changed By</div>
-                      <div className="text-gray-900">
-                        {oDetail.changedBy
-                          ? `${
-                              oDetail.changedBy.name || oDetail.changedBy.email
-                            } (${oDetail.changedBy.role})`
-                          : "system"}
-                      </div>
-                      {oDetail.changedBy?.email && (
-                        <div className="text-gray-500">
-                          {oDetail.changedBy.email}
+                      <div className="bg-muted p-3 border-[3px] border-border">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Changed By</div>
+                        <div className="text-foreground font-black tracking-widest text-xs truncate">
+                          {oDetail.changedBy
+                            ? `${
+                                oDetail.changedBy.name || oDetail.changedBy.email
+                              } (${oDetail.changedBy.role})`
+                            : "system"}
                         </div>
-                      )}
+                        {oDetail.changedBy?.email && (
+                          <div className="text-[10px] font-bold tracking-widest text-muted-foreground mt-1 truncate">
+                            {oDetail.changedBy.email}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    <div>
-                      <div className="text-gray-500">Note</div>
-                      <div className="text-gray-900 whitespace-pre-wrap">
+                    <div className="bg-muted p-4 border-[3px] border-border">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Note</div>
+                      <div className="text-foreground font-bold tracking-widest text-xs whitespace-pre-wrap">
                         {oDetail.note || "—"}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <div className="text-gray-500">IP</div>
-                        <div className="text-gray-900">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-muted p-3 border-[3px] border-border">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">IP Address</div>
+                        <div className="text-foreground font-black tracking-widest text-[10px]">
                           {oDetail.meta?.ip || "—"}
                         </div>
                       </div>
-                      <div>
-                        <div className="text-gray-500">User Agent</div>
-                        <div className="text-gray-900 break-all">
+                      <div className="bg-muted p-3 border-[3px] border-border">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">User Agent</div>
+                        <div className="text-foreground font-bold tracking-widest text-[10px] break-all">
                           {oDetail.meta?.ua || "—"}
                         </div>
                       </div>
@@ -642,14 +638,14 @@ export default function AdminLogsPage() {
 
         {/* Admin Actions tab */}
         {tab === "actions" && (
-          <div className="space-y-4">
-            <div className="bg-white border border-gray-200 rounded-xl p-4">
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">
+          <div className="space-y-8">
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6">
+              <h2 className="text-xl font-black uppercase tracking-widest text-foreground mb-6">
                 Admin Actions
               </h2>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
                     Action
                   </label>
                   <input
@@ -658,11 +654,11 @@ export default function AdminLogsPage() {
                       setAFilters((f) => ({ ...f, action: e.target.value }))
                     }
                     placeholder="e.g., order.status.update"
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
                     Entity Type
                   </label>
                   <select
@@ -670,7 +666,7 @@ export default function AdminLogsPage() {
                     onChange={(e) =>
                       setAFilters((f) => ({ ...f, entityType: e.target.value }))
                     }
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                   >
                     <option value="">All</option>
                     {entityTypes.map((t) => (
@@ -681,7 +677,7 @@ export default function AdminLogsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
                     Entity ID
                   </label>
                   <input
@@ -690,24 +686,24 @@ export default function AdminLogsPage() {
                       setAFilters((f) => ({ ...f, entityId: e.target.value }))
                     }
                     placeholder="ObjectId or Plain ID"
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
-                    Changed By (email or ID)
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                    Changed By
                   </label>
                   <input
                     value={aFilters.changedBy}
                     onChange={(e) =>
                       setAFilters((f) => ({ ...f, changedBy: e.target.value }))
                     }
-                    placeholder="admin@domain.com"
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    placeholder="Email or ID"
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
                     Search Summary
                   </label>
                   <input
@@ -716,11 +712,11 @@ export default function AdminLogsPage() {
                       setAFilters((f) => ({ ...f, q: e.target.value }))
                     }
                     placeholder='e.g., "Deleted product"'
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
                     From
                   </label>
                   <input
@@ -729,24 +725,24 @@ export default function AdminLogsPage() {
                     onChange={(e) =>
                       setAFilters((f) => ({ ...f, from: e.target.value }))
                     }
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">To</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">To</label>
                   <input
                     type="date"
                     value={aFilters.to}
                     onChange={(e) =>
                       setAFilters((f) => ({ ...f, to: e.target.value }))
                     }
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                   />
                 </div>
-                <div className="flex gap-2 items-end">
+                <div className="flex gap-4 items-end">
                   <button
                     onClick={() => fetchActionLogs(1)}
-                    className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-500"
+                    className="flex-1 px-4 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
                   >
                     Apply
                   </button>
@@ -763,7 +759,7 @@ export default function AdminLogsPage() {
                       });
                       fetchActionLogs(1);
                     }}
-                    className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    className="flex-1 px-4 py-2 border-[3px] border-border bg-card text-foreground font-black uppercase tracking-widest text-xs shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
                   >
                     Reset
                   </button>
@@ -771,170 +767,168 @@ export default function AdminLogsPage() {
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-gray-50 text-gray-600">
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead className="bg-muted border-b-[3px] border-border">
+                  <tr className="text-left font-black uppercase tracking-widest text-foreground text-[10px]">
+                    <th className="px-5 py-4 border-r-[3px] border-border">Date</th>
+                    <th className="px-5 py-4 border-r-[3px] border-border">Action</th>
+                    <th className="px-5 py-4 border-r-[3px] border-border">Entity</th>
+                    <th className="px-5 py-4 border-r-[3px] border-border">Summary</th>
+                    <th className="px-5 py-4 border-r-[3px] border-border">Changed By</th>
+                    <th className="px-5 py-4 border-r-[3px] border-border">IP</th>
+                    <th className="px-5 py-4 border-r-[3px] border-border">UA</th>
+                    <th className="px-5 py-4 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y-[3px] divide-border bg-card">
+                  {aLoading && (
                     <tr>
-                      <th className="text-left px-4 py-3">Date</th>
-                      <th className="text-left px-4 py-3">Action</th>
-                      <th className="text-left px-4 py-3">Entity</th>
-                      <th className="text-left px-4 py-3">Summary</th>
-                      <th className="text-left px-4 py-3">Changed By</th>
-                      <th className="text-left px-4 py-3">IP</th>
-                      <th className="text-left px-4 py-3">UA</th>
-                      <th className="px-4 py-3"></th>
+                      <td
+                        colSpan={8}
+                        className="px-5 py-8 text-center text-muted-foreground font-bold tracking-widest uppercase"
+                      >
+                        Loading...
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {aLoading && (
-                      <tr>
-                        <td
-                          colSpan={8}
-                          className="px-4 py-6 text-center text-gray-500"
-                        >
-                          Loading...
+                  )}
+                  {!aLoading && aResp.data.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={8}
+                        className="px-5 py-8 text-center text-muted-foreground font-bold tracking-widest uppercase"
+                      >
+                        No logs found.
+                      </td>
+                    </tr>
+                  )}
+                  {!aLoading &&
+                    aResp.data.map((log) => (
+                      <tr key={log._id} className="hover:bg-muted/50 transition-colors">
+                        <td className="px-5 py-4 border-r-[3px] border-border text-foreground font-bold text-[10px] whitespace-nowrap">
+                          {new Date(log.createdAt).toLocaleString()}
                         </td>
-                      </tr>
-                    )}
-                    {!aLoading && aResp.data.length === 0 && (
-                      <tr>
-                        <td
-                          colSpan={8}
-                          className="px-4 py-6 text-center text-gray-500"
-                        >
-                          No logs found.
-                        </td>
-                      </tr>
-                    )}
-                    {!aLoading &&
-                      aResp.data.map((log) => (
-                        <tr key={log._id} className="border-t border-gray-100">
-                          <td className="px-4 py-3 text-gray-900">
-                            {new Date(log.createdAt).toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 text-gray-900">
+                        <td className="px-5 py-4 border-r-[3px] border-border">
+                          <span className="bg-primary/10 text-primary border-[2px] border-primary px-2 py-0.5 font-bold uppercase tracking-widest text-[10px] whitespace-nowrap">
                             {log.action}
-                          </td>
-                          <td className="px-4 py-3">
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 border-r-[3px] border-border">
+                          <div className="flex flex-col">
+                            <span className="text-foreground font-black text-xs uppercase tracking-widest">
+                              {log.entityType}
+                            </span>
+                            <span
+                              className="font-bold text-[10px] text-muted-foreground tracking-widest mt-1"
+                              title={log.entityId}
+                            >
+                              {shortId(log.entityId)}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 border-r-[3px] border-border">
+                          <span className="line-clamp-2 max-w-[250px] text-foreground font-bold text-xs">
+                            {log.summary || "—"}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 border-r-[3px] border-border">
+                          {log.changedBy ? (
                             <div className="flex flex-col">
-                              <span className="text-gray-900 capitalize">
-                                {log.entityType}
+                              <span className="text-foreground font-black text-xs truncate max-w-[150px]">
+                                {log.changedBy.name || log.changedBy.email}
                               </span>
-                              <span
-                                className="font-mono text-xs text-gray-600"
-                                title={log.entityId}
-                              >
-                                {shortId(log.entityId)}
+                              <span className="text-muted-foreground text-[10px] font-bold tracking-widest mt-1 truncate max-w-[150px]">
+                                {log.changedBy.email}
                               </span>
                             </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className="line-clamp-2 max-w-[320px] text-gray-800">
-                              {log.summary || "—"}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            {log.changedBy ? (
-                              <div className="flex flex-col">
-                                <span className="text-gray-900">
-                                  {log.changedBy.name || log.changedBy.email}
-                                </span>
-                                <span className="text-gray-500 text-xs">
-                                  {log.changedBy.email}
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-gray-500">—</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700">
-                            {log.meta?.ip || "—"}
-                          </td>
-                          <td
-                            className="px-4 py-3 text-gray-500 truncate max-w-[220px]"
-                            title={log.meta?.ua}
+                          ) : (
+                            <span className="text-muted-foreground font-bold tracking-widest uppercase text-[10px]">—</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 border-r-[3px] border-border text-foreground font-black text-[10px] tracking-widest whitespace-nowrap">
+                          {log.meta?.ip || "—"}
+                        </td>
+                        <td
+                          className="px-5 py-4 border-r-[3px] border-border text-muted-foreground font-bold text-[10px] truncate max-w-[150px]"
+                          title={log.meta?.ua}
+                        >
+                          {log.meta?.ua || "—"}
+                        </td>
+                        <td className="px-5 py-4 text-center">
+                          <button
+                            onClick={() => setADetail(log)}
+                            className="px-3 py-1.5 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all whitespace-nowrap"
                           >
-                            {log.meta?.ua || "—"}
-                          </td>
-                          <td className="px-4 py-3">
-                            <button
-                              onClick={() => setADetail(log)}
-                              className="px-3 py-1.5 text-sm rounded-md border border-gray-300 hover:bg-gray-50"
-                            >
-                              Details
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
+                            Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
 
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-                <div className="text-sm text-gray-600">
-                  Page {aResp.page} of{" "}
-                  {Math.max(1, Math.ceil(aResp.total / aResp.limit))}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={aPrev}
-                    disabled={aLoading || aPage <= 1}
-                    className="px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 disabled:opacity-50"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={aNext}
-                    disabled={aLoading || !aResp.hasNext}
-                    className="px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 disabled:opacity-50"
-                  >
-                    Next
-                  </button>
-                </div>
+            <div className="flex items-center justify-between px-6 py-4 border-t-[3px] border-border bg-muted">
+              <div className="text-[10px] font-black uppercase tracking-widest text-foreground">
+                Page {aResp.page} of{" "}
+                {Math.max(1, Math.ceil(aResp.total / aResp.limit))}
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={aPrev}
+                  disabled={aLoading || aPage <= 1}
+                  className="px-3 py-1.5 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[2px_2px_0px_#111]"
+                >
+                  Prev
+                </button>
+                <button
+                  onClick={aNext}
+                  disabled={aLoading || !aResp.hasNext}
+                  className="px-3 py-1.5 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[2px_2px_0px_#111]"
+                >
+                  Next
+                </button>
               </div>
             </div>
 
             {/* Admin Action details modal */}
             {aDetail && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-                <div className="w-full max-w-3xl rounded-xl bg-white shadow-xl">
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-900">
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <div className="w-full max-w-4xl rounded-none bg-card border-[3px] border-border shadow-[12px_12px_0px_#111] max-h-[90vh] flex flex-col">
+                  <div className="flex items-center justify-between px-6 py-4 border-b-[3px] border-border bg-primary/10 shrink-0">
+                    <h3 className="text-xl font-black uppercase tracking-widest text-foreground">
                       Action Details
                     </h3>
                     <button
                       onClick={() => setADetail(null)}
-                      className="px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
+                      className="px-3 py-1.5 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-xs shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
                     >
                       Close
                     </button>
                   </div>
-                  <div className="p-4 space-y-4 text-sm">
+                  <div className="p-6 overflow-y-auto space-y-6 text-sm">
                     <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-gray-500">Date</div>
-                        <div className="text-gray-900">
+                      <div className="bg-muted p-3 border-[3px] border-border">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Date</div>
+                        <div className="text-foreground font-black tracking-widest text-xs">
                           {new Date(aDetail.createdAt).toLocaleString()}
                         </div>
                       </div>
-                      <div>
-                        <div className="text-gray-500">Action</div>
-                        <div className="text-gray-900">{aDetail.action}</div>
+                      <div className="bg-muted p-3 border-[3px] border-border">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Action</div>
+                        <div className="text-foreground font-black tracking-widest text-xs bg-primary/10 text-primary border-[2px] border-primary px-2 py-0.5 inline-block uppercase w-fit">{aDetail.action}</div>
                       </div>
-                      <div>
-                        <div className="text-gray-500">Entity</div>
-                        <div className="text-gray-900">
-                          <span className="capitalize">
-                            {aDetail.entityType}
-                          </span>{" "}
-                          ·{" "}
-                          <span className="font-mono">{aDetail.entityId}</span>
+                      <div className="bg-muted p-3 border-[3px] border-border">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Entity</div>
+                        <div className="text-foreground font-black tracking-widest text-xs uppercase">
+                          <span className="text-primary">{aDetail.entityType}</span>
+                          <span className="text-muted-foreground mx-2">·</span>
+                          <span>{aDetail.entityId}</span>
                         </div>
                       </div>
-                      <div>
-                        <div className="text-gray-500">Changed By</div>
-                        <div className="text-gray-900">
+                      <div className="bg-muted p-3 border-[3px] border-border">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Changed By</div>
+                        <div className="text-foreground font-black tracking-widest text-xs truncate">
                           {aDetail.changedBy
                             ? `${
                                 aDetail.changedBy.name ||
@@ -943,54 +937,58 @@ export default function AdminLogsPage() {
                             : "—"}
                         </div>
                         {aDetail.changedBy?.email && (
-                          <div className="text-gray-500">
+                          <div className="text-[10px] font-bold tracking-widest text-muted-foreground mt-1 truncate">
                             {aDetail.changedBy.email}
                           </div>
                         )}
                       </div>
                     </div>
 
-                    <div>
-                      <div className="text-gray-500">Summary</div>
-                      <div className="text-gray-900">
+                    <div className="bg-muted p-4 border-[3px] border-border">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Summary</div>
+                      <div className="text-foreground font-bold tracking-widest text-xs">
                         {aDetail.summary || "—"}
                       </div>
                     </div>
 
                     {aDetail.note && (
-                      <div>
-                        <div className="text-gray-500">Note</div>
-                        <div className="text-gray-900 whitespace-pre-wrap">
+                      <div className="bg-muted p-4 border-[3px] border-border">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Note</div>
+                        <div className="text-foreground font-bold tracking-widest text-xs whitespace-pre-wrap">
                           {aDetail.note}
                         </div>
                       </div>
                     )}
 
                     <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-gray-500">Before</div>
-                        <pre className="mt-1 bg-gray-50 border border-gray-200 rounded p-2 overflow-auto max-h-64 text-xs">
+                      <div className="border-[3px] border-border flex flex-col">
+                        <div className="bg-muted border-b-[3px] border-border p-2">
+                           <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Before</div>
+                        </div>
+                        <pre className="bg-card p-4 overflow-auto max-h-64 text-xs font-bold text-foreground scrollbar-thin scrollbar-thumb-border scrollbar-track-muted flex-1">
                           {JSON.stringify(aDetail.before ?? null, null, 2)}
                         </pre>
                       </div>
-                      <div>
-                        <div className="text-gray-500">After</div>
-                        <pre className="mt-1 bg-gray-50 border border-gray-200 rounded p-2 overflow-auto max-h-64 text-xs">
+                      <div className="border-[3px] border-border flex flex-col">
+                        <div className="bg-muted border-b-[3px] border-border p-2">
+                           <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">After</div>
+                        </div>
+                        <pre className="bg-card p-4 overflow-auto max-h-64 text-xs font-bold text-foreground scrollbar-thin scrollbar-thumb-border scrollbar-track-muted flex-1">
                           {JSON.stringify(aDetail.after ?? null, null, 2)}
                         </pre>
                       </div>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-gray-500">IP</div>
-                        <div className="text-gray-900">
+                      <div className="bg-muted p-3 border-[3px] border-border">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">IP Address</div>
+                        <div className="text-foreground font-black tracking-widest text-[10px]">
                           {aDetail.meta?.ip || "—"}
                         </div>
                       </div>
-                      <div>
-                        <div className="text-gray-500">User Agent</div>
-                        <div className="text-gray-900 break-all">
+                      <div className="bg-muted p-3 border-[3px] border-border">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">User Agent</div>
+                        <div className="text-foreground font-bold tracking-widest text-[10px] break-all">
                           {aDetail.meta?.ua || "—"}
                         </div>
                       </div>

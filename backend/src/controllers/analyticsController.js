@@ -39,7 +39,7 @@ export const trackEvent = async (req, res) => {
     await evt.save();
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ message: err.message || "Failed to track" });
+    res.status(500).json({ message: "Failed to track" });
   }
 };
 
@@ -174,7 +174,7 @@ export const getAdminFunnel = async (req, res) => {
 
     res.json({ daily: out, totals });
   } catch (err) {
-    res.status(500).json({ message: err.message || "Failed to fetch funnel" });
+    res.status(500).json({ message: "Failed to fetch funnel" });
   }
 };
 
@@ -194,7 +194,7 @@ export const getSellerOverview = async (req, res) => {
 
     res.json({ totalProducts, totalOrders, totalRevenue });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -230,7 +230,7 @@ export const getSellerSales = async (req, res) => {
       }))
     );
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -273,7 +273,7 @@ export const getSellerTopProducts = async (req, res) => {
 
     res.json(top);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -339,6 +339,7 @@ export const getSellerReviewsAnalytics = async (req, res) => {
       topReviewed: grouped.slice(0, 5),
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+

@@ -297,12 +297,12 @@ function AdminAnalyticsPage() {
       map.set(pm, (map.get(pm) || 0) + 1);
     }
     const palette = [
-      "#7c3aed",
+      "#0369a1",
       "#10b981",
       "#06b6d4",
       "#f59e0b",
       "#f43f5e",
-      "#8b5cf6",
+      "#0ea5b7",
       "#22c55e",
       "#0ea5e9",
     ];
@@ -337,7 +337,7 @@ function AdminAnalyticsPage() {
     const colors: Record<string, string> = {
       delivered: "#10b981",
       shipped: "#3b82f6",
-      confirmed: "#6366f1",
+      confirmed: "#0f766e",
       pending: "#f59e0b",
       cancelled: "#f43f5e",
     };
@@ -432,8 +432,8 @@ function AdminAnalyticsPage() {
         <PermissionGate
           perm="analytics:read"
           fallback={
-            <div className="card p-6 text-gray-700">
-              You don’t have access to Analytics.
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">
+              You don&apos;t have access to Analytics.
             </div>
           }
         >
@@ -451,35 +451,36 @@ function AdminAnalyticsPage() {
           </div>
 
           {/* Range controls */}
-          <div className="mt-6 flex items-center justify-between gap-3 flex-wrap">
-            <h2 className="text-lg font-semibold text-gray-900">Performance</h2>
-            <div className="flex items-center gap-3">
-              <Tabs value={tab} onValueChange={setTab}>
-                <TabsList>
-                  <TabsTrigger value="7d">7d</TabsTrigger>
-                  <TabsTrigger value="14d">14d</TabsTrigger>
-                  <TabsTrigger value="30d">30d</TabsTrigger>
-                  <TabsTrigger value="90d">90d</TabsTrigger>
-                  <TabsTrigger value="custom">Custom</TabsTrigger>
+          <div className="mt-8 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6">
+            <h2 className="text-2xl font-black uppercase tracking-widest text-foreground border-l-[6px] border-primary pl-4">Performance</h2>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+              <Tabs value={tab} onValueChange={setTab} className="w-full sm:w-auto">
+                <TabsList className="bg-muted border-[3px] border-border rounded-none p-1 flex">
+                  <TabsTrigger value="7d" className="rounded-none font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none">7d</TabsTrigger>
+                  <TabsTrigger value="14d" className="rounded-none font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none">14d</TabsTrigger>
+                  <TabsTrigger value="30d" className="rounded-none font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none">30d</TabsTrigger>
+                  <TabsTrigger value="90d" className="rounded-none font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none">90d</TabsTrigger>
+                  <TabsTrigger value="custom" className="rounded-none font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none">Custom</TabsTrigger>
                 </TabsList>
               </Tabs>
               {tab === "custom" && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <input
                     type="date"
                     value={from}
                     onChange={(e) =>
                       setRange((r) => ({ ...r, from: e.target.value }))
                     }
-                    className="bg-white border border-gray-300 rounded-md px-3 py-2 text-gray-700 hover:bg-gray-50"
+                    className="w-full sm:w-auto bg-card border-[3px] border-border rounded-none px-4 py-2 text-foreground font-bold uppercase tracking-widest shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all text-xs"
                   />
+                  <span className="font-black uppercase tracking-widest text-foreground">TO</span>
                   <input
                     type="date"
                     value={to}
                     onChange={(e) =>
                       setRange((r) => ({ ...r, to: e.target.value }))
                     }
-                    className="bg-white border border-gray-300 rounded-md px-3 py-2 text-gray-700 hover:bg-gray-50"
+                    className="w-full sm:w-auto bg-card border-[3px] border-border rounded-none px-4 py-2 text-foreground font-bold uppercase tracking-widest shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all text-xs"
                   />
                 </div>
               )}
@@ -487,14 +488,18 @@ function AdminAnalyticsPage() {
           </div>
 
           {/* Charts grid (top) */}
-          <div className="mt-4 grid grid-cols-1 xl:grid-cols-12 gap-6">
+          <div className="mt-8 grid grid-cols-1 xl:grid-cols-12 gap-8">
             {/* Left: dual line + AOV */}
-            <div className="xl:col-span-7 space-y-6 min-w-0">
-              <Card className="min-w-0">
-                <CardHeader className="flex-row items-center justify-between">
-                  <CardTitle>Revenue & Orders</CardTitle>
-                  <Button variant="outline" onClick={exportSalesCSV}>
-                    Export Sales CSV
+            <div className="xl:col-span-7 space-y-8 min-w-0">
+              <Card className="min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none">
+                <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
+                  <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Revenue & Orders</CardTitle>
+                  <Button 
+                    variant="outline" 
+                    onClick={exportSalesCSV}
+                    className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                  >
+                    Export CSV
                   </Button>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -530,7 +535,7 @@ function AdminAnalyticsPage() {
                           yAxisId="left"
                           type="monotone"
                           dataKey="orders"
-                          stroke="#7c3aed"
+                          stroke="#0369a1"
                           strokeWidth={2}
                           dot={false}
                           name="Orders"
@@ -550,11 +555,15 @@ function AdminAnalyticsPage() {
                 </CardContent>
               </Card>
 
-              <Card className="min-w-0">
-                <CardHeader className="flex-row items-center justify-between">
-                  <CardTitle>Average Order Value (AOV)</CardTitle>
-                  <Button variant="outline" onClick={exportAOVCSV}>
-                    Export AOV CSV
+              <Card className="min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none">
+                <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
+                  <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Average Order Value (AOV)</CardTitle>
+                  <Button 
+                    variant="outline" 
+                    onClick={exportAOVCSV}
+                    className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                  >
+                    Export CSV
                   </Button>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -579,7 +588,7 @@ function AdminAnalyticsPage() {
                         <Line
                           type="monotone"
                           dataKey="aov"
-                          stroke="#6366f1"
+                          stroke="#0f766e"
                           strokeWidth={2}
                           dot={false}
                           name="AOV"
@@ -592,18 +601,22 @@ function AdminAnalyticsPage() {
             </div>
 
             {/* Right: two donuts with legends */}
-            <div className="xl:col-span-5 grid grid-cols-1 gap-6 min-w-0">
-              <Card className="min-w-0">
-                <CardHeader className="flex-row items-center justify-between">
-                  <CardTitle>Payment Methods</CardTitle>
-                  <Button variant="outline" onClick={exportPaymentCSV}>
+            <div className="xl:col-span-5 grid grid-cols-1 gap-8 min-w-0">
+              <Card className="min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none">
+                <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
+                  <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Payment Methods</CardTitle>
+                  <Button 
+                    variant="outline" 
+                    onClick={exportPaymentCSV}
+                    className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                  >
                     Export CSV
                   </Button>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="w-full h-[260px]">
                     {paymentSplit.length === 0 ? (
-                      <div className="text-sm text-gray-600 p-3">No data.</div>
+                      <div className="text-sm text-foreground font-bold uppercase tracking-widest p-3">No data.</div>
                     ) : (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -627,14 +640,14 @@ function AdminAnalyticsPage() {
 
                   {/* Legend chips */}
                   {paymentSplit.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-6 flex flex-wrap justify-center gap-3">
                       {paymentSplit.map((p) => (
                         <span
                           key={p.name}
-                          className="inline-flex items-center gap-2 text-xs text-gray-700 border border-gray-200 rounded-full px-2 py-1 bg-white"
+                          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-foreground border-[3px] border-border bg-card px-3 py-1.5 shadow-[2px_2px_0px_#111]"
                         >
                           <span
-                            className="inline-block w-2.5 h-2.5 rounded-full"
+                            className="inline-block w-3 h-3 border-[2px] border-border"
                             style={{ background: p.color }}
                           />
                           {p.name}
@@ -645,17 +658,21 @@ function AdminAnalyticsPage() {
                 </CardContent>
               </Card>
 
-              <Card className="min-w-0">
-                <CardHeader className="flex-row items-center justify-between">
-                  <CardTitle>Order Status</CardTitle>
-                  <Button variant="outline" onClick={exportStatusCSV}>
+              <Card className="min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none">
+                <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
+                  <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Order Status</CardTitle>
+                  <Button 
+                    variant="outline" 
+                    onClick={exportStatusCSV}
+                    className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                  >
                     Export CSV
                   </Button>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="w-full h-[260px]">
                     {statusPie.length === 0 ? (
-                      <div className="text-sm text-gray-600 p-3">No data.</div>
+                      <div className="text-sm text-foreground font-bold uppercase tracking-widest p-3">No data.</div>
                     ) : (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -679,14 +696,14 @@ function AdminAnalyticsPage() {
 
                   {/* Legend chips */}
                   {statusPie.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-6 flex flex-wrap justify-center gap-3">
                       {statusPie.map((s) => (
                         <span
                           key={s.name}
-                          className="inline-flex items-center gap-2 text-xs text-gray-700 border border-gray-200 rounded-full px-2 py-1 bg-white"
+                          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-foreground border-[3px] border-border bg-card px-3 py-1.5 shadow-[2px_2px_0px_#111]"
                         >
                           <span
-                            className="inline-block w-2.5 h-2.5 rounded-full"
+                            className="inline-block w-3 h-3 border-[2px] border-border"
                             style={{ background: s.color }}
                           />
                           {s.name}
@@ -700,11 +717,15 @@ function AdminAnalyticsPage() {
           </div>
 
           {/* Conversion Funnel */}
-          <div className="mt-4">
-            <Card className="min-w-0">
-              <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Conversion Funnel</CardTitle>
-                <Button variant="outline" onClick={exportFunnelCSV}>
+          <div className="mt-8">
+            <Card className="min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none">
+              <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
+                <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Conversion Funnel</CardTitle>
+                <Button 
+                  variant="outline" 
+                  onClick={exportFunnelCSV}
+                  className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                >
                   Export CSV
                 </Button>
               </CardHeader>
@@ -713,8 +734,8 @@ function AdminAnalyticsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
                     { key: "view", label: "Views", color: "#9ca3af" },
-                    { key: "cart", label: "Add to Cart", color: "#7c3aed" },
-                    { key: "checkout", label: "Checkout", color: "#6366f1" },
+                    { key: "cart", label: "Add to Cart", color: "#0369a1" },
+                    { key: "checkout", label: "Checkout", color: "#0f766e" },
                     { key: "purchase", label: "Purchases", color: "#10b981" },
                   ].map((s, idx, arr) => {
                     const val = (funnelTotals as any)[s.key] || 0;
@@ -726,15 +747,15 @@ function AdminAnalyticsPage() {
                     return (
                       <div
                         key={s.key}
-                        className="rounded-lg border border-gray-200 bg-white p-4"
+                        className="border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] p-4 transition-transform hover:-translate-y-1"
                       >
-                        <div className="text-sm text-gray-600">{s.label}</div>
-                        <div className="text-2xl font-semibold text-gray-900">
+                        <div className="text-xs font-black uppercase tracking-widest text-foreground">{s.label}</div>
+                        <div className="text-3xl font-black text-foreground mt-2">
                           {val}
                         </div>
-                        <div className="mt-2 h-2 bg-gray-100 rounded overflow-hidden">
+                        <div className="mt-4 h-4 bg-muted border-[3px] border-border rounded-none overflow-hidden p-0.5">
                           <div
-                            className="h-full"
+                            className="h-full bg-primary"
                             style={{
                               width: `${p}%`,
                               background: s.color,
@@ -743,7 +764,7 @@ function AdminAnalyticsPage() {
                           />
                         </div>
                         {idx > 0 && (
-                          <div className="mt-1 text-xs text-gray-600">
+                          <div className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right border-t-[3px] border-border pt-2 border-dashed">
                             {p}% from {arr[idx - 1].label}
                           </div>
                         )}
@@ -779,7 +800,7 @@ function AdminAnalyticsPage() {
                         type="monotone"
                         dataKey="cart"
                         name="Add to Cart"
-                        stroke="#7c3aed"
+                        stroke="#0369a1"
                         strokeWidth={2}
                         dot={false}
                       />
@@ -787,7 +808,7 @@ function AdminAnalyticsPage() {
                         type="monotone"
                         dataKey="checkout"
                         name="Checkout"
-                        stroke="#6366f1"
+                        stroke="#0f766e"
                         strokeWidth={2}
                         dot={false}
                       />
@@ -807,18 +828,22 @@ function AdminAnalyticsPage() {
           </div>
 
           {/* More charts */}
-          <div className="mt-4 grid grid-cols-1 xl:grid-cols-12 gap-6">
-            <Card className="xl:col-span-7 min-w-0">
-              <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Orders by Category</CardTitle>
-                <Button variant="outline" onClick={exportCategoriesCSV}>
+          <div className="mt-8 grid grid-cols-1 xl:grid-cols-12 gap-8">
+            <Card className="xl:col-span-7 min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none">
+              <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
+                <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Orders by Category</CardTitle>
+                <Button 
+                  variant="outline" 
+                  onClick={exportCategoriesCSV}
+                  className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                >
                   Export CSV
                 </Button>
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="w-full h-[300px]">
                   {categoryBars.length === 0 ? (
-                    <div className="text-sm text-gray-600 p-3">
+                    <div className="text-sm font-bold uppercase tracking-widest text-foreground p-3">
                       No category data.
                     </div>
                   ) : (
@@ -857,14 +882,14 @@ function AdminAnalyticsPage() {
                 </div>
                 {/* Legend chips */}
                 {categoryBars.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-6 flex flex-wrap justify-center gap-3">
                     {categoryBars.map((c) => (
                       <span
                         key={c.name}
-                        className="inline-flex items-center gap-2 text-xs text-gray-700 border border-gray-200 rounded-full px-2 py-1 bg-white"
+                        className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-foreground border-[3px] border-border bg-card px-3 py-1.5 shadow-[2px_2px_0px_#111]"
                       >
                         <span
-                          className="inline-block w-2.5 h-2.5 rounded-full"
+                          className="inline-block w-3 h-3 border-[2px] border-border"
                           style={{ background: categoryColor(c.name) }}
                         />
                         {c.name}
@@ -875,10 +900,14 @@ function AdminAnalyticsPage() {
               </CardContent>
             </Card>
 
-            <Card className="xl:col-span-5 min-w-0">
-              <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Weekday Performance</CardTitle>
-                <Button variant="outline" onClick={exportWeekdayCSV}>
+            <Card className="xl:col-span-5 min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none">
+              <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
+                <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Weekday Performance</CardTitle>
+                <Button 
+                  variant="outline" 
+                  onClick={exportWeekdayCSV}
+                  className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                >
                   Export CSV
                 </Button>
               </CardHeader>
@@ -912,7 +941,7 @@ function AdminAnalyticsPage() {
                         yAxisId="left"
                         dataKey="orders"
                         name="Orders"
-                        fill="#7c3aed"
+                        fill="#0369a1"
                         barSize={16}
                       />
                       <Bar
@@ -930,10 +959,10 @@ function AdminAnalyticsPage() {
           </div>
 
           {/* Tables */}
-          <div className="mt-4 grid grid-cols-1 xl:grid-cols-12 gap-6">
-            <Card className="xl:col-span-7 min-w-0">
-              <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Recent Orders</CardTitle>
+          <div className="mt-8 grid grid-cols-1 xl:grid-cols-12 gap-8">
+            <Card className="xl:col-span-7 min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none flex flex-col">
+              <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-0">
+                <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Recent Orders</CardTitle>
                 <Button
                   variant="outline"
                   onClick={() =>
@@ -955,36 +984,49 @@ function AdminAnalyticsPage() {
                       }
                     )
                   }
+                  className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
                 >
                   Export CSV
                 </Button>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="pt-0 p-0 flex-1 overflow-auto">
                 {orders.length === 0 ? (
-                  <div className="text-sm text-gray-600">No orders found.</div>
+                  <div className="text-sm font-bold uppercase tracking-widest text-muted-foreground p-6">No orders found.</div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm">
-                      <thead>
-                        <tr className="text-left text-gray-600">
-                          <th className="py-2">Customer</th>
-                          <th className="py-2">Date</th>
-                          <th className="py-2">Status</th>
-                          <th className="py-2">Total</th>
+                  <div className="overflow-x-auto w-full">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted sticky top-0 z-10 border-b-[3px] border-border">
+                        <tr className="text-left font-black uppercase tracking-widest text-foreground text-xs">
+                          <th className="py-3 px-4 border-r-[3px] border-border whitespace-nowrap">Customer</th>
+                          <th className="py-3 px-4 border-r-[3px] border-border whitespace-nowrap">Date</th>
+                          <th className="py-3 px-4 border-r-[3px] border-border whitespace-nowrap text-center">Status</th>
+                          <th className="py-3 px-4 text-right whitespace-nowrap">Total</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y-[3px] divide-border font-bold uppercase tracking-widest text-[11px] text-foreground">
                         {orders.slice(0, 10).map((o) => (
                           <tr
                             key={o._id}
-                            className="border-t border-gray-200 text-gray-900"
+                            className="hover:bg-muted/50 transition-colors"
                           >
-                            <td className="py-2">
+                            <td className="py-3 px-4 border-r-[3px] border-border max-w-[150px] truncate" title={o.user?.name || o.user?.email || "—"}>
                               {o.user?.name || o.user?.email || "—"}
                             </td>
-                            <td className="py-2">{csvDate(o.createdAt)}</td>
-                            <td className="py-2 capitalize">{o.status}</td>
-                            <td className="py-2">{currency(o.totalAmount)}</td>
+                            <td className="py-3 px-4 border-r-[3px] border-border whitespace-nowrap">{csvDate(o.createdAt)}</td>
+                            <td className="py-3 px-4 border-r-[3px] border-border text-center">
+                              <span className={`px-2 py-0.5 border-[2px] inline-block w-full max-w-[100px] truncate
+                                ${
+                                  o.status === "delivered" ? "bg-emerald-100 text-emerald-800 border-emerald-300" :
+                                  o.status === "shipped" ? "bg-blue-100 text-blue-800 border-blue-300" :
+                                  o.status === "confirmed" ? "bg-indigo-100 text-indigo-800 border-indigo-300" :
+                                  o.status === "cancelled" ? "bg-rose-100 text-rose-800 border-rose-300" :
+                                  "bg-amber-100 text-amber-800 border-amber-300"
+                                }
+                              `}>
+                                {o.status}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-right whitespace-nowrap text-emerald-600 font-black">{currency(o.totalAmount)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -994,9 +1036,9 @@ function AdminAnalyticsPage() {
               </CardContent>
             </Card>
 
-            <Card className="xl:col-span-5 min-w-0">
-              <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Top Products</CardTitle>
+            <Card className="xl:col-span-5 min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none flex flex-col">
+              <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-0">
+                <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Top Products</CardTitle>
                 <Button
                   variant="outline"
                   onClick={() =>
@@ -1018,36 +1060,39 @@ function AdminAnalyticsPage() {
                       }
                     )
                   }
+                  className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
                 >
                   Export CSV
                 </Button>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="pt-0 p-0 flex-1 overflow-auto">
                 {top.length === 0 ? (
-                  <div className="text-sm text-gray-600">No data</div>
+                  <div className="text-sm font-bold uppercase tracking-widest text-muted-foreground p-6">No data</div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm">
-                      <thead>
-                        <tr className="text-left text-gray-600">
-                          <th className="py-2">Product</th>
-                          <th className="py-2">Sold</th>
-                          <th className="py-2">Revenue</th>
-                          <th className="py-2">Owner</th>
+                  <div className="overflow-x-auto w-full">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted sticky top-0 z-10 border-b-[3px] border-border">
+                        <tr className="text-left font-black uppercase tracking-widest text-foreground text-xs">
+                          <th className="py-3 px-4 border-r-[3px] border-border whitespace-nowrap">Product</th>
+                          <th className="py-3 px-4 border-r-[3px] border-border whitespace-nowrap text-center">Sold</th>
+                          <th className="py-3 px-4 border-r-[3px] border-border whitespace-nowrap text-right">Revenue</th>
+                          <th className="py-3 px-4 whitespace-nowrap">Owner</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y-[3px] divide-border font-bold uppercase tracking-widest text-[11px] text-foreground">
                         {top.map((t, idx) => (
                           <tr
                             key={idx}
-                            className="border-t border-gray-200 text-gray-900"
+                            className="hover:bg-muted/50 transition-colors"
                           >
-                            <td className="py-2">{t.product}</td>
-                            <td className="py-2">{t.sold}</td>
-                            <td className="py-2">
-                              ₹{t.revenue.toLocaleString("en-IN")}
+                            <td className="py-3 px-4 border-r-[3px] border-border max-w-[150px] truncate" title={t.product}>{t.product}</td>
+                            <td className="py-3 px-4 border-r-[3px] border-border text-center">
+                              <span className="bg-primary/10 text-primary border-[2px] border-primary px-2 py-0.5">{t.sold}</span>
                             </td>
-                            <td className="py-2">{t.ownerName || "—"}</td>
+                            <td className="py-3 px-4 border-r-[3px] border-border text-right text-emerald-600 font-black whitespace-nowrap">
+                              {currency(t.revenue)}
+                            </td>
+                            <td className="py-3 px-4 max-w-[120px] truncate" title={t.ownerName || "—"}>{t.ownerName || "—"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1066,3 +1111,4 @@ function AdminAnalyticsPage() {
 export default dynamic(() => Promise.resolve(AdminAnalyticsPage), {
   ssr: false,
 });
+

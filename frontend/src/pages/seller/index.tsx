@@ -265,13 +265,13 @@ function SellerHomePage() {
   return (
     <ProtectedRoute roles={["seller", "admin"]}>
       <SellerLayout>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
+            <h1 className="text-3xl text-foreground">
               Seller Dashboard
             </h1>
             {!canAnalytics && (
-              <p className="text-gray-600 text-sm">
+              <p className="text-muted-foreground font-bold tracking-widest text-[10px] mt-1">
                 Analytics restricted for your role. You can still access the
                 tools below.
               </p>
@@ -281,7 +281,7 @@ function SellerHomePage() {
 
         {/* KPIs / Loading */}
         {loading ? (
-          <div className="card p-6 text-gray-600">Loading…</div>
+          <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-bold uppercase tracking-widest text-sm">Loading…</div>
         ) : canAnalytics ? (
           <OverviewCards
             stats={{
@@ -295,36 +295,36 @@ function SellerHomePage() {
         ) : null}
 
         {/* Filters */}
-        <div className="mt-6 flex items-center justify-between gap-3 flex-wrap">
-          <h2 className="text-lg font-semibold text-gray-900">Performance</h2>
+        <div className="mt-6 flex items-center justify-between gap-4 flex-wrap bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-4 font-bold">
+          <h2 className="text-xl font-black uppercase tracking-widest text-foreground">Performance</h2>
           <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-2 rounded-md border bg-background p-1">
+            <div className="inline-flex items-center gap-2">
               <button
                 onClick={() => setTab("7d")}
-                className={`px-3 py-1.5 rounded-md text-sm border ${
+                className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
                   tab === "7d"
-                    ? "bg-purple-600 border-purple-600 text-white"
-                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
+                    : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
                 }`}
               >
                 7d
               </button>
               <button
                 onClick={() => setTab("14d")}
-                className={`px-3 py-1.5 rounded-md text-sm border ${
+                className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
                   tab === "14d"
-                    ? "bg-purple-600 border-purple-600 text-white"
-                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
+                    : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
                 }`}
               >
                 14d
               </button>
               <button
                 onClick={() => setTab("30d")}
-                className={`px-3 py-1.5 rounded-md text-sm border ${
+                className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
                   tab === "30d"
-                    ? "bg-purple-600 border-purple-600 text-white"
-                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
+                    : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
                 }`}
               >
                 30d
@@ -340,42 +340,60 @@ function SellerHomePage() {
           <div className="mt-4 grid grid-cols-1 xl:grid-cols-12 gap-6">
             {/* Left: small dual series + AOV */}
             <div className="xl:col-span-7 space-y-6">
-              <Card>
-                <CardHeader className="flex-row items-center justify-between">
-                  <CardTitle>Revenue & Orders (last {days} days)</CardTitle>
-                  <Button variant="outline" onClick={exportSalesCSV}>
+              <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
+                <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
+                  <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Revenue & Orders (last {days} days)</h3>
+                  <button onClick={exportSalesCSV} className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all">
                     Export Sales CSV
-                  </Button>
-                </CardHeader>
-                <CardContent className="pt-0">
+                  </button>
+                </div>
+                <div className="p-6 pt-6">
                   <div className="w-full h-[280px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart
                         data={sales}
                         margin={{ top: 12, right: 16, left: 8, bottom: 8 }}
                       >
-                        <CartesianGrid stroke="#e5e7eb" vertical={false} />
+                        <CartesianGrid stroke="#e5e7eb" vertical={false} strokeDasharray="3 3" />
                         <XAxis
                           dataKey="date"
-                          tick={{ fill: "#6b7280", fontSize: 11 }}
+                          tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
+                          axisLine={{ stroke: "#000", strokeWidth: 3 }}
+                          tickLine={{ stroke: "#000", strokeWidth: 3 }}
                         />
                         <YAxis
                           yAxisId="left"
-                          tick={{ fill: "#6b7280", fontSize: 11 }}
+                          tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
+                          axisLine={{ stroke: "#000", strokeWidth: 3 }}
+                          tickLine={{ stroke: "#000", strokeWidth: 3 }}
                         />
                         <YAxis
                           yAxisId="right"
                           orientation="right"
-                          tick={{ fill: "#6b7280", fontSize: 11 }}
+                          tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
+                          axisLine={{ stroke: "#000", strokeWidth: 3 }}
+                          tickLine={{ stroke: "#000", strokeWidth: 3 }}
                         />
                         <Tooltip
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--card))",
+                            border: "3px solid hsl(var(--border))",
+                            boxShadow: "4px 4px 0px #111",
+                            borderRadius: "0",
+                            fontWeight: "bold",
+                            fontFamily: "Inter",
+                            fontSize: "12px",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                          }}
+                          itemStyle={{ color: "hsl(var(--foreground))" }}
                           formatter={(v: any, n: any) =>
                             n === "revenue"
                               ? `₹${Number(v).toLocaleString("en-IN")}`
                               : v
                           }
                         />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em' }} />
                         <Line
                           isAnimationActive
                           animationDuration={350}
@@ -383,9 +401,10 @@ function SellerHomePage() {
                           yAxisId="left"
                           type="monotone"
                           dataKey="orders"
-                          stroke="#7c3aed"
-                          strokeWidth={2}
-                          dot={false}
+                          stroke="#9333ea"
+                          strokeWidth={4}
+                          dot={{ stroke: '#000', strokeWidth: 2, fill: '#fff', r: 4 }}
+                          activeDot={{ stroke: '#000', strokeWidth: 3, r: 6, fill: '#9333ea' }}
                           name="Orders"
                         />
                         <Line
@@ -395,22 +414,22 @@ function SellerHomePage() {
                           yAxisId="right"
                           type="monotone"
                           dataKey="revenue"
-                          stroke="#10b981"
-                          strokeWidth={2}
-                          dot={false}
+                          stroke="#d97706"
+                          strokeWidth={4}
+                          dot={{ stroke: '#000', strokeWidth: 2, fill: '#fff', r: 4 }}
+                          activeDot={{ stroke: '#000', strokeWidth: 3, r: 6, fill: '#d97706' }}
                           name="Revenue"
                         />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              <Card>
-                <CardHeader className="flex-row items-center justify-between">
-                  <CardTitle>Average Order Value (AOV)</CardTitle>
-                  <Button
-                    variant="outline"
+              <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
+                <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
+                  <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Average Order Value (AOV)</h3>
+                  <button
                     onClick={() =>
                       downloadCSV(
                         "seller-dashboard-aov.csv",
@@ -421,77 +440,93 @@ function SellerHomePage() {
                         { date: "Date", aov: "AOV" }
                       )
                     }
+                    className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all"
                   >
                     Export AOV CSV
-                  </Button>
-                </CardHeader>
-                <CardContent className="pt-0">
+                  </button>
+                </div>
+                <div className="p-6 pt-6">
                   <div className="w-full h-[220px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart
                         data={aovData}
                         margin={{ top: 12, right: 16, left: 8, bottom: 8 }}
                       >
-                        <CartesianGrid stroke="#e5e7eb" vertical={false} />
+                        <CartesianGrid stroke="#e5e7eb" vertical={false} strokeDasharray="3 3"/>
                         <XAxis
                           dataKey="date"
-                          tick={{ fill: "#6b7280", fontSize: 11 }}
+                          tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
+                          axisLine={{ stroke: "#000", strokeWidth: 3 }}
+                          tickLine={{ stroke: "#000", strokeWidth: 3 }}
                         />
-                        <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+                        <YAxis tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }} axisLine={{ stroke: "#000", strokeWidth: 3 }} tickLine={{ stroke: "#000", strokeWidth: 3 }} />
                         <Tooltip
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--card))",
+                            border: "3px solid hsl(var(--border))",
+                            boxShadow: "4px 4px 0px #111",
+                            borderRadius: "0",
+                            fontWeight: "bold",
+                            fontFamily: "Inter",
+                            fontSize: "12px",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                          }}
+                          itemStyle={{ color: "hsl(var(--foreground))" }}
                           formatter={(v: any) =>
                             `₹${Number(v).toLocaleString("en-IN")}`
                           }
                         />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em' }} />
                         <Line
                           isAnimationActive
                           animationDuration={350}
                           animationEasing="ease-out"
                           type="monotone"
                           dataKey="aov"
-                          stroke="#6366f1"
-                          strokeWidth={2}
-                          dot={false}
+                          stroke="#9333ea"
+                          strokeWidth={4}
+                          dot={{ stroke: '#000', strokeWidth: 2, fill: '#fff', r: 4 }}
+                          activeDot={{ stroke: '#000', strokeWidth: 3, r: 6, fill: '#9333ea' }}
                           name="AOV"
                         />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
 
             {/* Right: Top products + Quick links */}
-            <Card className="xl:col-span-5">
-              <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Top Products</CardTitle>
-                <Button variant="outline" onClick={exportTopProductsCSV}>
+            <div className="xl:col-span-5 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
+              <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
+                <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Top Products</h3>
+                <button onClick={exportTopProductsCSV} className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all">
                   Export CSV
-                </Button>
-              </CardHeader>
-              <CardContent className="pt-0">
+                </button>
+              </div>
+              <div className="p-6">
                 {top.length === 0 ? (
-                  <div className="text-sm text-gray-600">No data</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-4 text-center">No data</div>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto border-[3px] border-border">
                     <table className="min-w-full text-sm">
-                      <thead>
-                        <tr className="text-left text-gray-600">
-                          <th className="py-2">Product</th>
-                          <th className="py-2">Sold</th>
-                          <th className="py-2">Revenue</th>
+                      <thead className="bg-muted border-b-[3px] border-border">
+                        <tr className="text-left font-black uppercase tracking-widest text-foreground text-[10px]">
+                          <th className="px-4 py-3 border-r-[3px] border-border">Product</th>
+                          <th className="px-4 py-3 border-r-[3px] border-border">Sold</th>
+                          <th className="px-4 py-3">Revenue</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y-[3px] divide-border">
                         {top.slice(0, 8).map((t, idx) => (
                           <tr
                             key={idx}
-                            className="border-t border-gray-200 text-gray-900"
+                            className="hover:bg-muted/50 transition-colors"
                           >
-                            <td className="py-2">{t.product}</td>
-                            <td className="py-2">{t.sold}</td>
-                            <td className="py-2">
+                            <td className="px-4 py-3 border-r-[3px] border-border font-bold text-[10px] tracking-widest text-foreground truncate max-w-[200px]" title={t.product}>{t.product}</td>
+                            <td className="px-4 py-3 border-r-[3px] border-border font-black text-xs text-foreground">{t.sold}</td>
+                            <td className="px-4 py-3 font-black text-xs text-primary">
                               ₹{t.revenue.toLocaleString("en-IN")}
                             </td>
                           </tr>
@@ -507,42 +542,42 @@ function SellerHomePage() {
                     <Link
                       key={s.href}
                       href={s.href}
-                      className="flex items-center gap-2 p-3 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition"
+                      className="flex items-center gap-3 p-4 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none bg-muted/30 hover:bg-muted"
                     >
-                      <s.icon className="w-5 h-5 text-gray-500" />
-                      <span className="text-gray-900">{s.label}</span>
+                      <s.icon className="w-5 h-5 text-primary" strokeWidth={3} />
+                      <span className="text-foreground font-black uppercase tracking-widest text-[10px]">{s.label}</span>
                     </Link>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
           {/* Recent Orders */}
-          <div className="mt-4 card p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold text-gray-900">
+          <div className="mt-6 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-0 flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b-[3px] border-border bg-muted">
+              <h3 className="text-xl font-black uppercase tracking-widest text-foreground">
                 Recent Orders
               </h3>
-              <Button variant="outline" onClick={exportOrdersCSV}>
+              <button onClick={exportOrdersCSV} className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all">
                 Export CSV
-              </Button>
+              </button>
             </div>
             {orders.length === 0 ? (
-              <div className="text-sm text-gray-600">No orders found.</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-8 text-center">No orders found.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-600">
-                      <th className="py-2">Order</th>
-                      <th className="py-2">Date</th>
-                      <th className="py-2">Status</th>
-                      <th className="py-2">Total</th>
-                      <th className="py-2">Customer</th>
+                  <thead className="bg-muted border-b-[3px] border-border">
+                    <tr className="text-left font-black uppercase tracking-widest text-foreground text-[10px]">
+                      <th className="px-6 py-4 border-r-[3px] border-border">Order</th>
+                      <th className="px-6 py-4 border-r-[3px] border-border">Date</th>
+                      <th className="px-6 py-4 border-r-[3px] border-border">Status</th>
+                      <th className="px-6 py-4 border-r-[3px] border-border">Total</th>
+                      <th className="px-6 py-4">Customer</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y-[3px] divide-border">
                     {orders.slice(0, 10).map((o) => {
                       const total = (o.items || []).reduce(
                         (s, it) => s + it.qty * it.price,
@@ -551,17 +586,31 @@ function SellerHomePage() {
                       return (
                         <tr
                           key={o._id}
-                          className="border-t border-gray-200 text-gray-900"
+                          className="hover:bg-muted/50 transition-colors"
                         >
-                          <td className="py-2">
-                            #{(o._id || "").slice(-6).toUpperCase()}
+                          <td className="px-6 py-4 border-r-[3px] border-border font-black text-xs text-foreground uppercase tracking-widest">
+                            #{(o._id || "").slice(-6)}
                           </td>
-                          <td className="py-2">
+                          <td className="px-6 py-4 border-r-[3px] border-border font-bold text-[10px] tracking-widest text-foreground">
                             {o.createdAt ? csvDate(o.createdAt) : "—"}
                           </td>
-                          <td className="py-2 capitalize">{o.status}</td>
-                          <td className="py-2">{currency(total)}</td>
-                          <td className="py-2">{o.user?.email || "—"}</td>
+                          <td className="px-6 py-4 border-r-[3px] border-border">
+                             <span className={`px-2 py-1 border-[2px] font-bold uppercase tracking-widest text-[10px]
+                              ${
+                                o.status === "delivered"
+                                  ? "bg-emerald-400 text-emerald-950 border-emerald-950"
+                                  : o.status === "cancelled"
+                                  ? "bg-rose-400 text-rose-950 border-rose-950"
+                                  : o.status === "processing"
+                                  ? "bg-blue-400 text-blue-950 border-blue-950"
+                                  : "bg-amber-400 text-amber-950 border-amber-950"
+                              }
+                            `}>
+                              {o.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 border-r-[3px] border-border font-black text-xs text-foreground">{currency(total)}</td>
+                          <td className="px-6 py-4 font-bold text-[10px] tracking-widest text-muted-foreground truncate max-w-[200px]">{o.user?.email || "—"}</td>
                         </tr>
                       );
                     })}
@@ -577,6 +626,4 @@ function SellerHomePage() {
 }
 
 export default dynamic(() => Promise.resolve(SellerHomePage), { ssr: false });
-function hsl($: any, arg1: { hue: number }, arg2: number) {
-  throw new Error("Function not implemented.");
-}
+

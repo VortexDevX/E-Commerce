@@ -1,252 +1,171 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import type { RootState } from "../../store";
+import { useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { jwtDecode } from "jwt-decode";
+import type { AppDispatch, RootState } from "../../store";
 import type { User } from "../../store/slices/authSlice";
 import { logoutAsync } from "../../store/slices/authSlice";
-
 import {
-  HomeIcon,
-  CubeIcon,
-  PhotoIcon,
   Bars3Icon,
-  XMarkIcon,
   ChartBarIcon,
+  ClipboardDocumentListIcon,
+  CubeIcon,
+  CurrencyDollarIcon,
+  DocumentMagnifyingGlassIcon,
+  EnvelopeIcon,
+  HomeIcon,
+  MegaphoneIcon,
+  PhotoIcon,
   ShoppingCartIcon,
   TagIcon,
-  UsersIcon,
   TicketIcon,
-  EnvelopeIcon,
-  ClipboardDocumentListIcon as ClipboardCheckIcon,
-  DocumentMagnifyingGlassIcon,
-  CurrencyDollarIcon,
-  MegaphoneIcon,
+  UsersIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const ADMIN_CATALOG = [
+  { href: "/admin", label: "Dashboard", icon: HomeIcon },
+  { href: "/admin/analytics", label: "Analytics", icon: ChartBarIcon, perm: "analytics:read" },
+  { href: "/admin/orders", label: "Orders", icon: ShoppingCartIcon, perm: "orders:read" },
+  { href: "/admin/products", label: "Products", icon: CubeIcon, perm: "products:read" },
+  { href: "/admin/returns", label: "Returns", icon: CurrencyDollarIcon, perm: "returns:read" },
+  { href: "/admin/categories", label: "Categories", icon: TagIcon, perm: "products:read" },
+  { href: "/admin/users", label: "Users", icon: UsersIcon, perm: "users:read" },
+  { href: "/admin/seller-requests", label: "Seller Requests", icon: ClipboardDocumentListIcon, perm: "sellers:read" },
+  { href: "/admin/coupons", label: "Coupons", icon: TicketIcon, perm: "coupons:read" },
+  { href: "/admin/emails", label: "Email Templates", icon: EnvelopeIcon, perm: "emailTemplates:read" },
+  { href: "/admin/media", label: "Media", icon: PhotoIcon, perm: "media:read" },
+  { href: "/admin/banners", label: "Banners", icon: PhotoIcon },
+  { href: "/admin/sponsored", label: "Sponsored", icon: MegaphoneIcon },
+  { href: "/admin/logs", label: "Logs", icon: DocumentMagnifyingGlassIcon, perm: "logs:read" },
+];
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const dispatch = useDispatch();
-  const [open, setOpen] = useState(false);
-  const panelRef = useRef<HTMLDivElement | null>(null);
-
+  const dispatch = useDispatch<AppDispatch>();
   const user = useSelector((s: RootState) => s.auth.user) as User | null;
+  const [open, setOpen] = useState(false);
 
-  // Decode JWT to check MFA flag
   let needsMFA = false;
-  if (
-    user?.accessToken &&
-    (user.role === "admin" || user.role === "subadmin")
-  ) {
+  if (user?.accessToken && (user.role === "admin" || user.role === "subadmin")) {
     try {
-      const decoded: any = jwtDecode(user.accessToken);
+      const decoded = jwtDecode<{ mfa?: boolean }>(user.accessToken);
       needsMFA = !decoded?.mfa;
     } catch {}
   }
 
-  // Catalog nav
-  const catalog = [
-    { href: "/admin", label: "Dashboard", icon: HomeIcon },
-    {
-      href: "/admin/analytics",
-      label: "Analytics",
-      icon: ChartBarIcon,
-      perm: "analytics:read",
-    },
-    {
-      href: "/admin/orders",
-      label: "Orders",
-      icon: ShoppingCartIcon,
-      perm: "orders:read",
-    },
-    {
-      href: "/admin/products",
-      label: "Products",
-      icon: CubeIcon,
-      perm: "products:read",
-    },
-    {
-      href: "/admin/returns",
-      label: "Returns",
-      icon: CurrencyDollarIcon,
-      perm: "returns:read",
-    },
-    {
-      href: "/admin/categories",
-      label: "Categories",
-      icon: TagIcon,
-      perm: "products:read",
-    },
-    {
-      href: "/admin/users",
-      label: "Users",
-      icon: UsersIcon,
-      perm: "users:read",
-    },
-    {
-      href: "/admin/seller-requests",
-      label: "Seller Requests",
-      icon: ClipboardCheckIcon,
-      perm: "sellers:read",
-    },
-    {
-      href: "/admin/coupons",
-      label: "Coupons",
-      icon: TicketIcon,
-      perm: "coupons:read",
-    },
-    {
-      href: "/admin/emails",
-      label: "Email Templates",
-      icon: EnvelopeIcon,
-      perm: "emailTemplates:read",
-    },
-    {
-      href: "/admin/media",
-      label: "Media",
-      icon: PhotoIcon,
-      perm: "media:read",
-    },
-    {
-      href: "/admin/banners",
-      label: "Banners",
-      icon: PhotoIcon,
-    },
-    {
-      href: "/admin/sponsored",
-      label: "Sponsored",
-      icon: MegaphoneIcon,
-    },
-    {
-      href: "/admin/logs",
-      label: "Logs",
-      icon: DocumentMagnifyingGlassIcon,
-      perm: "logs:read",
-    },
-  ];
-
   const nav = useMemo(() => {
-    if (user?.role === "admin") return catalog;
+    if (user?.role === "admin") return ADMIN_CATALOG;
     if (user?.role === "subadmin") {
-      const set = new Set(user?.permissions || []);
-      return catalog.filter((n) => !n.perm || set.has(n.perm));
+      const allowed = new Set(user.permissions || []);
+      return ADMIN_CATALOG.filter((item) => !item.perm || allowed.has(item.perm));
     }
-    return catalog.filter((n) => !n.perm);
+    return ADMIN_CATALOG.filter((item) => !item.perm);
   }, [user]);
 
-  const isActive = (href: string) => {
-    if (href === "/admin") return router.pathname === "/admin";
-    return router.pathname.startsWith(href);
+  const isActive = (href: string) =>
+    href === "/admin" ? router.pathname === href : router.pathname.startsWith(href);
+
+  const forceLogout = async () => {
+    await dispatch(logoutAsync());
+    router.replace("/auth/login?next=/admin");
   };
 
-  const NavList = ({ onItemClick }: { onItemClick?: () => void }) => (
-    <nav className="space-y-1">
-      {nav.map((n) => {
-        const active = isActive(n.href);
+  const NavList = ({ mobile = false }: { mobile?: boolean }) => (
+    <nav className="space-y-2">
+      {nav.map((item) => {
+        const active = isActive(item.href);
         return (
           <Link
-            key={n.href}
-            href={n.href}
-            onClick={onItemClick}
+            key={item.href}
+            href={item.href}
+            onClick={() => mobile && setOpen(false)}
+            className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm font-semibold ${
+              active
+                ? "border-primary/40 bg-primary/12 text-foreground"
+                : "border-border bg-secondary text-muted-foreground hover:bg-card hover:text-foreground"
+            }`}
             aria-current={active ? "page" : undefined}
-            className={`flex items-center gap-3 px-3 py-2 rounded-lg border transition
-              ${
-                active
-                  ? "bg-purple-50 border-purple-300 text-purple-800"
-                  : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-              }`}
           >
-            <n.icon
-              className={`w-5 h-5 ${
-                active ? "text-purple-600" : "text-gray-500"
-              }`}
-            />
-            {n.label}
+            <item.icon className={`h-5 w-5 ${active ? "text-primary" : "text-muted-foreground"}`} />
+            <span>{item.label}</span>
           </Link>
         );
       })}
     </nav>
   );
 
-  // Force overlay if MFA required and not satisfied
-  const forceLogout = async () => {
-    await dispatch<any>(logoutAsync());
-    router.replace("/auth/login?next=/admin");
-  };
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">Admin</h2>
-        <button
-          onClick={() => setOpen(true)}
-          aria-label="Open admin menu"
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
-        >
-          <Bars3Icon className="w-5 h-5 text-gray-700" />
-          <span className="hidden sm:inline text-sm text-gray-700">Menu</span>
+    <div className="page-shell">
+      <div className="mb-8 flex items-center justify-between gap-4">
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+            Admin Control
+          </div>
+          <h1 className="text-3xl font-semibold text-foreground md:text-4xl">
+            Marketplace operations
+          </h1>
+        </div>
+        <button type="button" className="btn md:hidden" onClick={() => setOpen(true)}>
+          <Bars3Icon className="h-5 w-5" />
+          Menu
         </button>
       </div>
 
-      {/* MFA ENFORCEMENT OVERLAY */}
-      {needsMFA && (user?.role === "admin" || user?.role === "subadmin") && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow-lg p-8 max-w-md text-center space-y-4">
-            <h2 className="text-xl font-bold text-red-600">
-              Two‑Factor Authentication Required
+      {needsMFA ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4">
+          <div className="surface-card w-full max-w-lg p-8 text-center">
+            <div className="mb-3 inline-flex rounded-full border border-destructive/30 bg-destructive/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-red-300">
+              Security Required
+            </div>
+            <h2 className="text-2xl font-semibold text-foreground">
+              Two-factor authentication is required
             </h2>
-            <p className="text-gray-700">
-              You must complete 2FA before accessing the Admin area. Please log
-              out and sign in again to complete verification.
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Complete sign-in verification before using the admin workspace.
             </p>
-            <button
-              onClick={forceLogout}
-              className="w-full py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-500 font-medium"
-            >
-              Logout & Re‑Login
+            <button type="button" className="btn-primary mt-6 w-full" onClick={forceLogout}>
+              Logout and re-authenticate
             </button>
           </div>
         </div>
-      )}
+      ) : null}
 
-      <section className="space-y-6">{children}</section>
+      <div className="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <aside className="hidden lg:block">
+          <div className="surface-card sticky top-28 p-4">
+            <div className="mb-4 border-b border-border pb-4">
+              <div className="text-sm font-semibold text-foreground">Workspace</div>
+              <div className="text-xs text-muted-foreground">Admin navigation</div>
+            </div>
+            <NavList />
+          </div>
+        </aside>
 
-      {/* Drawer stays unchanged */}
-      {open && (
-        <div
-          className="fixed inset-0 z-40"
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setOpen(false)}
-        >
-          <div className="absolute inset-0 bg-black/40 transition-opacity" />
+        <section className="min-w-0">{children}</section>
+      </div>
+
+      {open ? (
+        <div className="fixed inset-0 z-[90] lg:hidden" onClick={() => setOpen(false)}>
+          <div className="absolute inset-0 bg-black/70" />
           <div
-            ref={panelRef}
-            className="absolute left-0 top-16 bottom-0 w-80 max-w-[85%] bg-white border-r border-gray-200 p-4 overflow-y-auto shadow-xl
-                       transform transition-transform duration-200 ease-out translate-x-0"
+            className="absolute left-0 top-0 h-full w-full max-w-sm border-r border-border bg-background p-4 shadow-[var(--shadow-soft)]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-gray-700">
-                Admin Menu
-              </h3>
-              <button
-                onClick={() => setOpen(false)}
-                aria-label="Close admin menu"
-                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50"
-              >
-                <XMarkIcon className="w-5 h-5 text-gray-700" />
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold text-foreground">Admin Menu</div>
+                <div className="text-xs text-muted-foreground">Navigate the console</div>
+              </div>
+              <button type="button" className="btn h-10 w-10 px-0" onClick={() => setOpen(false)}>
+                <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
-            <NavList onItemClick={() => setOpen(false)} />
+            <NavList mobile />
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

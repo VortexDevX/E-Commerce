@@ -4,6 +4,7 @@ import Coupon from "../models/Coupon.js";
 import OrderStatusAudit from "../models/OrderStatusAudit.js";
 import ReturnRequest from "../models/ReturnRequest.js";
 import Product from "../models/Product.js";
+import mongoose from "mongoose";
 import {
   sendOrderConfirmationEmail,
   sendOrderDeliveredEmail,
@@ -76,33 +77,42 @@ function computeDiscount(coupon, items) {
 
 /** Place new order */
 export const placeOrder = async (req, res) => {
-  try {
+  const runPlacement = async (session = null) => {
     const { address, shippingMethod } = req.body;
-    if (!address) return res.status(400).json({ message: "Address required" });
+    if (!address) {
+      const err = new Error("Address required");
+      err.statusCode = 400;
+      throw err;
+    }
 
     const method = shippingMethod === "express" ? "express" : "standard";
     const shippingCost = method === "express" ? 99 : 0;
     const TAX_RATE = Number.parseFloat(process.env.TAX_RATE || "0.05"); // 5%
+    const dbOpts = session ? { session } : undefined;
 
-    const cart = await Cart.findOne({ user: req.user._id }).populate(
+    const cartQuery = Cart.findOne({ user: req.user._id }).populate(
       "items.product"
     );
-    if (!cart || cart.items.length === 0)
-      return res.status(400).json({ message: "Cart is empty" });
-
-    // Check stock
-    for (const item of cart.items) {
-      if (item.product.stock < item.qty) {
-        return res
-          .status(400)
-          .json({ message: `Not enough stock for ${item.product.title}` });
-      }
+    if (session) cartQuery.session(session);
+    const cart = await cartQuery;
+    if (!cart || cart.items.length === 0) {
+      const err = new Error("Cart is empty");
+      err.statusCode = 400;
+      throw err;
     }
 
-    // Decrement stock
+    // Decrement stock atomically per item.
     for (const item of cart.items) {
-      item.product.stock -= item.qty;
-      await item.product.save();
+      const updated = await Product.updateOne(
+        { _id: item.product._id, stock: { $gte: Number(item.qty || 0) } },
+        { $inc: { stock: -Number(item.qty || 0) } },
+        dbOpts
+      );
+      if (updated.modifiedCount !== 1) {
+        const err = new Error(`Not enough stock for ${item.product.title}`);
+        err.statusCode = 400;
+        throw err;
+      }
     }
 
     const orderItems = cart.items.map((i) => {
@@ -118,7 +128,10 @@ export const placeOrder = async (req, res) => {
     let discount = 0;
 
     if (cart.appliedCoupon?.code) {
-      const coupon = await Coupon.findOne({ code: cart.appliedCoupon.code });
+      const couponQuery = Coupon.findOne({ code: cart.appliedCoupon.code });
+      if (session) couponQuery.session(session);
+      const coupon = await couponQuery;
+
       if (
         coupon &&
         coupon.active &&
@@ -147,7 +160,7 @@ export const placeOrder = async (req, res) => {
             } else {
               coupon.usedBy.push({ user: req.user._id, count: 1 });
             }
-            await coupon.save();
+            await coupon.save(dbOpts);
           }
         }
       }
@@ -157,7 +170,7 @@ export const placeOrder = async (req, res) => {
     const tax = Math.round(discountedSubtotal * TAX_RATE);
     const total = discountedSubtotal + tax + shippingCost;
 
-    let order = await Order.create({
+    const orderPayload = {
       user: req.user._id,
       items: orderItems,
       subtotal,
@@ -169,7 +182,44 @@ export const placeOrder = async (req, res) => {
       paymentMethod: "COD",
       status: "pending",
       appliedCoupon: appliedCouponSnap,
-    });
+    };
+
+    let order;
+    if (session) {
+      const created = await Order.create([orderPayload], { session });
+      order = created[0];
+    } else {
+      order = await Order.create(orderPayload);
+    }
+
+    // Clear cart and coupon
+    cart.items = [];
+    cart.appliedCoupon = undefined;
+    await cart.save(dbOpts);
+
+    return order;
+  };
+
+  const session = await mongoose.startSession();
+  try {
+    let order;
+    let orderForEmail;
+    try {
+      await session.withTransaction(async () => {
+        order = await runPlacement(session);
+      });
+    } catch (txErr) {
+      const msg = String(txErr?.message || "");
+      const txUnsupported =
+        msg.includes("Transaction numbers are only allowed on a replica set") ||
+        msg.includes("Transaction support") ||
+        msg.includes("replica set");
+
+      if (!txUnsupported) throw txErr;
+
+      // Fallback for standalone MongoDB setups.
+      order = await runPlacement(null);
+    }
 
     // Audit: initial status
     await logOrderStatusChange(req, {
@@ -181,18 +231,13 @@ export const placeOrder = async (req, res) => {
     });
 
     // Repopulate for returning in response and for email template
-    order = await Order.findById(order._id).populate("items.product");
+    orderForEmail = await Order.findById(order._id).populate("items.product");
 
-    // Clear cart and coupon
-    cart.items = [];
-    cart.appliedCoupon = undefined;
-    await cart.save();
-
-    res.status(201).json(order);
+    res.status(201).json(orderForEmail);
 
     setImmediate(async () => {
       try {
-        await sendOrderConfirmationEmail(req.user, order);
+        await sendOrderConfirmationEmail(req.user, orderForEmail);
       } catch (err) {
         console.error(
           "[email] order confirmation failed:",
@@ -201,7 +246,22 @@ export const placeOrder = async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    const statusCode = Number(err?.statusCode || 0);
+    if (statusCode >= 400 && statusCode < 500) {
+      return res.status(statusCode).json({ message: err.message });
+    }
+
+    if (err?.message === "Address required")
+      return res.status(400).json({ message: "Address required" });
+    if (err?.message === "Cart is empty")
+      return res.status(400).json({ message: "Cart is empty" });
+    if (String(err?.message || "").startsWith("Not enough stock for "))
+      return res.status(400).json({ message: err.message });
+
+    console.error("[order] placeOrder failed:", err?.message || err);
+    res.status(500).json({ message: "Internal server error" });
+  } finally {
+    await session.endSession();
   }
 };
 
@@ -213,7 +273,7 @@ export const getMyOrders = async (req, res) => {
     );
     res.json(orders);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -226,7 +286,7 @@ export const getOrderById = async (req, res) => {
       return res.status(403).json({ message: "Forbidden" });
     res.json(order);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -245,7 +305,7 @@ export const getOrderAuditForUser = async (req, res) => {
       .populate("changedBy", "name email role");
     res.json(audit);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -292,7 +352,7 @@ export const updateOrderStatus = async (req, res) => {
 
     res.json({ message: `Order status updated to ${status}`, order });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -436,7 +496,7 @@ export const createReturnRequest = async (req, res) => {
 
     res.status(201).json(rr);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -459,6 +519,7 @@ export const getMyReturnRequests = async (req, res) => {
 
     res.json(list);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+

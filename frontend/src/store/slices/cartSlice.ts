@@ -48,7 +48,7 @@ export const fetchCart = createAsyncThunk("cart/fetch", async (_, { rejectWithVa
     const { data } = await api.get("/cart");
     return data;
   } catch (err: any) {
-    return rejectWithValue(err.response?.data || "Failed to fetch cart");
+    return rejectWithValue(err.response?.data || "We could not load your cart");
   }
 });
 
@@ -61,7 +61,7 @@ export const addToCart = createAsyncThunk(
       trackAddToCart(payload.productId);
       return data; // { items, subtotal }
     } catch (err: any) {
-      return rejectWithValue(err.response?.data || "Failed to add to cart");
+      return rejectWithValue(err.response?.data || "We could not add this item");
     }
   }
 );
@@ -73,7 +73,7 @@ export const removeFromCart = createAsyncThunk(
       const { data } = await api.delete(`/cart/${id}`);
       return data; // { items, subtotal }
     } catch (err: any) {
-      return rejectWithValue(err.response?.data || "Failed to remove item");
+      return rejectWithValue(err.response?.data || "We could not remove this item");
     }
   }
 );
@@ -85,7 +85,7 @@ export const updateCartQty = createAsyncThunk(
       const { data } = await api.put(`/cart/${payload.itemId}`, { qty: payload.qty });
       return data; // { items, subtotal }
     } catch (err: any) {
-      return rejectWithValue(err.response?.data || "Failed to update item");
+      return rejectWithValue(err.response?.data || "We could not update quantity");
     }
   }
 );
@@ -98,7 +98,7 @@ export const applyCoupon = createAsyncThunk(
       const { data } = await api.post("/cart/apply-coupon", { code });
       return data; // { items, appliedCoupon, subtotal, discount, discountedSubtotal }
     } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || "Failed to apply coupon");
+      return rejectWithValue(err.response?.data?.message || "We could not apply that code");
     }
   }
 );
@@ -110,7 +110,7 @@ export const removeCoupon = createAsyncThunk(
       const { data } = await api.post("/cart/remove-coupon");
       return data; // { items, subtotal, discount:0, discountedSubtotal:subtotal }
     } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || "Failed to remove coupon");
+      return rejectWithValue(err.response?.data?.message || "We could not remove that code");
     }
   }
 );
@@ -158,7 +158,7 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCart.rejected, (state, action: any) => {
         state.loading = false;
-        state.error = action.payload?.message || action.payload || "Failed to fetch cart";
+        state.error = action.payload?.message || action.payload || "We could not load your cart";
       })
 
       // addToCart
@@ -198,7 +198,7 @@ const cartSlice = createSlice({
         state.couponError = null;
       })
       .addCase(applyCoupon.rejected, (state, action: any) => {
-        state.couponError = action.payload || "Invalid coupon";
+        state.couponError = action.payload || "Enter a valid code";
       })
 
       // removeCoupon

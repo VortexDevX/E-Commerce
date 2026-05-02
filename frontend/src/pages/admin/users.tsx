@@ -89,21 +89,23 @@ function AdminUsersPage() {
   return (
     <ProtectedRoute roles={["admin"]}>
       <AdminLayout>
-        <h1 className="text-2xl font-semibold text-gray-900">Manage Users</h1>
+        <div className="flex items-center justify-between font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
+          <h1 className="text-3xl text-foreground">Manage Users</h1>
+        </div>
 
         {/* Filters */}
-        <div className="card p-4 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+        <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-4 flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-8">
           <input
             placeholder="Search by name or email..."
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 w-full md:w-80"
+            className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all w-full md:w-80"
           />
           <div className="flex gap-3">
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as AdminUser["role"])}
-              className="bg-white border border-gray-300 rounded px-2 py-1 text-gray-900"
+              className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
             >
               <option value="all">All roles</option>
               <option value="user">User</option>
@@ -115,7 +117,7 @@ function AdminUsersPage() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
-              className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900"
+              className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
             >
               <option value="all">All status</option>
               <option value="active">Active</option>
@@ -125,28 +127,28 @@ function AdminUsersPage() {
         </div>
 
         {/* Table */}
-        <div className="card overflow-x-auto">
+        <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-600">
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Email</th>
-                <th className="px-4 py-3">Role</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Seller</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+              <tr className="text-left bg-primary/5 text-foreground border-b-[3px] border-border">
+                <th className="px-4 py-4 font-black uppercase tracking-widest">Name</th>
+                <th className="px-4 py-4 font-black uppercase tracking-widest">Email</th>
+                <th className="px-4 py-4 font-black uppercase tracking-widest">Role</th>
+                <th className="px-4 py-4 font-black uppercase tracking-widest">Status</th>
+                <th className="px-4 py-4 font-black uppercase tracking-widest">Seller</th>
+                <th className="px-4 py-4 font-black uppercase tracking-widest text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td className="px-4 py-6 text-gray-600" colSpan={6}>
+                  <td className="px-4 py-6 text-foreground font-bold uppercase tracking-widest text-sm" colSpan={6}>
                     Loading...
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6 text-gray-600" colSpan={6}>
+                  <td className="px-4 py-6 text-foreground font-bold uppercase tracking-widest text-sm" colSpan={6}>
                     No users found.
                   </td>
                 </tr>
@@ -154,17 +156,17 @@ function AdminUsersPage() {
                 filtered.map((u) => (
                   <tr
                     key={u._id}
-                    className="border-t border-gray-200 text-gray-900"
+                    className="border-b-[3px] border-border/50 text-foreground font-bold hover:bg-muted/50 transition-colors"
                   >
-                    <td className="px-4 py-3">{u.name}</td>
-                    <td className="px-4 py-3">{u.email}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-4">{u.name}</td>
+                    <td className="px-4 py-4">{u.email}</td>
+                    <td className="px-4 py-4">
                       <select
                         value={u.role}
                         onChange={(e) =>
                           changeRole(u._id, e.target.value as AdminUser["role"])
                         }
-                        className="bg-white border border-gray-300 rounded px-2 py-1 text-gray-900"
+                        className="bg-card border-[3px] border-border rounded-none px-2 py-1 text-foreground font-bold shadow-[2px_2px_0px_#111] focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] hover:shadow-none transition-all text-xs uppercase"
                       >
                         <option value="user">User</option>
                         <option value="seller">Seller</option>
@@ -175,37 +177,37 @@ function AdminUsersPage() {
                         </option>
                       </select>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-4">
                       <span
-                        className={`px-2 py-0.5 rounded text-xs capitalize ${
+                        className={`px-3 py-1 border-[3px] border-border shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111] text-xs font-black uppercase tracking-widest transition-all ${
                           u.status === "active"
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-rose-50 text-rose-700"
+                            ? "bg-emerald-400 text-emerald-950"
+                            : "bg-rose-400 text-rose-950"
                         }`}
                       >
                         {u.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-4">
                       {u.sellerRequest === "pending" ? (
-                        <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded text-xs">
+                        <span className="text-amber-950 bg-amber-400 border-[3px] border-border shadow-[2px_2px_0px_#111] font-black uppercase tracking-widest px-3 py-1 text-xs">
                           Pending
                         </span>
                       ) : u.role === "seller" && u.seller?.approved ? (
-                        <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-xs">
+                        <span className="text-emerald-950 bg-emerald-400 border-[3px] border-border shadow-[2px_2px_0px_#111] font-black uppercase tracking-widest px-3 py-1 text-xs">
                           Approved
                         </span>
                       ) : (
-                        <span className="text-gray-600 text-xs">
+                        <span className="text-foreground font-black uppercase tracking-widest text-xs px-3 py-1 border-[3px] border-transparent">
                           {u.sellerRequest || "none"}
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-4 text-right">
                       <div className="flex gap-2 justify-end flex-wrap">
                         <a
                           href={`/admin/users/${u._id}`}
-                          className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                          className="px-4 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all font-black uppercase text-xs flex items-center"
                         >
                           Details
                         </a>
@@ -213,14 +215,14 @@ function AdminUsersPage() {
                         {u.status === "active" ? (
                           <button
                             onClick={() => toggleStatus(u._id, "blocked")}
-                            className="px-3 py-1.5 rounded bg-rose-600 text-white hover:bg-rose-500"
+                            className="px-4 py-2 border-[3px] border-rose-600 bg-rose-600 shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all text-white font-black uppercase text-xs"
                           >
                             Block
                           </button>
                         ) : (
                           <button
                             onClick={() => toggleStatus(u._id, "active")}
-                            className="px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-500"
+                            className="px-4 py-2 border-[3px] border-emerald-600 bg-emerald-600 shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all text-white font-black uppercase text-xs"
                           >
                             Unblock
                           </button>
@@ -230,23 +232,23 @@ function AdminUsersPage() {
                           <>
                             <a
                               href={`/admin/seller-requests/${u._id}`}
-                              className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                              className="px-4 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all font-black uppercase text-xs flex items-center"
                             >
-                              Review Application
+                              Review
                             </a>
                             <button
                               onClick={() =>
                                 handleSellerRequest(u._id, "approve")
                               }
-                              className="px-3 py-1.5 rounded bg-purple-600 text-white hover:bg-purple-500"
+                              className="px-4 py-2 border-[3px] border-primary bg-primary shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all text-primary-foreground font-black uppercase text-xs"
                             >
-                              Approve Seller
+                              Approve
                             </button>
                             <button
                               onClick={() =>
                                 handleSellerRequest(u._id, "reject")
                               }
-                              className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                              className="px-4 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all font-black uppercase text-xs flex items-center"
                             >
                               Reject
                             </button>

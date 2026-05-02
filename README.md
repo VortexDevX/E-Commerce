@@ -26,7 +26,7 @@ A modern, full-stack E-Commerce platform built with **Next.js 15** and **Node.js
 - **User & Seller Oversight**: Manage all user accounts and monitor seller activities.
 - **Content Management**: Update homepage banners, sponsored listings, and contact inquiries.
 - **Marketing Tools**: Create and manage discount coupons/vouchers.
-- **Email Campaigns**: Send system-wide announcements via Nodemailer.
+- **Email Campaigns**: Send system-wide announcements via Brevo SMTP.
 - **Media Library**: Manage all uploaded images through Cloudinary integration.
 
 ## 📊 Feature Matrix
@@ -44,7 +44,7 @@ A modern, full-stack E-Commerce platform built with **Next.js 15** and **Node.js
 
 - **Frontend**: Next.js 15, TypeScript, TailwindCSS, Redux Toolkit.
 - **Backend**: Node.js, Express, MongoDB.
-- **Services**: Cloudinary (Image Hosting), Nodemailer (Emails).
+- **Services**: Cloudinary (Image Hosting), Brevo SMTP (Emails).
 
 ## 📦 Installation & Setup
 
@@ -73,11 +73,19 @@ Create a `.env` file in the `backend` directory with the following variables:
 
 ```env
 PORT=8080
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_secure_random_string
+MONGODB_URI=your_mongodb_connection_string
+JWT_ACCESS_SECRET=your_secure_random_string
+JWT_MFA_SECRET=your_secure_random_string
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
+EMAIL_PROVIDER=brevo
+EMAIL_FROM=no-reply@yourdomain.com
+EMAIL_FROM_NAME=Luxora
+EMAIL_REPLY_TO=support@yourdomain.com
+BREVO_API_KEY=your_brevo_api_key
+ENABLE_TEST_EMAIL_ROUTE=false
+CORS_ORIGINS=http://localhost:3000
 ```
 
 Start the backend server:
@@ -99,7 +107,8 @@ npm install
 Create a `.env.local` file in the `frontend` directory:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8080/api
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api
+NEXT_PUBLIC_BACKEND_ORIGIN=http://localhost:8080
 ```
 
 Start the frontend development server:

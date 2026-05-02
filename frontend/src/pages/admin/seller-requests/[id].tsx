@@ -34,7 +34,7 @@ function AdminSellerRequestDetailPage() {
     return (
       <ProtectedRoute roles={["admin"]}>
         <AdminLayout>
-          <div className="card p-6 text-gray-600">Loading...</div>
+          <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-center">Loading...</div>
         </AdminLayout>
       </ProtectedRoute>
     );
@@ -45,37 +45,43 @@ function AdminSellerRequestDetailPage() {
   return (
     <ProtectedRoute roles={["admin"]}>
       <AdminLayout>
-        <h1 className="text-2xl font-semibold text-gray-900">
-          Review Seller Application
-        </h1>
+        <div className="flex items-center justify-between font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
+          <h1 className="text-3xl text-foreground">
+            Review Seller Application
+          </h1>
+        </div>
 
-        <section className="card p-4 mt-4">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">
+        <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 mt-4 mb-8">
+          <h3 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4 mb-6">
             Applicant
           </h3>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-3 gap-6">
             <div>
-              <div className="text-sm text-gray-600">Name</div>
-              <div className="text-gray-900">{user.name}</div>
+              <div className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">Name</div>
+              <div className="text-foreground font-bold text-lg">{user.name}</div>
             </div>
             <div>
-              <div className="text-sm text-gray-600">Email</div>
-              <div className="text-gray-900">{user.email}</div>
+              <div className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">Email</div>
+              <div className="text-foreground font-bold text-lg">{user.email}</div>
             </div>
             <div>
-              <div className="text-sm text-gray-600">Status</div>
-              <div className="text-gray-900 capitalize">
+              <div className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">Status</div>
+              <div className={`text-xs font-black uppercase tracking-widest px-3 py-1 border-[3px] border-border shadow-[2px_2px_0px_#111] w-fit ${
+                user.sellerRequest === 'pending' ? 'bg-amber-400 text-amber-950' :
+                user.sellerRequest === 'approved' ? 'bg-emerald-400 text-emerald-950' :
+                'bg-rose-400 text-rose-950'
+              }`}>
                 {user.sellerRequest}
               </div>
             </div>
           </div>
         </section>
 
-        <section className="card p-4 mt-4">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">
+        <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 mt-4 mb-8">
+          <h3 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4 mb-6">
             Application
           </h3>
-          <div className="grid md:grid-cols-2 gap-3">
+          <div className="grid md:grid-cols-2 gap-6">
             {[
               "businessName",
               "legalName",
@@ -85,22 +91,22 @@ function AdminSellerRequestDetailPage() {
               "address",
               "message",
             ].map((k) => (
-              <div key={k}>
-                <div className="text-sm text-gray-600">{k}</div>
-                <div className="text-gray-900 break-words">
+              <div key={k} className="bg-primary/5 border-[3px] border-border p-4 shadow-[4px_4px_0px_#111]">
+                <div className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-2">{k}</div>
+                <div className="text-foreground font-bold break-words">
                   {sellerApplication?.[k] || "-"}
                 </div>
               </div>
             ))}
           </div>
           {sellerApplication?.documents?.length ? (
-            <div className="mt-4">
-              <h4 className="font-semibold text-gray-900">Documents</h4>
-              <ul className="list-disc ml-5 text-sm text-gray-700">
+            <div className="mt-8 pt-6 border-t-[3px] border-border">
+              <h4 className="text-xl font-black uppercase tracking-widest text-foreground mb-4">Documents</h4>
+              <ul className="grid gap-3">
                 {sellerApplication.documents.map((d: any, i: number) => (
                   <li key={i}>
                     <a
-                      className="text-purple-700 hover:underline"
+                      className="block p-4 border-[3px] border-border bg-card shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all text-primary font-bold break-words"
                       href={d.url}
                       target="_blank"
                       rel="noreferrer"
@@ -114,16 +120,16 @@ function AdminSellerRequestDetailPage() {
           ) : null}
         </section>
 
-        <div className="flex gap-3 mt-4">
+        <div className="flex gap-4 mt-8">
           <button
             onClick={() => decide("approve")}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500"
+            className="px-6 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all flex-1 sm:flex-none"
           >
             Approve
           </button>
           <button
             onClick={() => decide("reject")}
-            className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            className="px-6 py-3 border-[3px] border-border bg-card text-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all flex-1 sm:flex-none"
           >
             Reject
           </button>

@@ -6,7 +6,7 @@ export const listCategories = async (_req, res) => {
     const cats = await Category.find({ active: true }).sort({ name: 1 }).lean();
     res.json(cats);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -20,7 +20,7 @@ export const createCategory = async (req, res) => {
     const cat = await Category.create({ name, active });
     res.status(201).json(cat);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -34,7 +34,7 @@ export const updateCategory = async (req, res) => {
     await cat.save();
     res.json(cat);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -43,7 +43,7 @@ export const deleteCategory = async (req, res) => {
     await Category.findByIdAndDelete(req.params.id);
     res.json({ message: "Deleted" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -68,6 +68,7 @@ export const importCategories = async (req, res) => {
     const inserted = await Category.insertMany(toInsert);
     res.json({ inserted: inserted.length });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+

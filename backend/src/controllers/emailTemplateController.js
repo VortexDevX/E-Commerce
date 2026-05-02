@@ -10,7 +10,7 @@ import { logAdminAction } from "../utils/adminLog.js";
 
 const DEFAULTS = {
   welcome: {
-    subject: "Welcome to Shop 🎉",
+    subject: "Welcome to Luxora Marketplace",
     html: (data) => welcomeEmail(data.user),
   },
   resetPassword: {
@@ -57,7 +57,7 @@ function renderTokens(html, subject, data) {
       .join("") || "";
 
   const map = {
-    "{{frontendUrl}}": `${process.env.FRONTEND_URL}}`,
+    "{{frontendUrl}}": `${process.env.FRONTEND_URL || "http://localhost:3000"}`,
     // user
     "{{user.name}}": data.user?.name || "User",
     "{{user.email}}": data.user?.email || "user@example.com",
@@ -166,7 +166,6 @@ export const saveTemplate = async (req, res) => {
     note: undefined,
   });
 
-  res.json({ message: "Saved", template: up });
   res.json({ message: "Saved", template: up });
 };
 

@@ -14,7 +14,7 @@ export const listMyProducts = async (req, res) => {
     });
     res.json(products);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -84,7 +84,7 @@ export const listMyOrders = async (req, res) => {
 
     res.json(shaped);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -136,7 +136,7 @@ export const updateMyOrderStatus = async (req, res) => {
 
     res.json({ message: `Order status updated to ${status}`, order });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -173,6 +173,7 @@ export const getMyProductDetail = async (req, res) => {
 
     res.json({ product, analytics });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+

@@ -20,7 +20,7 @@ export interface User {
   name: string;
   email: string;
   role: "user" | "seller" | "admin" | "subadmin";
-  accessToken: string;
+  accessToken?: string;
   addresses?: Address[];
   sellerRequest?: "none" | "pending" | "approved" | "rejected";
   seller?: { approved?: boolean; approvedAt?: string };
@@ -86,7 +86,11 @@ interface AuthState {
 const getStoredUser = (): User | null => {
   if (typeof window === "undefined") return null;
   try {
-    return JSON.parse(localStorage.getItem("user") || "null");
+    const raw = JSON.parse(localStorage.getItem("user") || "null");
+    if (!raw) return null;
+    // Never hydrate access token from localStorage.
+    if (raw.accessToken) delete raw.accessToken;
+    return raw;
   } catch {
     return null;
   }
@@ -94,7 +98,12 @@ const getStoredUser = (): User | null => {
 const setStoredUser = (user: User | null) => {
   if (typeof window === "undefined") return;
   if (!user) localStorage.removeItem("user");
-  else localStorage.setItem("user", JSON.stringify(user));
+  else {
+    // Persist profile data only; keep access token in-memory.
+    const safe = { ...user };
+    delete safe.accessToken;
+    localStorage.setItem("user", JSON.stringify(safe));
+  }
 };
 
 const initialState: AuthState = {

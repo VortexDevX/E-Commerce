@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { useEffect, useRef, useState, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
@@ -34,6 +33,33 @@ function slugify(text: string) {
     .replace(/(^-|-$)+/g, "");
 }
 
+const CATEGORIES = ["Fashion", "Electronics", "Home", "Beauty"];
+const PRICE_OPTIONS: Array<{ label: string; range: [number, number] }> = [
+  { label: "Under ₹500", range: [0, 500] },
+  { label: "₹500 - ₹2,000", range: [500, 2000] },
+  { label: "₹2,000 - ₹5,000", range: [2000, 5000] },
+  { label: "₹5,000 - ₹10,000", range: [5000, 10000] },
+];
+
+const priceRangeLabel = (range: [number, number] | null) => {
+  if (!range) return "";
+  const hit = PRICE_OPTIONS.find(
+    (item) => item.range[0] === range[0] && item.range[1] === range[1]
+  );
+  return hit?.label || `${range[0]} - ${range[1]}`;
+};
+
+const getQueryValue = (value: string | string[] | undefined) =>
+  Array.isArray(value) ? value[0] : value;
+
+const parsePriceRange = (value: string | string[] | undefined): [number, number] | null => {
+  const raw = getQueryValue(value);
+  if (!raw) return null;
+  const [min, max] = raw.split(",").map((item) => Number(item));
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return null;
+  return [min, max];
+};
+
 export default function ProductsPage() {
   const dispatch = useDispatch<AppDispatch>();
   const { list, loading } = useSelector((s: RootState) => s.products);
@@ -54,7 +80,7 @@ export default function ProductsPage() {
   const [categoryBanner, setCategoryBanner] = useState<Banner | null>(null);
   const catBannerImpressionRef = useRef<string | null>(null);
 
-  const lastParamsRef = useRef<any>(null);
+  const lastParamsRef = useRef<Record<string, string | number | boolean> | null>(null);
 
   const sortOptions = [
     { value: "", label: "Sort by" },
@@ -71,8 +97,8 @@ export default function ProductsPage() {
     { value: 4, label: "4★ & up" },
   ];
 
-  const buildParams = () => {
-    const params: any = {};
+  const buildParams = (): Record<string, string | number | boolean> => {
+    const params: Record<string, string | number | boolean> = {};
     if (searchParam) params.q = searchParam;
     if (sort) params.sort = sort;
     if (category) params.category = category;
@@ -82,19 +108,32 @@ export default function ProductsPage() {
     return params;
   };
 
-  // Initialize category from URL query (e.g., /products?category=Electronics)
+  // Hydrate filter state from URL query so storefront CTAs and shared links apply correctly.
   useEffect(() => {
     if (!router.isReady) return;
-    const c = router.query.category;
-    if (typeof c === "string") {
-      setCategory(c);
-    }
-  }, [router.isReady, router.query.category]);
+    const nextCategory = getQueryValue(router.query.category) || "";
+    const nextSort = getQueryValue(router.query.sort) || "";
+    const nextRating = Number(getQueryValue(router.query.minRating) || 0);
+
+    setCategory(nextCategory);
+    setSort(sortOptions.some((item) => item.value === nextSort) ? nextSort : "");
+    setMinRating(Number.isFinite(nextRating) ? Math.min(Math.max(nextRating, 0), 4) : 0);
+    setInStock(getQueryValue(router.query.inStock) === "true");
+    setPriceRange(parsePriceRange(router.query.priceRange));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    router.isReady,
+    router.query.category,
+    router.query.sort,
+    router.query.minRating,
+    router.query.inStock,
+    router.query.priceRange,
+  ]);
 
   // Selecting a category updates URL and clears search
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
-    const query: any = { category: newCategory };
+    const query: Record<string, string> = { category: newCategory };
     router.push({ pathname: "/products", query }, undefined, { shallow: true });
   };
 
@@ -159,14 +198,40 @@ export default function ProductsPage() {
 
   const isInitialLoading = loading && list.length === 0;
 
+  const activeFilters: Array<{ key: string; label: string }> = [];
+  if (category) activeFilters.push({ key: "category", label: `Category: ${category}` });
+  if (priceRange)
+    activeFilters.push({
+      key: "priceRange",
+      label: `Price: ${priceRangeLabel(priceRange)}`,
+    });
+  if (minRating > 0)
+    activeFilters.push({ key: "minRating", label: `Rating: ${minRating}★ & up` });
+  if (inStock) activeFilters.push({ key: "inStock", label: "In stock" });
+  if (sort) {
+    const sortLabel = sortOptions.find((s) => s.value === sort)?.label || "Sort";
+    activeFilters.push({ key: "sort", label: sortLabel });
+  }
+
+  const clearOneFilter = (key: string) => {
+    if (key === "category") {
+      setCategory("");
+      router.push("/products", undefined, { shallow: true });
+    }
+    if (key === "priceRange") setPriceRange(null);
+    if (key === "minRating") setMinRating(0);
+    if (key === "inStock") setInStock(false);
+    if (key === "sort") setSort("");
+  };
+
   const searchInfo = searchParam ? (
-    <div className="mb-4 p-3 bg-purple-50 rounded-md flex items-center justify-between">
-      <span className="text-sm text-gray-700">
-        Searching for: <strong>{searchParam}</strong>
+    <div className="mb-4 flex items-center justify-between rounded-xl border border-primary/40 bg-primary/10 p-4 text-foreground">
+      <span className="text-sm text-muted-foreground">
+        Showing results for <strong className="ml-1 font-semibold text-foreground">{searchParam}</strong>
       </span>
       <button
         onClick={() => router.push("/products", undefined, { shallow: true })}
-        className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+        className="text-sm font-semibold text-primary hover:text-primary/80"
       >
         Clear search
       </button>
@@ -174,26 +239,26 @@ export default function ProductsPage() {
   ) : null;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 grid md:grid-cols-4 gap-8">
+    <div className="page-shell grid gap-8 md:grid-cols-4">
       {/* Sidebar */}
-      <aside className="hidden md:block space-y-6 card p-6 h-fit">
+      <aside className="hidden h-fit space-y-6 border border-border bg-card p-6 shadow-card md:block">
         <button
           onClick={onClearFilters}
-          className="w-full mb-4 px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-500 text-sm font-medium"
+          className="btn-secondary mb-4 w-full px-3 py-2 text-sm"
         >
-          Clear All Filters
+          Clear filters
         </button>
 
         <div>
-          <h3 className="font-semibold mb-2 text-gray-900">Categories</h3>
-          {["Fashion", "Electronics", "Home", "Beauty"].map((c) => (
+          <h3 className="mb-2 font-semibold text-foreground">Categories</h3>
+          {CATEGORIES.map((c) => (
             <button
               key={c}
               onClick={() => handleCategoryChange(c)}
-              className={`block w-full text-left px-3 py-1 rounded ${
+              className={`mb-2 block w-full rounded-lg border px-3 py-2 text-left text-sm font-medium transition-all ${
                 category === c
-                  ? "bg-purple-600 text-white"
-                  : "hover:bg-gray-50 text-gray-700"
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-surface text-muted-foreground hover:bg-card hover:text-foreground"
               }`}
             >
               {c}
@@ -202,22 +267,17 @@ export default function ProductsPage() {
         </div>
 
         <div>
-          <h3 className="font-semibold mb-2 text-gray-900">Price</h3>
-          {[
-            { label: "Under ₹500", range: [0, 500] },
-            { label: "₹500 - ₹2,000", range: [500, 2000] },
-            { label: "₹2,000 - ₹5,000", range: [2000, 5000] },
-            { label: "₹5,000 - ₹10,000", range: [5000, 10000] },
-          ].map((r) => (
+          <h3 className="mb-2 font-semibold text-foreground">Price</h3>
+          {PRICE_OPTIONS.map((r) => (
             <button
               key={r.label}
               onClick={() => setPriceRange(r.range as [number, number])}
-              className={`block w-full text-left px-3 py-1 rounded ${
+              className={`mb-2 block w-full rounded-lg border px-3 py-2 text-left text-sm font-medium transition-all ${
                 priceRange &&
                 priceRange[0] === r.range[0] &&
                 priceRange[1] === r.range[1]
-                  ? "bg-purple-600 text-white"
-                  : "hover:bg-gray-50 text-gray-700"
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-surface text-muted-foreground hover:bg-card hover:text-foreground"
               }`}
             >
               {r.label}
@@ -227,7 +287,7 @@ export default function ProductsPage() {
 
         {/* Ratings */}
         <div>
-          <h3 className="font-semibold mb-2 text-gray-900">Ratings</h3>
+          <h3 className="mb-2 font-semibold text-foreground">Ratings</h3>
           {[
             { value: 0, label: "Any rating" },
             { value: 1, label: "1★ & up" },
@@ -238,10 +298,10 @@ export default function ProductsPage() {
             <button
               key={o.value}
               onClick={() => setMinRating(o.value)}
-              className={`block w-full text-left px-3 py-1 rounded ${
+              className={`mb-2 block w-full rounded-lg border px-3 py-2 text-left text-sm font-medium transition-all ${
                 minRating === o.value
-                  ? "bg-purple-600 text-white"
-                  : "hover:bg-gray-50 text-gray-700"
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-surface text-muted-foreground hover:bg-card hover:text-foreground"
               }`}
             >
               {o.label}
@@ -251,12 +311,13 @@ export default function ProductsPage() {
 
         {/* Availability */}
         <div>
-          <h3 className="font-semibold mb-2 text-gray-900">Availability</h3>
-          <label className="flex items-center gap-2 text-gray-700">
+          <h3 className="mb-2 font-semibold text-foreground">Availability</h3>
+          <label className="flex select-none items-center gap-2 text-sm font-medium text-muted-foreground">
             <input
               type="checkbox"
               checked={inStock}
               onChange={(e) => setInStock(e.target.checked)}
+              className="h-5 w-5 rounded border-border text-primary focus:ring-2 focus:ring-primary focus:ring-offset-0"
             />
             In stock only
           </label>
@@ -264,14 +325,77 @@ export default function ProductsPage() {
       </aside>
 
       {/* Main Content */}
-      <div className="md:col-span-3 space-y-6">
+      <div className="space-y-6 md:col-span-3">
+        <div className="flex flex-col gap-3 border border-border bg-card p-5 shadow-card md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-xs font-semibold text-primary">Luxora catalog</p>
+            <h1 className="display-font text-4xl font-semibold text-foreground md:text-5xl">
+              Browse the edit
+            </h1>
+          </div>
+          <p className="max-w-md text-sm leading-6 text-muted-foreground">
+            Filter by department, price, rating, and availability. Good shopping starts with fewer surprises.
+          </p>
+        </div>
         {searchInfo}
 
+        <div className="md:hidden -mx-1 overflow-x-auto no-scrollbar sticky top-[68px] z-30 bg-[hsl(var(--background))] py-2">
+          <div className="flex gap-2 px-1 min-w-max">
+            <button
+              onClick={() => setCategory("")}
+              className={`px-3 py-1.5 text-xs rounded-full border ${
+                !category ? "bg-primary text-primary-foreground border-primary" : "bg-surface border-border text-muted-foreground"
+              }`}
+            >
+              All
+            </button>
+            {CATEGORIES.map((c) => (
+              <button
+                key={c}
+                onClick={() => handleCategoryChange(c)}
+                className={`px-3 py-1.5 text-xs rounded-full border whitespace-nowrap ${
+                  category === c
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-surface border-border text-muted-foreground"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {activeFilters.length > 0 && (
+          <div className="rounded-xl border border-border bg-surface p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              {activeFilters.map((chip) => (
+                <button
+                  key={chip.key}
+                  onClick={() => clearOneFilter(chip.key)}
+                  className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary"
+                >
+                  {chip.label}
+                  <span aria-hidden>×</span>
+                </button>
+              ))}
+              <button
+                onClick={onClearFilters}
+                className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+              >
+                Clear all
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Sort dropdown */}
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground">
+            {list.length} result{list.length === 1 ? "" : "s"}
+          </p>
           <Listbox value={sort} onChange={setSort}>
             <div className="relative w-48">
-              <Listbox.Button className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm text-left text-gray-900">
+              <Listbox.Button className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-left text-sm font-medium text-foreground transition-transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary/40">
                 {["", "priceAsc", "priceDesc", "newest"].includes(sort)
                   ? {
                       "": "Sort by",
@@ -281,7 +405,7 @@ export default function ProductsPage() {
                     }[sort as "" | "priceAsc" | "priceDesc" | "newest"]
                   : "Sort by"}
               </Listbox.Button>
-              <Listbox.Options className="absolute mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-50">
+              <Listbox.Options className="absolute z-50 mt-2 w-full space-y-1 rounded-xl border border-border bg-card p-2 shadow-card">
                 {[
                   { value: "", label: "Sort by" },
                   { value: "priceAsc", label: "Price: Low → High" },
@@ -291,7 +415,7 @@ export default function ProductsPage() {
                   <Listbox.Option
                     key={o.value}
                     value={o.value}
-                    className="cursor-pointer px-3 py-2 hover:bg-gray-50 text-gray-900"
+                    className="cursor-pointer rounded-lg px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
                   >
                     {o.label}
                   </Listbox.Option>
@@ -303,14 +427,14 @@ export default function ProductsPage() {
 
         {/* Mobile Filters Button */}
         <button
-          className="md:hidden w-full bg-purple-600 text-white py-2 rounded-md"
+          className="btn-primary mt-4 block w-full py-4 text-center md:hidden"
           onClick={() => setShowFilters(true)}
         >
-          Show Filters
+          Show filters
         </button>
 
         {/* NEW: Category Header Banner */}
-        {categoryBanner ? <BannerHero banner={categoryBanner as any} /> : null}
+        {categoryBanner ? <BannerHero banner={categoryBanner} /> : null}
 
         {/* Mobile Filters Modal */}
         <Transition show={showFilters} as={Fragment}>
@@ -340,31 +464,31 @@ export default function ProductsPage() {
                 leaveFrom="translate-y-0"
                 leaveTo="translate-y-full"
               >
-                <Dialog.Panel className="w-full max-w-md bg-white rounded-t-2xl p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+                <Dialog.Panel className="max-h-[80vh] w-full max-w-md space-y-6 overflow-y-auto rounded-t-2xl border border-border bg-surface p-6 pb-20">
                   <div className="flex justify-between items-center">
-                    <Dialog.Title className="text-lg font-semibold text-gray-900">
+                    <Dialog.Title className="text-lg font-semibold text-foreground">
                       Filters
                     </Dialog.Title>
                     <button
                       onClick={onClearFilters}
-                      className="text-rose-600 text-sm font-medium"
+                      className="text-sm font-medium text-error"
                     >
-                      Reset All
+                      Reset all
                     </button>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold mb-2 text-gray-900">
+                    <h3 className="mb-2 font-semibold text-foreground">
                       Categories
                     </h3>
-                    {["Fashion", "Electronics", "Home", "Beauty"].map((c) => (
+                    {CATEGORIES.map((c) => (
                       <button
                         key={c}
                         onClick={() => handleCategoryChange(c)}
-                        className={`block w-full text-left px-3 py-2 rounded ${
+                        className={`mb-2 block w-full rounded-lg border px-3 py-2 text-left text-sm ${
                           category === c
-                            ? "bg-purple-600 text-white"
-                            : "hover:bg-gray-50 text-gray-700"
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-card text-muted-foreground hover:text-foreground"
                         }`}
                       >
                         {c}
@@ -373,24 +497,19 @@ export default function ProductsPage() {
                   </div>
 
                   <div>
-                    <h3 className="font-semibold mb-2 text-gray-900">Price</h3>
-                    {[
-                      { label: "Under ₹500", range: [0, 500] },
-                      { label: "₹500 - ₹2000", range: [500, 2000] },
-                      { label: "₹2000 - ₹5,000", range: [2000, 5000] },
-                      { label: "₹5000 - ₹10,000", range: [5000, 10000] },
-                    ].map((r) => (
+                    <h3 className="mb-2 font-semibold text-foreground">Price</h3>
+                    {PRICE_OPTIONS.map((r) => (
                       <button
                         key={r.label}
                         onClick={() =>
                           setPriceRange(r.range as [number, number])
                         }
-                        className={`block w-full text-left px-3 py-2 rounded ${
+                        className={`mb-2 block w-full rounded-lg border px-3 py-2 text-left text-sm ${
                           priceRange &&
                           priceRange[0] === r.range[0] &&
                           priceRange[1] === r.range[1]
-                            ? "bg-purple-600 text-white"
-                            : "hover:bg-gray-50 text-gray-700"
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-card text-muted-foreground hover:text-foreground"
                         }`}
                       >
                         {r.label}
@@ -400,17 +519,17 @@ export default function ProductsPage() {
 
                   {/* Ratings */}
                   <div>
-                    <h3 className="font-semibold mb-2 text-gray-900">
+                    <h3 className="mb-2 font-semibold text-foreground">
                       Ratings
                     </h3>
                     {ratingOptions.map((o) => (
                       <button
                         key={o.value}
                         onClick={() => setMinRating(o.value)}
-                        className={`block w-full text-left px-3 py-2 rounded ${
+                        className={`mb-2 block w-full rounded-lg border px-3 py-2 text-left text-sm ${
                           minRating === o.value
-                            ? "bg-purple-600 text-white"
-                            : "hover:bg-gray-50 text-gray-700"
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-card text-muted-foreground hover:text-foreground"
                         }`}
                       >
                         {o.label}
@@ -420,10 +539,10 @@ export default function ProductsPage() {
 
                   {/* Availability */}
                   <div>
-                    <h3 className="font-semibold mb-2 text-gray-900">
+                    <h3 className="mb-2 font-semibold text-foreground">
                       Availability
                     </h3>
-                    <label className="flex items-center gap-2 text-gray-700">
+                    <label className="flex items-center gap-2 text-sm text-muted-foreground">
                       <input
                         type="checkbox"
                         checked={inStock}
@@ -433,16 +552,16 @@ export default function ProductsPage() {
                     </label>
                   </div>
 
-                  <div className="flex justify-between gap-4 pt-4 border-t border-gray-200">
+                  <div className="sticky bottom-0 flex justify-between gap-4 border-t border-border bg-surface pt-4">
                     <button
                       onClick={onClearFilters}
-                      className="flex-1 bg-white border border-gray-300 text-gray-700 py-2 rounded-md"
+                      className="btn-secondary flex-1 py-2"
                     >
-                      Clear All
+                      Clear all
                     </button>
                     <button
                       onClick={() => setShowFilters(false)}
-                      className="flex-1 bg-purple-600 text-white py-2 rounded-md hover:bg-purple-500"
+                      className="btn-primary flex-1 py-2"
                     >
                       Apply
                     </button>
@@ -461,20 +580,20 @@ export default function ProductsPage() {
             ))}
           </div>
         ) : list.length === 0 ? (
-          <div className="card p-8 text-center">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <div className="card p-12 text-center flex flex-col items-center justify-center">
+            <h2 className="mb-4 text-3xl font-bold text-foreground">
               No products found
             </h2>
-            <p className="text-gray-600 mb-4">
+            <p className="mb-8 max-w-sm text-muted-foreground">
               {searchParam
                 ? "Try adjusting your search or clear it to see all products."
                 : "Try adjusting your filters or browse all products."}
             </p>
             <button
               onClick={onClearFilters}
-              className="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-500"
+              className="btn-primary"
             >
-              Clear All Filters
+              Clear filters
             </button>
           </div>
         ) : (

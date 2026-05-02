@@ -90,7 +90,7 @@ export default function RegisterPage() {
 
   return (
     <div className="max-w-md mx-auto px-6 py-16">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+      <h1 className="text-3xl font-black uppercase tracking-tighter text-foreground mb-8 text-center border-b-[3px] border-border pb-4">
         Create your account
       </h1>
 
@@ -103,7 +103,7 @@ export default function RegisterPage() {
             placeholder="Your name"
             value={form.name}
             onChange={handleChange}
-            className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200"
+            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
             required
           />
         </div>
@@ -116,7 +116,7 @@ export default function RegisterPage() {
             placeholder="you@example.com"
             value={form.email}
             onChange={handleChange}
-            className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200"
+            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
             required
           />
         </div>
@@ -130,7 +130,7 @@ export default function RegisterPage() {
               placeholder="••••••••"
               value={form.password}
               onChange={handleChange}
-              className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 pr-10 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200"
+              className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pr-10 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
               required
             />
             <button
@@ -167,7 +167,7 @@ export default function RegisterPage() {
               placeholder="Repeat password"
               value={form.confirmPassword}
               onChange={handleChange}
-              className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 pr-10 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200"
+              className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pr-10 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
               required
               aria-invalid={
                 form.confirmPassword.length > 0 &&
@@ -226,7 +226,7 @@ export default function RegisterPage() {
           <input
             id="accept-policies"
             type="checkbox"
-            className="mt-0.5"
+            className="w-5 h-5 border-[3px] border-border text-primary rounded-none focus:ring-primary focus:ring-offset-0 mt-0.5"
             checked={acceptedPolicies}
             onChange={(e) => {
               setAcceptedPolicies(e.target.checked);
@@ -237,14 +237,14 @@ export default function RegisterPage() {
             I agree to the{" "}
             <Link
               href="/policies/terms"
-              className="text-purple-700 hover:text-purple-600 font-medium"
+              className="font-black uppercase tracking-widest border-b-[2px] border-primary text-primary hover:opacity-80 transition-all"
             >
               Terms of Service
             </Link>{" "}
             and{" "}
             <Link
               href="/policies/privacy"
-              className="text-purple-700 hover:text-purple-600 font-medium"
+              className="font-black uppercase tracking-widest border-b-[2px] border-primary text-primary hover:opacity-80 transition-all"
             >
               Privacy Policy
             </Link>
@@ -257,7 +257,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={submitting || !acceptedPolicies}
-          className="w-full inline-flex justify-center items-center bg-purple-600 hover:bg-purple-500 disabled:opacity-60 text-white font-medium rounded-md px-4 py-2"
+          className="btn-primary w-full disabled:opacity-50"
         >
           {submitting ? "Creating account..." : "Register"}
         </button>
@@ -267,7 +267,7 @@ export default function RegisterPage() {
         Already have an account?{" "}
         <Link
           href="/auth/login"
-          className="text-purple-700 hover:text-purple-600 font-medium"
+          className="font-black uppercase tracking-widest pt-1 border-b-[3px] border-primary text-primary hover:opacity-80 transition-all ml-1"
         >
           Login
         </Link>

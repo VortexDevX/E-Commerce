@@ -38,30 +38,30 @@ function EditProductPage() {
           scope="seller"
           perm="seller:products:write"
           fallback={
-            <div className="rounded-xl border border-gray-200 bg-white p-6 text-gray-700">
-              You don’t have permission to edit products.
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">
+              You don&apos;t have permission to edit products.
             </div>
           }
         >
-          <div className="space-y-2">
-            <h1 className="text-2xl font-semibold text-gray-900">
+          <div className="space-y-2 mb-8 border-b-[3px] border-border pb-4">
+            <h1 className="text-3xl font-black uppercase tracking-widest text-foreground">
               Edit Product
             </h1>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
               Update product information and media.
             </p>
           </div>
 
           {loading ? (
-            <div className="rounded-xl border border-gray-200 bg-white p-6 text-gray-600">
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">
               Loading...
             </div>
           ) : !initial ? (
-            <div className="rounded-xl border border-gray-200 bg-white p-6 text-rose-600">
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-rose-600 font-black uppercase tracking-widest text-sm text-center">
               Product not found
             </div>
           ) : (
-            <div className="rounded-xl border border-gray-200 bg-white p-4 form-light">
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6">
               <ProductForm
                 initial={initial}
                 onSuccess={() => router.push("/seller/products")}

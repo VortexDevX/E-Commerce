@@ -8,7 +8,7 @@ export const getWishlist = async (req, res) => {
     const user = await User.findById(req.user._id).populate("wishlist");
     res.json(user.wishlist);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -27,7 +27,7 @@ export const addToWishlist = async (req, res) => {
 
     res.json({ message: "Added to wishlist", wishlist: user.wishlist });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -44,7 +44,7 @@ export const removeFromWishlist = async (req, res) => {
 
     res.json({ message: "Removed from wishlist", wishlist: user.wishlist });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -69,7 +69,7 @@ export const getSharedWishlist = async (req, res) => {
     );
     res.json({ items });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -84,7 +84,7 @@ export const getWishlistShareStatus = async (req, res) => {
       createdAt: s?.createdAt || null,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -123,7 +123,7 @@ export const enableWishlistShare = async (req, res) => {
       await user.save();
       return res.json(user.wishlistShare);
     }
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -139,6 +139,7 @@ export const disableWishlistShare = async (req, res) => {
 
     res.json({ enabled: false, id: null });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+

@@ -8,7 +8,6 @@ package-lock.json
 
 # ─── Environment Variables ───
 .env
-.env.*
 backend/.env
 frontend/.env.local
 !.env.example

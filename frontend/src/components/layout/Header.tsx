@@ -1,286 +1,315 @@
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import SearchBar from "../SearchBar";
 import { useRouter } from "next/router";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import type { RootState, AppDispatch } from "../../store";
-import { logoutAsync } from "../../store/slices/authSlice";
 import {
   Bars3Icon,
-  XMarkIcon,
   MagnifyingGlassIcon,
+  ShoppingBagIcon,
+  TruckIcon,
+  UserCircleIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
+import type { AppDispatch, RootState } from "../../store";
+import { logoutAsync } from "../../store/slices/authSlice";
+import SearchBar from "../SearchBar";
 
 type Role = "user" | "seller" | "admin" | "subadmin" | "seller_assistant";
+type NavLink = { href: string; label: string; badge?: number };
+
+const departments = ["Fashion", "Electronics", "Home", "Beauty", "Deals", "New arrivals"];
+
+const getDepartmentQuery = (department: string) =>
+  department === "Deals"
+    ? { search: "discount" }
+    : department === "New arrivals"
+      ? { sort: "newest" }
+      : { category: department };
 
 export default function Header() {
-  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const user = useSelector((s: RootState) => s.auth.user);
   const cartItems = useSelector((s: RootState) => s.cart.items ?? []);
-  const cartCount = cartItems.reduce((sum, i) => sum + i.qty, 0);
+  const cartCount = cartItems.reduce((sum, item) => sum + item.qty, 0);
 
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const panelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    const close = () => setOpen(false);
-    router.events.on("routeChangeComplete", close);
-    return () => {
-      router.events.off("routeChangeComplete", close);
+    const close = () => {
+      setOpen(false);
+      setMobileSearchOpen(false);
     };
+    router.events.on("routeChangeComplete", close);
+    return () => router.events.off("routeChangeComplete", close);
   }, [router.events]);
 
   useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+    if (!open && !mobileSearchOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, [open, mobileSearchOpen]);
 
   useEffect(() => {
-    if (open) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = prev;
-      };
-    }
-  }, [open]);
+    if (!open && !mobileSearchOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        setMobileSearchOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, mobileSearchOpen]);
+
+  const canSeeAdmin = (role?: Role) => role === "admin" || role === "subadmin";
+  const canSeeSeller = (role?: Role) =>
+    role === "seller" || role === "seller_assistant";
+
+  const navLinks = useMemo<NavLink[]>(() => {
+    const base: NavLink[] = [
+      { href: "/products", label: "Shop" },
+      { href: "/wishlist", label: "Saved" },
+      { href: "/cart", label: "Cart", badge: cartCount > 0 ? cartCount : undefined },
+    ];
+
+    if (!user) return base;
+
+    const authed: NavLink[] = [
+      { href: "/orders", label: "Orders" },
+      { href: "/profile", label: "Account" },
+    ];
+
+    if (canSeeSeller(user.role as Role)) authed.push({ href: "/seller", label: "Seller" });
+    if (canSeeAdmin(user.role as Role)) authed.push({ href: "/admin", label: "Admin" });
+
+    return [...base, ...authed];
+  }, [cartCount, user]);
+
+  const isActive = (href: string) =>
+    href === "/" ? router.pathname === href : router.pathname === href || router.pathname.startsWith(`${href}/`);
 
   const handleLogout = async () => {
     await dispatch(logoutAsync());
     router.replace("/");
   };
 
-  const canSeeAdmin = (role?: Role) => role === "admin" || role === "subadmin";
-  const canSeeSeller = (role?: Role) =>
-    role === "seller" || role === "seller_assistant";
-
-  const NavLinks = ({ onItemClick }: { onItemClick?: () => void }) => (
+  const NavItems = ({ mobile = false }: { mobile?: boolean }) => (
     <>
-      <Link
-        href="/products"
-        className="hover:text-gray-900"
-        onClick={onItemClick}
-      >
-        Products
-      </Link>
-      <Link
-        href="/wishlist"
-        className="hover:text-gray-900"
-        onClick={onItemClick}
-      >
-        Wishlist
-      </Link>
-      <Link
-        href="/cart"
-        className="relative hover:text-gray-900"
-        onClick={onItemClick}
-      >
-        <span>Cart</span>
-        {cartCount > 0 && (
-          <span className="absolute -top-2 -right-4 bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full">
-            {cartCount}
-          </span>
-        )}
-      </Link>
-      {user ? (
-        <>
-          <Link
-            href="/orders"
-            className="hover:text-gray-900"
-            onClick={onItemClick}
-          >
-            My Orders
-          </Link>
-          <Link
-            href="/profile"
-            className="hover:text-gray-900"
-            onClick={onItemClick}
-          >
-            Profile
-          </Link>
-          {canSeeSeller(user.role as Role) && (
-            <Link
-              href="/seller"
-              className="hover:text-gray-900"
-              onClick={onItemClick}
-            >
-              Seller
-            </Link>
-          )}
-          {canSeeAdmin(user.role as Role) && (
-            <Link
-              href="/admin"
-              className="hover:text-gray-900"
-              onClick={onItemClick}
-            >
-              Admin
-            </Link>
-          )}
-          <button
-            onClick={() => {
-              onItemClick?.();
-              handleLogout();
-            }}
-            className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-left"
-          >
-            Logout
-          </button>
-        </>
-      ) : (
-        <div className="flex items-center gap-3">
-          <Link
-            href="/auth/login"
-            className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-            onClick={onItemClick}
-          >
-            Login
-          </Link>
-          <Link
-            href="/auth/register"
-            className="px-3 py-1.5 rounded-md border border-transparent bg-purple-600 text-white hover:bg-purple-500"
-            onClick={onItemClick}
-          >
-            Register
-          </Link>
-        </div>
-      )}
+      {navLinks.map((link) => (
+        <Link
+          key={link.href}
+          href={link.href}
+          className={
+            mobile
+              ? "flex items-center justify-between border border-border bg-white px-4 py-3 text-sm font-semibold text-foreground"
+              : `nav-link ${isActive(link.href) ? "nav-link-active" : ""}`
+          }
+          aria-current={isActive(link.href) ? "page" : undefined}
+          onClick={() => mobile && setOpen(false)}
+        >
+          <span>{link.label}</span>
+          {link.badge ? (
+            <span className="tag-chip tag-chip-primary min-w-[1.75rem] justify-center">
+              {link.badge}
+            </span>
+          ) : null}
+        </Link>
+      ))}
     </>
   );
 
   if (!mounted) {
     return (
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between py-4">
-            <div className="h-8 w-28 rounded-md bg-gray-100 border border-gray-200" />
-            <div className="h-8 w-8 rounded-md bg-gray-100 border border-gray-200" />
-          </div>
+      <header className="sticky top-0 z-50 border-b border-border bg-background">
+        <div className="page-shell !py-4">
+          <div className="h-14 animate-pulse border border-border bg-secondary" />
         </div>
       </header>
     );
   }
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex items-center justify-between py-4">
-          <Link href="/" className="inline-flex items-center gap-3">
-            <Image
-              src="/luxora-4.png"
-              alt="Luxora"
-              width={120}
-              height={40}
-              priority
-              className="h-10 w-auto"
-            />
-            <span className="sr-only">Luxora</span>
+    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
+      <div className="border-b border-border bg-foreground text-white">
+        <div className="page-shell flex flex-col gap-2 !py-2 text-xs sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <TruckIcon className="h-4 w-4 text-[#f4c56a]" />
+            <span>Curated marketplace shipping across India</span>
+          </div>
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-white/78">
+            <Link href={{ pathname: "/products", query: { sort: "newest" } }} className="hover:text-white">
+              New arrivals
+            </Link>
+            <Link href={{ pathname: "/products", query: { inStock: "true" } }} className="hover:text-white">
+              Ready to ship
+            </Link>
+            <Link href="/seller" className="hover:text-white">
+              Seller studio
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="page-shell !py-4">
+        <div className="grid items-center gap-4 md:grid-cols-[210px_minmax(320px,1fr)_auto_auto]">
+          <Link href="/" className="group flex items-center gap-3">
+            <span className="grid h-11 w-11 place-items-center border border-foreground bg-foreground text-white shadow-[6px_6px_0_rgba(228,82,55,0.22)]">
+              <ShoppingBagIcon className="h-5 w-5 transition-transform group-hover:-rotate-6" />
+            </span>
+            <span className="display-font text-3xl font-semibold leading-none text-foreground">
+              Luxora
+            </span>
           </Link>
 
-          {/* Desktop search */}
-          <div className="hidden md:flex flex-1 justify-center px-6">
+          <div className="hidden md:block">
             <SearchBar />
           </div>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-6 text-gray-700">
-            <NavLinks />
+          <nav className="hidden items-center gap-6 md:flex">
+            <NavItems />
           </nav>
 
-          {/* Mobile right actions */}
-          <div className="md:hidden flex items-center gap-2">
+          <div className="hidden items-center gap-2 md:flex">
+            {user ? (
+              <>
+                <button type="button" className="btn h-10 px-3" onClick={handleLogout}>
+                  Logout
+                </button>
+                <Link href="/profile" className="btn h-10 w-10 px-0" aria-label="Account">
+                  <UserCircleIcon className="h-5 w-5" />
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/auth/login" className="btn h-10">
+                  Sign in
+                </Link>
+                <Link href="/auth/register" className="btn-primary h-10">
+                  Join
+                </Link>
+              </>
+            )}
+          </div>
+
+          <div className="ml-auto flex items-center gap-2 md:hidden">
             <button
-              onClick={() => setMobileSearchOpen(true)}
-              className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
+              type="button"
+              className="btn h-10 w-10 px-0"
               aria-label="Open search"
+              onClick={() => setMobileSearchOpen(true)}
             >
-              <MagnifyingGlassIcon className="w-6 h-6" />
+              <MagnifyingGlassIcon className="h-5 w-5" />
             </button>
+            <Link href="/cart" className="btn relative h-10 w-10 px-0" aria-label="Cart">
+              <ShoppingBagIcon className="h-5 w-5" />
+              {cartCount > 0 ? (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-semibold text-white">
+                  {cartCount}
+                </span>
+              ) : null}
+            </Link>
             <button
-              aria-label="Toggle menu"
-              className="p-2 rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50"
-              onClick={() => setOpen((o) => !o)}
+              type="button"
+              className="btn h-10 w-10 px-0"
+              aria-label="Open menu"
+              onClick={() => setOpen((value) => !value)}
             >
-              {open ? (
-                <XMarkIcon className="w-6 h-6" />
-              ) : (
-                <Bars3Icon className="w-6 h-6" />
-              )}
+              {open ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile search popup */}
-      {mobileSearchOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex justify-center items-start pt-20 px-4">
-          <div className="bg-white w-full max-w-md rounded-lg shadow-lg p-4">
-            <div className="flex items-center gap-2">
-              <SearchBar />
-              <button
-                onClick={() => setMobileSearchOpen(false)}
-                className="p-2 text-gray-500 hover:bg-gray-100 rounded"
-                aria-label="Close search"
-              >
-                ✖
+      <div className="hidden border-t border-border bg-white/70 md:block">
+        <div className="page-shell flex items-center gap-2 overflow-x-auto !py-2">
+          {departments.map((department) => (
+            <Link
+              key={department}
+              href={{ pathname: "/products", query: getDepartmentQuery(department) }}
+              className="rounded-full border border-transparent px-4 py-2 text-sm font-semibold text-muted-foreground hover:border-accent/40 hover:bg-secondary hover:text-foreground"
+            >
+              {department}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {mobileSearchOpen ? (
+        <div className="fixed inset-0 z-[60] bg-foreground/65 px-4 pt-20 md:hidden" onClick={() => setMobileSearchOpen(false)}>
+          <div className="surface-card mx-auto max-w-xl p-4" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-base font-semibold text-foreground">Search Luxora</h2>
+              <button type="button" className="btn h-10 w-10 px-0" onClick={() => setMobileSearchOpen(false)}>
+                <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
+            <SearchBar />
           </div>
         </div>
-      )}
+      ) : null}
 
-      {/* Mobile drawer */}
-      {open && (
-        <div
-          className="fixed inset-0 z-50 md:hidden"
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setOpen(false)}
-        >
-          <div className="absolute inset-0 bg-black/40 transition-opacity" />
+      {open ? (
+        <div className="fixed inset-0 z-[60] md:hidden" onClick={() => setOpen(false)}>
+          <div className="absolute inset-0 bg-foreground/65" />
           <div
-            ref={panelRef}
-            className="absolute right-0 top-0 bottom-0 w-80 max-w-[85%] bg-white border-l border-gray-200 p-5 shadow-xl transform transition-transform duration-200 ease-out translate-x-0"
+            className="absolute right-0 top-0 flex h-full w-full max-w-sm flex-col border-l border-border bg-background p-4 shadow-[var(--shadow-soft)]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-4">
-              <Link
-                href="/"
-                onClick={() => setOpen(false)}
-                className="inline-flex items-center gap-2"
-              >
-                <Image
-                  src="/luxora-4.png"
-                  alt="Luxora"
-                  width={110}
-                  height={110}
-                  className="h-10 w-auto"
-                />
-                <span className="sr-only">Luxora</span>
-              </Link>
-              <button
-                aria-label="Close menu"
-                className="p-2 rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50"
-                onClick={() => setOpen(false)}
-              >
-                <XMarkIcon className="w-5 h-5" />
+            <div className="mb-5 flex items-center justify-between">
+              <span className="display-font text-3xl font-semibold text-foreground">Luxora</span>
+              <button type="button" className="btn h-10 w-10 px-0" onClick={() => setOpen(false)}>
+                <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
-            <nav className="flex flex-col gap-3 text-gray-700">
-              <NavLinks onItemClick={() => setOpen(false)} />
+
+            <nav className="flex flex-1 flex-col gap-3">
+              <NavItems mobile />
+              <div className="mt-4 border-t border-border pt-4">
+                <p className="mb-3 text-xs font-semibold text-muted-foreground">
+                  Departments
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {departments.map((department) => (
+                    <Link
+                      key={department}
+                      href={{ pathname: "/products", query: getDepartmentQuery(department) }}
+                      className="border border-border bg-white px-3 py-2 text-sm font-semibold text-foreground"
+                      onClick={() => setOpen(false)}
+                    >
+                      {department}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </nav>
+
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              {user ? (
+                <button type="button" className="btn col-span-2" onClick={handleLogout}>
+                  Logout
+                </button>
+              ) : (
+                <>
+                  <Link href="/auth/login" className="btn" onClick={() => setOpen(false)}>
+                    Sign in
+                  </Link>
+                  <Link href="/auth/register" className="btn-primary" onClick={() => setOpen(false)}>
+                    Join
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
-      )}
+      ) : null}
     </header>
   );
 }

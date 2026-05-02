@@ -23,7 +23,7 @@ export const listMedia = async (req, res) => {
     );
     res.json(stats.sort((a, b) => b.mtime - a.mtime));
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -101,6 +101,7 @@ export const deleteMedia = async (req, res) => {
     return res.json({ message: "Deleted" });
   } catch (err) {
     console.error("[media] delete failed:", err?.message || err);
-    return res.status(500).json({ message: err.message || "Delete failed" });
+    return res.status(500).json({ message: "Delete failed" });
   }
 };
+

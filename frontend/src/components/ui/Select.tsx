@@ -16,19 +16,19 @@ const Select = forwardRef<HTMLSelectElement, Props>(function Select(
 ) {
   return (
     <label className={cn("block space-y-1", wrapperClassName)}>
-      {label && <span className="text-sm text-gray-700">{label}</span>}
+      {label && <span className="text-sm font-medium text-foreground">{label}</span>}
       <select
         ref={ref}
         {...props}
         className={cn(
-          "w-full bg-white border border-gray-300 rounded px-3 py-2",
-          "text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400",
+          "w-full rounded-xl border border-input bg-secondary px-3 py-2.5",
+          "text-foreground focus:outline-none",
           className
         )}
       >
         {children}
       </select>
-      {error && <span className="text-xs text-rose-600">{error}</span>}
+      {error && <span className="text-xs text-red-300">{error}</span>}
     </label>
   );
 });

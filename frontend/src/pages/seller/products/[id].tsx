@@ -12,7 +12,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { hasSellerPerm } from "../../../utils/permissions";
 
 function Chip({ children }: { children: React.ReactNode }) {
-  return <span className="badge badge-muted border">{children}</span>;
+  return <span className="px-2 py-0.5 border-[3px] border-border shadow-[2px_2px_0px_#111] bg-card text-foreground font-black uppercase tracking-widest text-xs">{children}</span>;
 }
 
 function SellerProductDetailsPage() {
@@ -61,24 +61,24 @@ function SellerProductDetailsPage() {
           scope="seller"
           perm="seller:products:read"
           fallback={
-            <div className="card p-6 text-gray-700">
-              You don’t have access to Products.
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">
+              You don&apos;t have access to Products.
             </div>
           }
         >
           {loading || !data ? (
-            <div className="card p-6 text-gray-600">Loading...</div>
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">Loading...</div>
           ) : (
             <>
-              <div className="flex items-center justify-between mb-4">
-                <h1 className="text-2xl font-semibold text-gray-900">
+              <div className="flex items-center justify-between font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
+                <h1 className="text-3xl text-foreground">
                   Product Details
                 </h1>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <PermissionGate scope="seller" perm="seller:products:write">
                     <Link
                       href={`/seller/products/edit/${data.product._id}`}
-                      className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-500"
+                      className="px-6 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 block"
                     >
                       Edit Product
                     </Link>
@@ -86,7 +86,7 @@ function SellerProductDetailsPage() {
                   <PermissionGate scope="seller" perm="seller:products:write">
                     <button
                       onClick={remove}
-                      className="px-4 py-2 border border-rose-300 rounded-md bg-white text-rose-700 hover:bg-rose-50"
+                      className="px-6 py-2 border-[3px] border-rose-600 bg-rose-600 shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all text-white font-black uppercase tracking-widest hover:-translate-y-1"
                     >
                       Delete
                     </button>
@@ -96,38 +96,38 @@ function SellerProductDetailsPage() {
 
               <div className="grid md:grid-cols-3 gap-6">
                 {/* Left: product info */}
-                <div className="md:col-span-2 card p-4">
-                  <div className="flex gap-4">
+                <div className="md:col-span-2 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6">
+                  <div className="flex flex-col md:flex-row gap-6">
                     <img
                       src={getImageUrl(data.product.images?.[0])}
-                      className="w-40 h-40 object-cover rounded-lg border border-gray-200"
+                      className="w-48 h-48 object-cover border-[3px] border-border shadow-[4px_4px_0px_#111]"
                       onError={(e) =>
                         ((e.currentTarget as HTMLImageElement).src =
                           "/fallback.png")
                       }
                       alt={data.product.title}
                     />
-                    <div className="space-y-1">
-                      <div className="text-xl font-semibold text-gray-900">
+                    <div className="space-y-2">
+                      <div className="text-2xl font-black uppercase tracking-widest text-foreground">
                         {data.product.title}
                       </div>
-                      <div className="text-purple-700 font-bold">
+                      <div className="text-primary font-black text-xl">
                         {currency(data.product.price)}
                       </div>
-                      <div className="text-sm text-gray-700">
-                        Category: {data.product.category || "-"}
+                      <div className="text-sm font-bold uppercase tracking-widest text-foreground">
+                        Category: <span className="text-muted-foreground">{data.product.category || "-"}</span>
                       </div>
-                      <div className="text-sm text-gray-700">
-                        Stock: {data.product.stock}
+                      <div className="text-sm font-bold uppercase tracking-widest text-foreground">
+                        Stock: <span className="text-muted-foreground">{data.product.stock}</span>
                       </div>
                       {data.product.sku && (
-                        <div className="text-sm text-gray-700">
-                          SKU: {data.product.sku}
+                        <div className="text-sm font-bold uppercase tracking-widest text-foreground">
+                          SKU: <span className="text-muted-foreground">{data.product.sku}</span>
                         </div>
                       )}
                       {data.product.brand && (
-                        <div className="text-sm text-gray-700">
-                          Brand: {data.product.brand}
+                        <div className="text-sm font-bold uppercase tracking-widest text-foreground">
+                          Brand: <span className="text-muted-foreground">{data.product.brand}</span>
                         </div>
                       )}
                       {data.product.tags?.length > 0 && (
@@ -146,52 +146,60 @@ function SellerProductDetailsPage() {
                   </div>
 
                   {(data.product.images || []).slice(1).length > 0 && (
-                    <div className="flex gap-2 mt-4">
+                    <div className="flex flex-wrap gap-4 mt-8 pt-8 border-t-[3px] border-border">
                       {(data.product.images || [])
                         .slice(1, 4)
                         .map((img: any, i: number) => {
                           const src = getImageUrl(img);
                           return (
-                            <img
-                              key={i}
-                              src={src}
-                              alt={`thumb-${i}`}
-                              className="w-16 h-16 rounded-md border border-gray-200 object-cover"
-                              onError={(e) =>
-                                ((e.currentTarget as HTMLImageElement).src =
-                                  "/fallback.png")
-                              }
-                            />
+                            <div key={i} className="w-24 h-24 border-[3px] border-border bg-muted overflow-hidden shrink-0 shadow-[4px_4px_0px_#111]">
+                              <img
+                                src={src}
+                                alt={`thumb-${i}`}
+                                className="w-full h-full object-cover"
+                                onError={(e) =>
+                                  ((e.currentTarget as HTMLImageElement).src =
+                                    "/fallback.png")
+                                }
+                              />
+                            </div>
                           );
                         })}
                     </div>
                   )}
 
                   {data.product.attributes?.length ? (
-                    <div className="mt-4">
-                      <h3 className="font-semibold text-gray-900">
+                    <div className="mt-8 pt-8 border-t-[3px] border-border">
+                      <h3 className="text-xl font-black uppercase tracking-widest text-foreground mb-4">
                         Attributes
                       </h3>
-                      <ul className="list-disc ml-6 text-sm text-gray-700">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {data.product.attributes.map((a: any, i: number) => (
-                          <li key={i}>
-                            {a.key}: {a.value}
-                          </li>
+                          <div key={i} className="flex flex-col gap-1 p-3 border-[3px] border-border bg-muted/30">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{a.key}</span>
+                            <span className="text-sm font-black uppercase tracking-widest text-foreground">{a.value}</span>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   ) : null}
 
                   {(data.product.seo?.title ||
                     data.product.seo?.description) && (
-                    <div className="mt-4">
-                      <h3 className="font-semibold text-gray-900">SEO</h3>
-                      <div className="text-sm text-gray-700">
+                    <div className="mt-8 pt-8 border-t-[3px] border-border">
+                      <h3 className="text-xl font-black uppercase tracking-widest text-foreground mb-4">SEO</h3>
+                      <div className="space-y-4">
                         {data.product.seo?.title && (
-                          <div>Title: {data.product.seo.title}</div>
+                          <div className="p-4 border-[3px] border-border bg-muted/30">
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Title</div>
+                            <div className="text-sm font-black uppercase tracking-widest text-foreground">{data.product.seo.title}</div>
+                          </div>
                         )}
                         {data.product.seo?.description && (
-                          <div>Description: {data.product.seo.description}</div>
+                          <div className="p-4 border-[3px] border-border bg-muted/30">
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Description</div>
+                            <div className="text-sm font-bold uppercase tracking-widest text-foreground">{data.product.seo.description}</div>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -199,18 +207,24 @@ function SellerProductDetailsPage() {
                 </div>
 
                 {/* Right: analytics */}
-                <div className="card p-4 space-y-2">
-                  <div className="text-sm text-gray-500">Orders</div>
-                  <div className="text-xl font-semibold text-gray-900">
-                    {data.analytics.ordersCount}
+                <div className="space-y-6">
+                  <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-center">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Orders</div>
+                    <div className="text-4xl font-black text-foreground">
+                      {data.analytics.ordersCount}
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-500">Units Sold</div>
-                  <div className="text-xl font-semibold text-gray-900">
-                    {data.analytics.sold}
+                  <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-center">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Units Sold</div>
+                    <div className="text-4xl font-black text-foreground">
+                      {data.analytics.sold}
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-500">Revenue</div>
-                  <div className="text-xl font-semibold text-gray-900">
-                    {currency(data.analytics.revenue)}
+                  <div className="bg-card border-[3px] border-primary shadow-[8px_8px_0px_#111] p-6 text-center">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Revenue</div>
+                    <div className="text-4xl font-black text-primary truncate" title={currency(data.analytics.revenue)}>
+                      {currency(data.analytics.revenue)}
+                    </div>
                   </div>
                 </div>
               </div>

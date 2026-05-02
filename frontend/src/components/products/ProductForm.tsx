@@ -244,34 +244,34 @@ export default function ProductForm({ initial, onSuccess }: Props) {
     form.discountPrice != null ? form.discountPrice : form.price;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="flex flex-col lg:flex-row gap-6">
       {/* Form */}
       <form
         onSubmit={handleSubmit}
-        className="lg:col-span-2 rounded-xl border border-gray-200 bg-white p-6 space-y-6"
+        className="flex-1 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 space-y-8"
       >
         {/* Basic */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">
+          <h3 className="text-xl font-black uppercase tracking-widest text-foreground mb-4 border-b-[3px] border-border pb-2">
             Basic Information
           </h3>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-gray-700 mb-1">Title</label>
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">Title</label>
               <input
-                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:font-bold placeholder:uppercase placeholder:text-xs"
                 value={form.title}
                 onChange={onChange("title")}
                 required
-                placeholder="e.g., Wireless Noise-Cancelling Headphones"
+                placeholder="Product Title"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">
                 Category
               </label>
               <select
-                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
                 required
@@ -287,22 +287,22 @@ export default function ProductForm({ initial, onSuccess }: Props) {
               </select>
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">Price</label>
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">Price</label>
               <input
                 type="number"
                 min={0}
-                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground"
                 value={form.price ?? 0}
                 onChange={onChange("price")}
                 placeholder="0"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">Stock</label>
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">Stock</label>
               <input
                 type="number"
                 min={0}
-                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground"
                 value={form.stock ?? 0}
                 onChange={onChange("stock")}
                 placeholder="0"
@@ -313,34 +313,34 @@ export default function ProductForm({ initial, onSuccess }: Props) {
 
         {/* Advanced */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Advanced</h3>
+          <h3 className="text-xl font-black uppercase tracking-widest text-foreground mb-4 border-b-[3px] border-border pb-2">Advanced</h3>
           <div className="grid md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm text-gray-700 mb-1">SKU</label>
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">SKU</label>
               <input
-                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:uppercase placeholder:text-[10px]"
                 value={form.sku || ""}
                 onChange={onChange("sku")}
                 placeholder="SKU-12345"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">Brand</label>
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">Brand</label>
               <input
-                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:uppercase placeholder:text-[10px]"
                 value={form.brand || ""}
                 onChange={onChange("brand")}
                 placeholder="Brand name"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">
                 Discount Price
               </label>
               <input
                 type="number"
                 min={0}
-                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:uppercase placeholder:text-[10px]"
                 value={form.discountPrice ?? ""}
                 onChange={onChange("discountPrice")}
                 placeholder="Optional"
@@ -349,11 +349,11 @@ export default function ProductForm({ initial, onSuccess }: Props) {
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm text-gray-700 mb-1">
+            <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">
               Tags (comma separated)
             </label>
             <input
-              className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+              className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:uppercase placeholder:text-[10px]"
               value={form.tags || ""}
               onChange={onChange("tags")}
               placeholder="featured, limited, new"
@@ -361,52 +361,58 @@ export default function ProductForm({ initial, onSuccess }: Props) {
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm text-gray-700 mb-1">
+            <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">
               Description
             </label>
             <textarea
               rows={4}
-              className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+              className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:uppercase placeholder:font-bold placeholder:text-[10px]"
               value={form.description || ""}
               onChange={onChange("description")}
-              placeholder="Describe your product features and benefits..."
+              placeholder="Describe your product..."
             />
           </div>
         </div>
 
         {/* Attributes */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm text-gray-700">Attributes</label>
+          <div className="flex items-center justify-between mb-4 border-b-[3px] border-border pb-2">
+            <h3 className="text-xl font-black uppercase tracking-widest text-foreground m-0">Attributes</h3>
             <button
               type="button"
               onClick={addAttr}
-              className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+              className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-bold uppercase text-[10px]"
             >
               Add
             </button>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {attrs.map((a, i) => (
-              <div key={i} className="grid grid-cols-1 sm:grid-cols-6 gap-2">
-                <input
-                  placeholder="Key (e.g., Color)"
-                  value={a.key}
-                  onChange={(e) => setAttr(i, "key", e.target.value)}
-                  className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 sm:col-span-2"
-                />
-                <input
-                  placeholder="Value (e.g., Red)"
-                  value={a.value}
-                  onChange={(e) => setAttr(i, "value", e.target.value)}
-                  className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 sm:col-span-3"
-                />
-                <div className="sm:col-span-1 flex sm:justify-end">
+              <div key={i} className="flex flex-col sm:flex-row gap-3 items-end">
+                <div className="w-full sm:flex-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Key (e.g. Color)</label>
+                  <input
+                    placeholder="Key"
+                    value={a.key}
+                    onChange={(e) => setAttr(i, "key", e.target.value)}
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:uppercase placeholder:text-[10px]"
+                  />
+                </div>
+                <div className="w-full sm:flex-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Value (e.g. Red)</label>
+                  <input
+                    placeholder="Value"
+                    value={a.value}
+                    onChange={(e) => setAttr(i, "value", e.target.value)}
+                    className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:uppercase placeholder:text-[10px]"
+                  />
+                </div>
+                <div className="w-full sm:w-auto h-[46px] pt-1">
                   <button
                     type="button"
                     aria-label="Remove attribute"
                     onClick={() => removeAttr(i)}
-                    className="w-full sm:w-auto px-3 py-2 rounded bg-rose-600 text-white hover:bg-rose-500"
+                    className="w-full sm:w-12 h-full border-[3px] border-border bg-rose-600 text-white font-black hover:bg-rose-500 shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all flex items-center justify-center text-xl"
                   >
                     ×
                   </button>
@@ -418,25 +424,25 @@ export default function ProductForm({ initial, onSuccess }: Props) {
 
         {/* SEO */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">SEO</h3>
+          <h3 className="text-xl font-black uppercase tracking-widest text-foreground mb-4 border-b-[3px] border-border pb-2">SEO</h3>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">
                 SEO Title
               </label>
               <input
-                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:uppercase placeholder:text-[10px]"
                 value={form.seoTitle || ""}
                 onChange={onChange("seoTitle")}
                 placeholder="Custom meta title"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">
                 SEO Description
               </label>
               <input
-                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:uppercase placeholder:text-[10px]"
                 value={form.seoDescription || ""}
                 onChange={onChange("seoDescription")}
                 placeholder="Custom meta description"
@@ -447,56 +453,56 @@ export default function ProductForm({ initial, onSuccess }: Props) {
 
         {/* Shipping */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Shipping</h3>
+          <h3 className="text-xl font-black uppercase tracking-widest text-foreground mb-4 border-b-[3px] border-border pb-2">Shipping</h3>
           <div className="grid md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">
                 Weight (kg)
               </label>
               <input
                 type="number"
                 min={0}
                 step="0.01"
-                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:uppercase placeholder:text-[10px]"
                 value={form.shipWeight ?? ""}
                 onChange={onChange("shipWeight")}
                 placeholder="0.00"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">
                 Length (cm)
               </label>
               <input
                 type="number"
                 min={0}
-                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:uppercase placeholder:text-[10px]"
                 value={form.shipLength ?? ""}
                 onChange={onChange("shipLength")}
                 placeholder="0"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">
                 Width (cm)
               </label>
               <input
                 type="number"
                 min={0}
-                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:uppercase placeholder:text-[10px]"
                 value={form.shipWidth ?? ""}
                 onChange={onChange("shipWidth")}
                 placeholder="0"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">
                 Height (cm)
               </label>
               <input
                 type="number"
                 min={0}
-                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:uppercase placeholder:text-[10px]"
                 value={form.shipHeight ?? ""}
                 onChange={onChange("shipHeight")}
                 placeholder="0"
@@ -507,89 +513,92 @@ export default function ProductForm({ initial, onSuccess }: Props) {
 
         {/* Images */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Images</h3>
-          <label className="block text-sm text-gray-700 mb-2">
-            Upload Images
-          </label>
-          <input
-            type="file"
-            id="media-upload"
-            multiple
-            accept="image/*"
-            onChange={onFiles}
-            className="sr-only"
-          />
-          <label
-            htmlFor="media-upload"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
-          >
-            <svg
-              className="w-4 h-4 text-gray-500"
-              viewBox="0 0 20 20"
-              fill="currentColor"
+          <h3 className="text-xl font-black uppercase tracking-widest text-foreground mb-4 border-b-[3px] border-border pb-2">Images</h3>
+          <div className="flex gap-4">
+            <input
+              type="file"
+              id="media-upload"
+              multiple
+              accept="image/*"
+              onChange={onFiles}
+              className="sr-only"
+            />
+            <label
+              htmlFor="media-upload"
+              className="inline-flex items-center gap-2 px-6 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-bold uppercase text-xs cursor-pointer"
             >
-              <path d="M4 3a2 2 0 00-2 2v2h2V5h12v10H4v-2H2v2a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4z" />
-              <path d="M9 7v3H6l4 4 4-4h-3V7H9z" />
-            </svg>
-            Choose file
-          </label>
+              <svg
+                className="w-4 h-4 text-foreground"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M4 3a2 2 0 00-2 2v2h2V5h12v10H4v-2H2v2a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4z" />
+                <path d="M9 7v3H6l4 4 4-4h-3V7H9z" />
+              </svg>
+              Upload Images
+            </label>
+          </div>
 
           {newFileURLs.length > 0 && (
-            <div className="flex gap-3 flex-wrap mt-3">
-              {newFileURLs.map((url, i) => (
-                <div key={i} className="relative">
-                  <img
-                    src={url}
-                    alt={`new-${i}`}
-                    className="w-24 h-24 object-cover rounded border border-gray-200"
-                  />
-                  <button
-                    type="button"
-                    aria-label="Remove image"
-                    onClick={() => removeNewFile(i)}
-                    className="absolute -top-2 -right-2 bg-rose-600 text-white text-xs rounded-full w-6 h-6"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+            <div className="mt-4">
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">New Images</label>
+              <div className="flex gap-4 flex-wrap">
+                {newFileURLs.map((url, i) => (
+                  <div key={i} className="relative w-24 h-24 border-[3px] border-border shadow-[4px_4px_0px_#111] group">
+                    <img
+                      src={url}
+                      alt={`new-${i}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      aria-label="Remove image"
+                      onClick={() => removeNewFile(i)}
+                      className="absolute -top-3 -right-3 border-[3px] border-border bg-rose-600 text-white font-black text-xs rounded-none w-8 h-8 flex items-center justify-center shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
           {existingImages.length > 0 && (
-            <>
-              <label className="block text-sm text-gray-700 mt-4 mb-2">
+            <div className="mt-6 border-t-[3px] border-border pt-4">
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
                 Existing Images
               </label>
-              <div className="flex gap-3 flex-wrap">
+              <div className="flex gap-4 flex-wrap">
                 {existingImages.map((img, i) => (
-                  <img
-                    key={i}
-                    src={getImageUrl(img)}
-                    alt={img.alt || "Image"}
-                    className="w-24 h-24 object-cover rounded border border-gray-200"
-                    onError={(e) =>
-                      ((e.currentTarget as HTMLImageElement).src =
-                        "/fallback.png")
-                    }
-                  />
+                  <div key={i} className="w-24 h-24 border-[3px] border-border shadow-[4px_4px_0px_#111]">
+                    <img
+                      src={getImageUrl(img)}
+                      alt={img.alt || "Image"}
+                      className="w-full h-full object-cover"
+                      onError={(e) =>
+                        ((e.currentTarget as HTMLImageElement).src =
+                          "/fallback.png")
+                      }
+                    />
+                  </div>
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mt-2">
                 Note: Updating appends new images.
               </p>
-            </>
+            </div>
           )}
         </div>
 
         {/* Video */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">
+          <h3 className="text-xl font-black uppercase tracking-widest text-foreground mb-4 border-b-[3px] border-border pb-2">
             Video (optional)
           </h3>
-          <div className="grid md:grid-cols-2 gap-3">
+          <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">
                 Video URL
               </label>
               <input
@@ -597,15 +606,15 @@ export default function ProductForm({ initial, onSuccess }: Props) {
                 placeholder="https://... (Cloudinary/YouTube/mp4)"
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
-                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-muted-foreground placeholder:uppercase placeholder:text-[10px]"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mt-2">
                 Provide a direct mp4 URL or a Cloudinary URL. If you also upload
                 a file, the file will be used.
               </p>
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">
                 Upload Video
               </label>
               <input
@@ -617,32 +626,36 @@ export default function ProductForm({ initial, onSuccess }: Props) {
               />
               <label
                 htmlFor="video-upload"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+                className="inline-flex items-center gap-2 px-6 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-bold uppercase text-xs cursor-pointer w-fit"
               >
                 <svg
-                  className="w-4 h-4 text-gray-500"
+                  className="w-4 h-4 text-foreground"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
                   <path d="M4 3a2 2 0 00-2 2v2h2V5h12v10H4v-2H2v2a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4z" />
                   <path d="M9 7v3H6l4 4 4-4h-3V7H9z" />
                 </svg>
-                Choose file
+                Choose Video
               </label>
               {videoPreview ? (
-                <video
-                  src={videoPreview}
-                  className="mt-2 w-full max-w-xs rounded border border-gray-200"
-                  controls
-                  playsInline
-                />
+                <div className="mt-4 border-[3px] border-border shadow-[4px_4px_0px_#111] bg-muted w-full max-w-xs">
+                  <video
+                    src={videoPreview}
+                    className="w-full aspect-video"
+                    controls
+                    playsInline
+                  />
+                </div>
               ) : initial?.videoUrl ? (
-                <video
-                  src={initial.videoUrl}
-                  className="mt-2 w-full max-w-xs rounded border border-gray-200"
-                  controls
-                  playsInline
-                />
+                <div className="mt-4 border-[3px] border-border shadow-[4px_4px_0px_#111] bg-muted w-full max-w-xs">
+                  <video
+                    src={initial.videoUrl}
+                    className="w-full aspect-video"
+                    controls
+                    playsInline
+                  />
+                </div>
               ) : null}
             </div>
           </div>
@@ -651,7 +664,7 @@ export default function ProductForm({ initial, onSuccess }: Props) {
         <button
           type="submit"
           disabled={submitting}
-          className="px-5 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 disabled:opacity-50"
+          className="mt-8 px-8 py-3 w-full sm:w-auto border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest text-sm shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:-translate-y-0 disabled:hover:shadow-[4px_4px_0px_transparent]"
         >
           {submitting
             ? initial?._id
@@ -664,31 +677,37 @@ export default function ProductForm({ initial, onSuccess }: Props) {
       </form>
 
       {/* Live Preview */}
-      <aside className="rounded-xl border border-gray-200 bg-white p-4 h-fit space-y-3">
-        <div className="text-sm text-gray-600">Live Preview</div>
-        <div className="rounded-xl overflow-hidden border border-gray-200">
-          <img
-            src={previewImage}
-            alt="preview"
-            className="w-full h-40 object-cover"
-            onError={(e) =>
-              ((e.currentTarget as HTMLImageElement).src = "/fallback.png")
-            }
-          />
-          <div className="p-4 space-y-1">
-            <h3 className="font-semibold text-gray-900 truncate">
+      <aside className="w-full lg:w-80 h-fit bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col sm:flex-row lg:flex-col shrink-0">
+        <div className="bg-primary/10 border-b-[3px] sm:border-b-0 lg:border-b-[3px] sm:border-r-[3px] lg:border-r-0 border-border p-3 shrink-0">
+          <div className="text-[10px] font-black uppercase tracking-widest text-primary text-center">Live Preview</div>
+        </div>
+        <div className="flex-1">
+          <div className="border-b-[3px] border-border aspect-square bg-muted">
+            <img
+              src={previewImage}
+              alt="preview"
+              className="w-full h-full object-cover"
+              onError={(e) =>
+                ((e.currentTarget as HTMLImageElement).src = "/fallback.png")
+              }
+            />
+          </div>
+          <div className="p-4 flex flex-col h-full bg-card">
+            <h3 className="font-black uppercase tracking-widest text-foreground text-sm line-clamp-2 leading-tight mb-2">
               {form.title || "Product title"}
             </h3>
-            <p className="text-purple-700 font-bold">
-              {currency(Number(effectivePrice) || 0)}
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl font-black text-primary">
+                {currency(Number(effectivePrice) || 0)}
+              </span>
               {form.discountPrice != null && (
-                <span className="text-xs text-gray-500 ml-2 line-through">
+                <span className="text-xs font-bold text-muted-foreground line-through">
                   {currency(Number(form.price) || 0)}
                 </span>
               )}
-            </p>
-            <p className="text-xs text-gray-600 line-clamp-2">
-              {form.description || "Product description will appear here."}
+            </div>
+            <p className="text-[10px] font-bold tracking-widest text-muted-foreground line-clamp-3 uppercase leading-relaxed mt-auto">
+              {form.description || "Product description will appear here..."}
             </p>
           </div>
         </div>

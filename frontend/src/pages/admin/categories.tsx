@@ -52,32 +52,34 @@ function AdminCategoriesPage() {
   return (
     <ProtectedRoute roles={["admin"]}>
       <AdminLayout>
-        <h1 className="text-2xl font-semibold text-gray-900">Categories</h1>
+        <div className="flex items-center justify-between font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
+          <h1 className="text-3xl text-foreground">Categories</h1>
+        </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <section className="card p-4 space-y-3">
-            <h3 className="font-semibold text-gray-900">Create</h3>
-            <div className="flex gap-2">
+          <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 space-y-4">
+            <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Create</h3>
+            <div className="flex gap-3">
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="flex-1 bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="flex-1 bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                 placeholder="Category name"
               />
               <button
                 onClick={create}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500"
+                className="px-6 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1"
               >
                 Add
               </button>
             </div>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">
               Example: Electronics, Fashion, Home, Beauty
             </p>
           </section>
 
-          <section className="card p-4 space-y-3">
-            <h3 className="font-semibold text-gray-900">Bulk Import (JSON)</h3>
+          <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 space-y-4">
+            <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Bulk Import (JSON)</h3>
             <textarea
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
@@ -94,9 +96,11 @@ function AdminCategoriesPage() {
           </section>
         </div>
 
-        <section className="card p-4 mt-6">
-          <h3 className="font-semibold text-gray-900 mb-2">All Categories</h3>
-          <div className="overflow-x-auto">
+        <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] mt-8 overflow-hidden">
+          <div className="p-4 border-b-[3px] border-border bg-card">
+            <h3 className="text-xl font-black uppercase tracking-widest text-foreground">All Categories</h3>
+          </div>
+          <div className="overflow-x-auto p-4">
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="text-left text-gray-600">
@@ -114,11 +118,21 @@ function AdminCategoriesPage() {
                   >
                     <td className="py-2 px-2">{c.name}</td>
                     <td className="py-2 px-2">{c.slug}</td>
-                    <td className="py-2 px-2">{c.active ? "Yes" : "No"}</td>
+                    <td className="py-2 px-2">
+                      <span
+                        className={`px-2 py-0.5 border-[3px] border-border shadow-[2px_2px_0px_#111] text-xs font-black uppercase tracking-widest ${
+                          c.active
+                            ? "bg-emerald-400 text-emerald-950"
+                            : "bg-gray-200 text-gray-700"
+                        }`}
+                      >
+                        {c.active ? "Yes" : "No"}
+                      </span>
+                    </td>
                     <td className="py-2 px-2">
                       <button
                         onClick={() => toggleActive(c)}
-                        className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                        className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-xs"
                       >
                         {c.active ? "Disable" : "Enable"}
                       </button>

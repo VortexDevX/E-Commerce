@@ -144,7 +144,7 @@ export const getCart = async (req, res) => {
       discountedSubtotal: Math.max(0, subtotal - discount),
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -176,7 +176,7 @@ export const addToCart = async (req, res) => {
       subtotal,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -207,7 +207,7 @@ export const updateCartItem = async (req, res) => {
       subtotal,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -233,7 +233,7 @@ export const removeCartItem = async (req, res) => {
       subtotal,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -270,7 +270,7 @@ export const applyCoupon = async (req, res) => {
       discountedSubtotal: Math.max(0, subtotal - val.discount),
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -294,6 +294,7 @@ export const removeCoupon = async (req, res) => {
       discountedSubtotal: subtotal,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+

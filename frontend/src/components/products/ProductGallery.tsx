@@ -150,7 +150,7 @@ export default function ProductGallery({
     <div className="flex flex-col">
       {/* Main viewer */}
       <div
-        className={`relative w-full bg-white border rounded mb-5 overflow-hidden ${
+        className={`relative mb-5 w-full overflow-hidden border border-border bg-card shadow-card ${
           active.type === "image" ? "cursor-zoom-in" : ""
         }`}
         style={{ height: "min(70vh, 64vw)" }}
@@ -166,7 +166,7 @@ export default function ProductGallery({
           <img
             src={activeImageUrl}
             alt={title}
-            className="w-full h-full object-contain transition-transform duration-150 select-none"
+            className="h-full w-full select-none object-contain transition-transform duration-150"
             style={{
               transform:
                 scale > 1
@@ -184,7 +184,7 @@ export default function ProductGallery({
           videoInfo.kind === "file" ? (
             <video
               src={videoInfo.src}
-              className="w-full h-full object-contain bg-black"
+              className="h-full w-full bg-black object-contain"
               controls
               playsInline
             />
@@ -192,7 +192,7 @@ export default function ProductGallery({
             <iframe
               src={videoInfo.src}
               title="Product video"
-              className="w-full h-full bg-black"
+              className="h-full w-full bg-black"
               style={{ border: 0 }}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
@@ -213,8 +213,8 @@ export default function ProductGallery({
           <button
             type="button"
             onClick={() => setActive({ type: "video" })}
-            className={`relative w-20 h-20 flex-shrink-0 border rounded overflow-hidden snap-start ${
-              active.type === "video" ? "ring-2 ring-purple-500" : ""
+            className={`relative h-20 w-20 flex-shrink-0 snap-start overflow-hidden border border-border ${
+              active.type === "video" ? "ring-2 ring-primary" : ""
             } bg-black`}
             title="Video"
           >
@@ -234,9 +234,9 @@ export default function ProductGallery({
             key={i}
             src={img}
             alt={`${title} ${i + 1}`}
-            className={`w-20 h-20 flex-shrink-0 object-cover border rounded cursor-pointer snap-start ${
-              active.type === "image" && (active as any).index === i
-                ? "ring-2 ring-purple-500"
+            className={`h-20 w-20 flex-shrink-0 cursor-pointer snap-start border border-border object-cover ${
+              active.type === "image" && active.index === i
+                ? "ring-2 ring-primary"
                 : ""
             }`}
             onClick={() => setActive({ type: "image", index: i })}
@@ -253,7 +253,7 @@ export default function ProductGallery({
           open={lightboxOpen}
           close={() => setLightboxOpen(false)}
           slides={slides}
-          index={active.type === "image" ? (active as any).index : 0}
+          index={active.type === "image" ? active.index : 0}
           carousel={{ finite: false }}
           plugins={[ZoomPlugin, ThumbnailsPlugin]}
           render={{

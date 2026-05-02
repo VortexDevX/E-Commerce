@@ -214,12 +214,12 @@ export default function AdminCouponsPage() {
   return (
     <ProtectedRoute roles={["admin", "subadmin"]}>
       <AdminLayout>
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">Coupons</h1>
+        <div className="flex items-center justify-between font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
+          <h1 className="text-3xl text-foreground">Coupons</h1>
           <PermissionGate perm="coupons:write">
             <button
               onClick={startCreate}
-              className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-500"
+              className="px-6 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1"
             >
               + New Coupon
             </button>
@@ -227,17 +227,17 @@ export default function AdminCouponsPage() {
         </div>
 
         {!canRead ? (
-          <div className="card p-6 text-gray-700">
-            You don’t have access to Coupons.
+          <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">
+            You don&apos;t have access to Coupons.
           </div>
         ) : (
           <>
             {/* Editor (write only) */}
             {editorOpen && canWrite && (
-              <div className="card p-4 mb-6">
-                <div className="grid md:grid-cols-3 gap-3">
+              <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 mb-8">
+                <div className="grid md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm text-gray-700 mb-1">
+                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
                       Code
                     </label>
                     <input
@@ -250,7 +250,7 @@ export default function AdminCouponsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-700 mb-1">
+                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
                       Type
                     </label>
                     <select
@@ -265,7 +265,7 @@ export default function AdminCouponsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-700 mb-1">
+                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
                       Value
                     </label>
                     <input
@@ -278,13 +278,13 @@ export default function AdminCouponsPage() {
                           value: Number(e.target.value),
                         }))
                       }
-                      className="w-full bg-white border border-gray-300 rounded px-3 py-2"
+                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                       placeholder="10"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-700 mb-1">
+                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
                       Active
                     </label>
                     <select
@@ -295,7 +295,7 @@ export default function AdminCouponsPage() {
                           active: e.target.value === "true",
                         }))
                       }
-                      className="w-full bg-white border border-gray-300 rounded px-3 py-2"
+                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                     >
                       <option value="true">Active</option>
                       <option value="false">Inactive</option>
@@ -303,7 +303,7 @@ export default function AdminCouponsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-700 mb-1">
+                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
                       Min Order Value
                     </label>
                     <input
@@ -316,14 +316,14 @@ export default function AdminCouponsPage() {
                           minOrderValue: Number(e.target.value),
                         }))
                       }
-                      className="w-full bg-white border border-gray-300 rounded px-3 py-2"
+                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                       placeholder="0"
                     />
                   </div>
 
                   {form.type === "percent" && (
                     <div>
-                      <label className="block text-sm text-gray-700 mb-1">
+                      <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
                         Max Discount (cap)
                       </label>
                       <input
@@ -336,14 +336,14 @@ export default function AdminCouponsPage() {
                             maxDiscount: Number(e.target.value),
                           }))
                         }
-                        className="w-full bg-white border border-gray-300 rounded px-3 py-2"
+                        className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                         placeholder="Optional"
                       />
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm text-gray-700 mb-1">
+                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
                       Global Usage Limit
                     </label>
                     <input
@@ -356,13 +356,13 @@ export default function AdminCouponsPage() {
                           usageLimit: Number(e.target.value) || undefined,
                         }))
                       }
-                      className="w-full bg-white border border-gray-300 rounded px-3 py-2"
+                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                       placeholder="Optional"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-700 mb-1">
+                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
                       Per User Limit
                     </label>
                     <input
@@ -375,13 +375,13 @@ export default function AdminCouponsPage() {
                           perUserLimit: Number(e.target.value) || undefined,
                         }))
                       }
-                      className="w-full bg-white border border-gray-300 rounded px-3 py-2"
+                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                       placeholder="Optional"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-700 mb-1">
+                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
                       Starts At
                     </label>
                     <input
@@ -393,12 +393,12 @@ export default function AdminCouponsPage() {
                           startsAt: e.target.value || undefined,
                         }))
                       }
-                      className="w-full bg-white border border-gray-300 rounded px-3 py-2"
+                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-700 mb-1">
+                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
                       Expires At
                     </label>
                     <input
@@ -410,12 +410,12 @@ export default function AdminCouponsPage() {
                           expiresAt: e.target.value || undefined,
                         }))
                       }
-                      className="w-full bg-white border border-gray-300 rounded px-3 py-2"
+                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                     />
                   </div>
 
                   <div className="md:col-span-3">
-                    <label className="block text-sm text-gray-700 mb-1">
+                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
                       Description
                     </label>
                     <input
@@ -423,14 +423,14 @@ export default function AdminCouponsPage() {
                       onChange={(e) =>
                         setForm((f) => ({ ...f, description: e.target.value }))
                       }
-                      className="w-full bg-white border border-gray-300 rounded px-3 py-2"
+                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                       placeholder="Optional, shown in admin only"
                     />
                   </div>
 
                   {/* Scope: categories */}
                   <div className="md:col-span-3">
-                    <label className="block text-sm text-gray-700 mb-2">
+                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-4">
                       Allowed Categories (apply to matching items)
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -441,7 +441,9 @@ export default function AdminCouponsPage() {
                         return (
                           <label
                             key={c._id}
-                            className="inline-flex items-center gap-2 text-sm border border-gray-300 rounded px-2 py-1 bg-white"
+                            className={`inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest border-[3px] border-border px-3 py-1.5 cursor-pointer transition-all ${
+                              checked ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111]" : "bg-card text-foreground hover:shadow-[2px_2px_0px_#111]"
+                            }`}
                           >
                             <input
                               type="checkbox"
@@ -472,7 +474,7 @@ export default function AdminCouponsPage() {
 
                   {/* Scope: brands */}
                   <div className="md:col-span-3">
-                    <label className="block text-sm text-gray-700 mb-1">
+                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
                       Allowed Brands (comma-separated)
                     </label>
                     <input
@@ -499,16 +501,16 @@ export default function AdminCouponsPage() {
                   </div>
                 </div>
 
-                <div className="mt-3 flex gap-2">
+                <div className="mt-8 flex gap-3">
                   <button
                     onClick={save}
-                    className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-500"
+                    className="px-6 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1"
                   >
                     {editing ? "Update" : "Create"}
                   </button>
                   <button
                     onClick={cancelEdit}
-                    className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                    className="px-6 py-2 border-[3px] border-border bg-card text-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1"
                   >
                     Cancel
                   </button>
@@ -517,7 +519,7 @@ export default function AdminCouponsPage() {
             )}
 
             {/* Table */}
-            <div className="card overflow-x-auto">
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="text-left text-gray-600">
@@ -570,10 +572,10 @@ export default function AdminCouponsPage() {
                         </td>
                         <td className="px-4 py-3">
                           <span
-                            className={`px-2 py-0.5 rounded text-xs ${
+                            className={`px-2 py-0.5 border-[3px] border-border shadow-[2px_2px_0px_#111] text-xs font-black uppercase tracking-widest ${
                               c.active
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-gray-100 text-gray-700"
+                                ? "bg-emerald-400 text-emerald-950"
+                                : "bg-gray-200 text-gray-700"
                             }`}
                           >
                             {c.active ? "Active" : "Inactive"}
@@ -610,22 +612,22 @@ export default function AdminCouponsPage() {
 
                         {canWrite && (
                           <td className="px-4 py-3 text-right">
-                            <div className="inline-flex gap-2">
+                            <div className="inline-flex gap-2 flex-wrap justify-end">
                               <button
                                 onClick={() => startEdit(c)}
-                                className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                                className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-xs"
                               >
                                 Edit
                               </button>
                               <button
                                 onClick={() => toggleActive(c)}
-                                className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                                className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-xs"
                               >
                                 {c.active ? "Disable" : "Enable"}
                               </button>
                               <button
                                 onClick={() => del(c)}
-                                className="px-3 py-1.5 rounded bg-rose-600 text-white hover:bg-rose-500"
+                                className="px-3 py-1.5 border-[3px] border-rose-600 bg-rose-600 shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-white font-bold uppercase text-xs"
                               >
                                 Delete
                               </button>

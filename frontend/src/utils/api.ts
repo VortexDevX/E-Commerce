@@ -24,16 +24,7 @@ api.interceptors.request.use((config) => {
   startProgress();
 
   const stateUser = store.getState().auth.user as { accessToken?: string } | null;
-  const token =
-    stateUser?.accessToken ||
-    (() => {
-      try {
-        const raw = localStorage.getItem("user");
-        return raw ? JSON.parse(raw)?.accessToken : undefined;
-      } catch {
-        return undefined;
-      }
-    })();
+  const token = stateUser?.accessToken;
 
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;

@@ -29,7 +29,7 @@ import RecentlyViewed from "../../components/products/RecentlyViewed";
 import { trackProductView } from "../../utils/analytics";
 
 function Chip({ children }: { children: React.ReactNode }) {
-  return <span className="badge badge-muted border">{children}</span>;
+  return <span className="tag-chip">{children}</span>;
 }
 
 export default function ProductDetails() {
@@ -100,9 +100,9 @@ export default function ProductDetails() {
     setAdding(true);
     try {
       await dispatch(addToCart({ productId: p._id, qty: 1 })).unwrap();
-      toast.success(`${p.title} added to cart!`);
+      toast.success("Added to cart");
     } catch {
-      toast.error("Failed to add to cart");
+      toast.error("Could not add this item to your cart");
     } finally {
       setTimeout(() => setAdding(false), 600);
     }
@@ -112,10 +112,10 @@ export default function ProductDetails() {
     if (!p) return;
     if (isWishlisted) {
       await dispatch(removeFromWishlist(p._id));
-      toast.success("Removed from wishlist");
+      toast.success("Removed from saved items");
     } else {
       await dispatch(addToWishlist(p._id));
-      toast.success("Added to wishlist");
+      toast.success("Saved for later");
     }
   };
 
@@ -150,7 +150,7 @@ export default function ProductDetails() {
   // update submitReview
   const submitReview = async () => {
     if (!reviewText.trim()) {
-      toast.error("Please write something.");
+      toast.error("Write a short review before you submit.");
       return;
     }
     try {
@@ -165,7 +165,7 @@ export default function ProductDetails() {
         fd.append("videoUrl", reviewVideoUrl.trim());
       }
       await dispatch(addReview(fd)).unwrap();
-      toast.success("Review added!");
+      toast.success("Review submitted");
 
       // reset form
       setReviewText("");
@@ -177,12 +177,50 @@ export default function ProductDetails() {
       const updated = await dispatch(fetchReviews(p._id)).unwrap();
       setReviews(updated);
     } catch (e: any) {
-      toast.error(e || "Failed to add review");
+      toast.error(e || "We could not submit your review");
     }
   };
 
   const allImages = p.images?.map(getImageUrl) || [];
   const activeIndex = Math.max(0, allImages.indexOf(activeImage || ""));
+
+  const attributeMap = new Map<string, string>();
+  (p.attributes || []).forEach((a: any) => {
+    const key = String(a?.key || "")
+      .trim()
+      .toLowerCase();
+    const value = String(a?.value || "").trim();
+    if (key && value && !attributeMap.has(key)) attributeMap.set(key, value);
+  });
+
+  const pickSpec = (aliases: string[], fallback = "—") => {
+    for (const alias of aliases) {
+      const v = attributeMap.get(alias.toLowerCase());
+      if (v) return v;
+    }
+    return fallback;
+  };
+
+  const specs = [
+    { label: "Size", value: pickSpec(["size", "dimensions", "dimension"]) },
+    { label: "Color", value: pickSpec(["color", "colour"]) },
+    {
+      label: "Quantity",
+      value:
+        typeof p.stock === "number" ? `${p.stock} in stock` : pickSpec(["qty", "quantity"]),
+    },
+    { label: "Quality", value: pickSpec(["quality", "material", "grade"]) },
+    {
+      label: "Tech Spec",
+      value: pickSpec([
+        "tech spec",
+        "tech specs",
+        "technical specification",
+        "technical specs",
+        "specs",
+      ]),
+    },
+  ];
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const { left, top, width, height } =
@@ -193,13 +231,13 @@ export default function ProductDetails() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start overflow-x-clip">
+    <div className="page-shell grid grid-cols-1 items-start gap-8 overflow-x-clip md:grid-cols-2 md:gap-12">
       {/* Left: Gallery */}
       <ProductGallery title={p.title} images={p.images} videoUrl={p.videoUrl} />
 
       {/* Right: Details */}
-      <div className="flex flex-col">
-        <h1 className="text-2xl md:text-3xl font-semibold text-gray-900">
+      <div className="flex flex-col border border-border bg-card p-5 shadow-card md:p-7">
+        <h1 className="display-font text-4xl font-semibold leading-tight text-foreground md:text-5xl">
           {p.title}
         </h1>
 
@@ -211,16 +249,34 @@ export default function ProductDetails() {
           {p.tags && p.tags.length > 5 && <Chip>+{p.tags.length - 5}</Chip>}
         </div>
 
-        <p className="text-xl md:text-2xl mt-3 text-purple-700 font-semibold">
+        <p className="mt-4 text-2xl font-semibold text-primary md:text-3xl">
           {currency(p.price)}
         </p>
 
-        <p className="text-gray-700 mt-4 leading-relaxed">{p.description}</p>
+        <p className="mt-4 leading-7 text-muted-foreground">{p.description}</p>
+
+        <div className="mt-4 grid gap-2 sm:grid-cols-3">
+          <div className="border border-border bg-secondary px-3 py-3 text-sm text-foreground">
+            {typeof p.stock === "number" && p.stock > 0
+              ? p.stock <= 5
+                ? `Only ${p.stock} left`
+                : "In stock now"
+              : "Check availability"}
+          </div>
+          <div className="border border-border bg-secondary px-3 py-3 text-sm text-foreground">
+            {typeof p.avgRating === "number"
+              ? `${p.avgRating.toFixed(1)} average rating`
+              : "Reviews available after purchase"}
+          </div>
+          <div className="border border-border bg-secondary px-3 py-3 text-sm text-foreground">
+            Standard delivery available at checkout
+          </div>
+        </div>
 
         {p.attributes?.length ? (
           <div className="mt-4">
-            <h3 className="font-semibold text-gray-900">Attributes</h3>
-            <ul className="list-disc ml-6 text-sm text-gray-700">
+            <h3 className="font-semibold text-foreground">What to know</h3>
+            <ul className="ml-6 list-disc text-sm text-muted-foreground">
               {p.attributes.map((a: any, i: number) => (
                 <li key={i}>
                   {a.key}: {a.value}
@@ -230,44 +286,63 @@ export default function ProductDetails() {
           </div>
         ) : null}
 
+        <div className="mt-5 border border-border bg-secondary p-4">
+          <h3 className="mb-3 text-sm font-semibold text-foreground">
+            Specifications
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {specs.map((spec) => (
+              <div
+                key={spec.label}
+                className="border border-border bg-card px-3 py-2"
+              >
+                <p className="text-[11px] font-semibold text-muted-foreground">
+                  {spec.label}
+                </p>
+                <p className="mt-1 text-sm font-medium text-foreground">
+                  {spec.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-2 mt-6">
           <button
             onClick={add}
             disabled={adding}
-            className={`px-6 py-3 text-white text-base rounded-md shadow ${
-              adding
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-purple-600 hover:bg-purple-500"
+            className={`btn-primary shadow-none ${
+              adding ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
-            {adding ? "Adding..." : "Add to cart"}
+            {adding ? "Adding to cart..." : "Add to cart"}
           </button>
           <button
             onClick={toggleWishlist}
-            className={`px-5 py-2.5 rounded-md font-medium border ${
+            className={`btn shadow-none ${
               isWishlisted
-                ? "bg-rose-600 border-rose-500 text-white hover:bg-rose-500"
-                : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                ? "bg-foreground text-background border-foreground"
+                : ""
             }`}
           >
             <HeartIcon
               className={`w-5 h-5 inline-block mr-2 ${
-                isWishlisted ? "text-white" : "text-purple-600"
+                isWishlisted ? "text-white" : "text-sky-700"
               }`}
             />
-            {isWishlisted ? "Wishlisted" : "Add to Wishlist"}
+            {isWishlisted ? "Saved" : "Save for later"}
           </button>
         </div>
       </div>
 
       {/* Reviews */}
       <div className="md:col-span-2 mt-10">
-        <h2 className="text-lg md:text-xl font-semibold mb-4 text-gray-900">
-          Customer Reviews
+        <h2 className="display-font mb-4 text-4xl font-semibold text-foreground">
+          Customer reviews
         </h2>
 
         {reviews.length === 0 ? (
-          <p className="text-gray-600 italic">No reviews yet. Be the first!</p>
+          <p className="text-muted-foreground italic">No reviews yet. Buy this item and share what you liked.</p>
         ) : (
           <ul className="space-y-3">
             {reviews.map((r, i) => (
@@ -287,13 +362,13 @@ export default function ProductDetails() {
                       >
                         <path d="M9 16.17l-3.88-3.88L4 13.41l5 5 12-12-1.41-1.41z" />
                       </svg>
-                      Verified
+                      Verified buyer
                     </span>
                   )}
                 </div>
-                <p className="text-gray-900">{r.comment || (r as any).text}</p>
-                <span className="text-sm text-gray-500 block mt-1">
-                  — {r.user?.name || "Anon"}
+                <p className="text-foreground">{r.comment || (r as any).text}</p>
+                <span className="mt-1 block text-sm text-muted-foreground">
+                  — {r.user?.name || "Customer"}
                 </span>
 
                 {/* Media render */}
@@ -315,7 +390,7 @@ export default function ProductDetails() {
                                 key={idx}
                                 src={src}
                                 alt={img.alt || `review-img-${idx}`}
-                                className="w-20 h-20 rounded border border-gray-200 object-cover cursor-zoom-in"
+                                className="h-20 w-20 cursor-zoom-in border border-border object-cover"
                                 onClick={() => {
                                   setRvSlides(
                                     (r.media?.images || []).map(
@@ -349,7 +424,7 @@ export default function ProductDetails() {
                           return info.kind === "file" ? (
                             <video
                               src={info.src}
-                              className="w-full max-w-sm rounded border border-gray-200"
+                              className="w-full max-w-sm border border-border"
                               controls
                               playsInline
                             />
@@ -357,7 +432,7 @@ export default function ProductDetails() {
                             <iframe
                               src={info.src}
                               title="Review video"
-                              className="w-full max-w-sm rounded border border-gray-200"
+                              className="w-full max-w-sm border border-border"
                               style={{ border: 0, aspectRatio: "16 / 9" }}
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                               allowFullScreen
@@ -379,27 +454,27 @@ export default function ProductDetails() {
             <select
               value={reviewRating}
               onChange={(e) => setReviewRating(Number(e.target.value))}
-              className="bg-white border border-gray-300 text-gray-900 rounded-md px-2 py-2"
+              className="bg-card px-3 py-2 font-semibold text-foreground focus:border-primary focus:outline-none"
             >
               {[5, 4, 3, 2, 1].map((r) => (
                 <option key={r} value={r}>
-                  {r} ★
+                  {r} stars
                 </option>
               ))}
             </select>
             <input
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
-              placeholder="Write a review..."
-              className="flex-1 bg-white border border-gray-300 text-gray-900 px-3 py-2 rounded-md w-full"
+              placeholder="Share what helped you decide to buy"
+              className="w-full flex-1 bg-card px-4 py-2 text-foreground focus:border-primary focus:outline-none"
             />
           </div>
 
           {/* Media pickers */}
           <div className="mt-3 grid md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
-                Add images (max 3)
+              <label className="mb-1 block text-sm text-muted-foreground">
+                Add up to 3 photos
               </label>
               <input
                 type="file"
@@ -414,22 +489,22 @@ export default function ProductDetails() {
                       key={idx}
                       src={src}
                       alt={`preview-${idx}`}
-                      className="w-16 h-16 rounded border border-gray-200 object-cover"
+                      className="h-16 w-16 border border-border object-cover"
                     />
                   ))}
                 </div>
               )}
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
-                Add video (optional)
+              <label className="mb-1 block text-sm text-muted-foreground">
+                Add a short video
               </label>
               <input
                 type="file"
                 accept="video/mp4,video/webm"
                 onChange={onPickVideo}
               />
-              <p className="text-xs text-gray-500 mt-1">Or paste a video URL</p>
+              <p className="mt-1 text-xs text-muted-foreground">Or paste a video link</p>
               <input
                 type="url"
                 value={reviewVideoUrl}
@@ -438,7 +513,7 @@ export default function ProductDetails() {
                   if (e.target.value) setReviewVideo(null);
                 }}
                 placeholder="https://..."
-                className="mt-1 w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900"
+                className="mt-2 w-full bg-card px-4 py-2 text-foreground focus:border-primary focus:outline-none"
               />
             </div>
           </div>
@@ -446,9 +521,9 @@ export default function ProductDetails() {
           <div className="mt-3">
             <button
               onClick={submitReview}
-              className="px-5 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-500"
+              className="btn-primary"
             >
-              Submit
+              Submit review
             </button>
           </div>
         </div>

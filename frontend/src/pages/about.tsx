@@ -12,54 +12,79 @@ export default function AboutPage() {
         />
       </Head>
 
-      <div className="max-w-3xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-gray-900">About Luxora</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Built for a modern shopping experience
-        </p>
-
-        <div className="mt-6 space-y-6 text-gray-800">
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900">Our Mission</h2>
-            <p className="mt-2">
-              To make high‑quality online shopping fast, reliable, and enjoyable
-              — from discovery to doorstep.
+      <div className="mx-auto max-w-4xl px-6 py-16">
+        <div className="surface-card p-8 md:p-12">
+          <div className="border-b border-border pb-6 mb-8 text-center md:text-left">
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground">
+              About Luxora
+            </h1>
+            <p className="mt-4 text-base text-muted-foreground">
+              Verified products, clear pricing, and delivery updates from checkout to doorstep.
             </p>
-          </section>
+          </div>
 
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900">
-              What We Offer
-            </h2>
-            <ul className="list-disc pl-6 mt-2 space-y-1">
-              <li>Curated products and honest pricing</li>
-              <li>Fast checkout and secure account management</li>
-              <li>
-                Helpful features like wishlists, reviews, and price alerts
-              </li>
-              <li>Transparent policies and responsive support</li>
-            </ul>
-          </section>
+          <div className="space-y-10 text-foreground">
+            <section className="rounded-xl border border-primary/40 bg-primary/10 p-6">
+              <h2 className="mb-4 text-2xl font-bold text-foreground">
+                What we do
+              </h2>
+              <p className="text-base leading-7 text-muted-foreground">
+                Luxora helps shoppers compare products, buy with confidence, and track orders without extra steps.
+              </p>
+            </section>
 
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900">Our Values</h2>
-            <ul className="list-disc pl-6 mt-2 space-y-1">
-              <li>Trust and transparency</li>
-              <li>Customer‑first design</li>
-              <li>Performance and reliability</li>
-            </ul>
-          </section>
+            <section className="grid md:grid-cols-2 gap-8">
+              <div className="card p-6">
+                <h2 className="mb-4 border-b border-border pb-4 text-2xl font-bold text-foreground">
+                  For shoppers
+                </h2>
+                <ul className="space-y-4 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary" />
+                    Find in-stock products with clear prices and seller details.
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary" />
+                    Save items, review ratings, and checkout securely.
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary" />
+                    Get order updates and delivery information after purchase.
+                  </li>
+                </ul>
+              </div>
 
-          <section className="text-gray-700">
-            Have questions?{" "}
-            <Link
-              href="/contact"
-              className="text-purple-700 hover:text-purple-600 font-medium underline"
-            >
-              Contact our team
-            </Link>
-            .
-          </section>
+              <div className="card p-6">
+                <h2 className="mb-4 border-b border-border pb-4 text-2xl font-bold text-foreground">
+                  For sellers
+                </h2>
+                <ul className="space-y-4 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-warning" />
+                    List products, manage inventory, and process orders from one dashboard.
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-warning" />
+                    Track sales, customer messages, and fulfillment status.
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-warning" />
+                    Build trust with accurate stock, reviews, and support.
+                  </li>
+                </ul>
+              </div>
+            </section>
+
+            <section className="border-t border-border pt-8 text-center text-sm">
+              <p className="mb-4 text-muted-foreground">Need help with an order or seller account?</p>
+              <Link
+                href="/contact"
+                className="btn-primary inline-block px-8 py-3"
+              >
+                Contact support
+              </Link>
+            </section>
+          </div>
         </div>
       </div>
     </>

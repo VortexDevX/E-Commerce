@@ -85,7 +85,7 @@ export const registerUser = async (req, res) => {
 
     res.status(201).json({ accessToken, user: sanitizeUser(user) });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -124,7 +124,7 @@ export const loginUser = async (req, res) => {
 
     res.json({ accessToken, user: sanitizeUser(user) });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -272,7 +272,7 @@ export const restartAdmin2FA = async (req, res) => {
       return res.json({ twoFAEnrollRequired: true, challenge });
     }
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -378,7 +378,7 @@ export const forgotPassword = async (req, res) => {
     await sendPasswordResetEmail(user, rawToken);
     res.json({ message: "Password reset email sent" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -463,7 +463,7 @@ export const resetPassword = async (req, res) => {
 
     res.json({ message: "Password reset successful" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -495,3 +495,4 @@ export const me = async (req, res) => {
   res.set("Expires", "0");
   res.json(req.user);
 };
+

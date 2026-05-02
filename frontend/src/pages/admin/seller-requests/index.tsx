@@ -35,17 +35,17 @@ function AdminSellerRequestsPage() {
   return (
     <ProtectedRoute roles={["admin"]}>
       <AdminLayout>
-        <h1 className="text-2xl font-semibold text-gray-900">
-          Seller Applications
-        </h1>
-        <div className="card overflow-x-auto mt-4">
+        <div className="flex items-center justify-between font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
+          <h1 className="text-3xl text-foreground">Seller Applications</h1>
+        </div>
+        <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] overflow-x-auto mt-4 mb-8">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-600">
-                <th className="px-4 py-3">Applicant</th>
-                <th className="px-4 py-3">Business</th>
-                <th className="px-4 py-3">Submitted</th>
-                <th className="px-4 py-3">Action</th>
+              <tr className="text-left bg-primary/5 text-foreground border-b-[3px] border-border">
+                <th className="px-4 py-4 font-black uppercase tracking-widest">Applicant</th>
+                <th className="px-4 py-4 font-black uppercase tracking-widest">Business</th>
+                <th className="px-4 py-4 font-black uppercase tracking-widest">Submitted</th>
+                <th className="px-4 py-4 font-black uppercase tracking-widest">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -57,7 +57,7 @@ function AdminSellerRequestsPage() {
                 </tr>
               ) : list.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6 text-gray-600" colSpan={4}>
+                  <td className="px-4 py-6 text-foreground font-bold uppercase" colSpan={4}>
                     No pending applications.
                   </td>
                 </tr>
@@ -65,24 +65,24 @@ function AdminSellerRequestsPage() {
                 list.map((u) => (
                   <tr
                     key={u._id}
-                    className="border-t border-gray-200 text-gray-900"
+                    className="border-b-[3px] border-border/50 text-foreground font-bold hover:bg-muted/50 transition-colors"
                   >
-                    <td className="px-4 py-3">
-                      <div>{u.name}</div>
-                      <div className="text-xs text-gray-500">{u.email}</div>
+                    <td className="px-4 py-4">
+                      <div className="font-black uppercase tracking-widest">{u.name}</div>
+                      <div className="text-xs text-muted-foreground">{u.email}</div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-4 font-bold uppercase tracking-widest">
                       {u.sellerApplication?.businessName || "-"}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-4 font-bold uppercase tracking-widest">
                       {u.sellerApplication?.submittedAt
                         ? shortDate(u.sellerApplication.submittedAt)
                         : "-"}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-4">
                       <Link
                         href={`/admin/seller-requests/${u._id}`}
-                        className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                        className="px-4 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all font-black uppercase text-xs flex items-center w-fit text-foreground"
                       >
                         Review
                       </Link>

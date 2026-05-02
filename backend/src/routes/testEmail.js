@@ -1,8 +1,12 @@
 // routes/testEmail.js
 import express from "express";
 import { sendEmail } from "../services/email/emailService.js";
+import { protect, authorizeRoles } from "../middleware/authMiddleware.js";
+import { requireAdminMFA } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
+
+router.use(protect, authorizeRoles("admin", "subadmin"), requireAdminMFA);
 
 router.post("/send-test", async (req, res) => {
   try {
@@ -15,7 +19,7 @@ router.post("/send-test", async (req, res) => {
     });
     res.json({ success: true, message: `Test email sent to ${recipient}` });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: "Failed to send test email" });
   }
 });
 export default router;

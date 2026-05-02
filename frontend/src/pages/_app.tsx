@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import "../styles/globals.css";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "next-themes";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import api from "../utils/api";
@@ -19,6 +20,19 @@ import { fetchWishlist } from "../store/slices/wishlistSlice";
 import Router from "next/router";
 import NProgress from "nprogress";
 import GlobalRouteGuard from "../components/layout/GlobalRouteGuard";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-body",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "600", "700"],
+  variable: "--font-display",
+});
 
 // Client-only wrapper (prevents SSR mismatch)
 function ClientOnly({ children }: { children: React.ReactNode }) {
@@ -50,32 +64,6 @@ function RouteProgress() {
   return null;
 }
 
-function InitAuth() {
-  const dispatch = useDispatch<AppDispatch>();
-  useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) {
-      try {
-        dispatch(loginSuccess(JSON.parse(stored)));
-      } catch {
-        localStorage.removeItem("user");
-      }
-    }
-  }, [dispatch]);
-  return null;
-}
-
-function InitHydrateOnce() {
-  const dispatch = useDispatch<AppDispatch>();
-  const doneRef = useRef(false);
-  useEffect(() => {
-    if (doneRef.current) return;
-    doneRef.current = true;
-    dispatch(fetchMe());
-  }, [dispatch]);
-  return null;
-}
-
 function decodeExp(token?: string): number | null {
   if (!token) return null;
   try {
@@ -86,10 +74,32 @@ function decodeExp(token?: string): number | null {
   }
 }
 
-function InitAutoRefresh() {
+function AppInitializer() {
   const dispatch = useDispatch<AppDispatch>();
+  const doneRef = useRef(false);
   const token = useSelector((s: RootState) => s.auth.user?.accessToken);
+  const userId = useSelector((s: RootState) => s.auth.user?._id);
 
+  // 1. Restore Auth from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      try {
+        dispatch(loginSuccess(JSON.parse(stored)));
+      } catch {
+        localStorage.removeItem("user");
+      }
+    }
+  }, [dispatch]);
+
+  // 2. Fetch Me (Hydrate Once)
+  useEffect(() => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    dispatch(fetchMe());
+  }, [dispatch]);
+
+  // 3. Auto Refresh Token
   useEffect(() => {
     if (!token) return;
     const exp = decodeExp(token);
@@ -108,123 +118,26 @@ function InitAutoRefresh() {
     return () => clearTimeout(t);
   }, [token, dispatch]);
 
-  return null;
-}
-
-function InitCart() {
-  const dispatch = useDispatch<AppDispatch>();
-  const userId = useSelector((s: RootState) => s.auth.user?._id);
+  // 4. Fetch Cart & Wishlist
   useEffect(() => {
-    if (userId) dispatch(fetchCart());
-  }, [userId, dispatch]);
-  return null;
-}
-
-function InitWishlist() {
-  const dispatch = useDispatch<AppDispatch>();
-  const userId = useSelector((s: RootState) => s.auth.user?._id);
-  useEffect(() => {
-    if (userId) dispatch(fetchWishlist());
-  }, [userId, dispatch]);
-  return null;
-}
-
-// PWA: register SW and show install prompt
-function PWARegister() {
-  const [installEvent, setInstallEvent] = useState<any>(null);
-  const [showPrompt, setShowPrompt] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    if ("serviceWorker" in navigator) {
-      if (process.env.NODE_ENV === "production") {
-        navigator.serviceWorker.register("/sw.js").catch(() => {});
-      } else {
-        // In dev, ensure no SW is controlling the page (prevents HMR loops)
-        navigator.serviceWorker
-          .getRegistrations?.()
-          .then((regs) => regs.forEach((r) => r.unregister()))
-          .catch(() => {});
-      }
+    if (userId) {
+      dispatch(fetchCart());
+      dispatch(fetchWishlist());
     }
+  }, [userId, dispatch]);
 
-    const onBeforeInstall = (e: any) => {
-      e.preventDefault();
-      setInstallEvent(e);
-      setShowPrompt(true);
-    };
-    const onInstalled = () => {
-      setInstallEvent(null);
-      setShowPrompt(false);
-    };
-
-    window.addEventListener("beforeinstallprompt", onBeforeInstall);
-    window.addEventListener("appinstalled", onInstalled);
-    return () => {
-      window.removeEventListener("beforeinstallprompt", onBeforeInstall);
-      window.removeEventListener("appinstalled", onInstalled);
-    };
-  }, []);
-
-  const triggerInstall = async () => {
-    if (!installEvent) return;
-    try {
-      installEvent.prompt();
-      await installEvent.userChoice;
-    } finally {
-      setInstallEvent(null);
-      setShowPrompt(false);
-    }
-  };
-
-  if (!showPrompt) return null;
-
-  return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <div className="rounded-lg shadow-lg border border-gray-200 bg-white text-gray-900 p-3 flex items-center gap-3">
-        <img
-          src="/ecommerce-favicon.ico"
-          alt="App icon"
-          className="w-6 h-6 rounded"
-          onError={(e) =>
-            ((e.currentTarget as HTMLImageElement).style.display = "none")
-          }
-        />
-        <div className="text-sm">
-          <div className="font-medium">Install Luxora</div>
-          <div className="text-gray-600">Add to your home screen</div>
-        </div>
-        <button
-          onClick={triggerInstall}
-          className="ml-2 px-3 py-1.5 rounded-md bg-purple-600 text-white text-sm hover:bg-purple-500"
-        >
-          Install
-        </button>
-        <button
-          onClick={() => setShowPrompt(false)}
-          className="ml-1 px-3 py-1.5 rounded-md bg-gray-100 text-gray-700 text-sm hover:bg-gray-200"
-        >
-          Not now
-        </button>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <Provider store={store}>
-      <ThemeProvider attribute="class" defaultTheme="light">
-        <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light">
+        <div className={`${manrope.variable} ${cormorant.variable} ${manrope.className} flex min-h-screen flex-col bg-background text-foreground`}>
           <ClientOnly>
             <RouteProgress />
           </ClientOnly>
-          <InitAuth />
-          <InitHydrateOnce />
-          <InitAutoRefresh />
-          <InitCart />
-          <InitWishlist />
+          <AppInitializer />
 
           <ClientOnly>
             <Header />
@@ -235,17 +148,36 @@ export default function MyApp({ Component, pageProps }: AppProps) {
               <Component {...pageProps} />
             </GlobalRouteGuard>
             <ClientOnly>
-              <Toaster position="top-right" toastOptions={{ duration: 2000 }} />
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 2400,
+                  style: {
+                    background: "#fffaf1",
+                    color: "#141b2a",
+                    border: "1px solid #d3c8b5",
+                    borderRadius: "8px",
+                    boxShadow: "0 18px 50px rgba(26,31,44,0.14)",
+                  },
+                  success: {
+                    iconTheme: {
+                      primary: "#297f58",
+                      secondary: "#fffaf1",
+                    },
+                  },
+                  error: {
+                    iconTheme: {
+                      primary: "#cc1a39",
+                      secondary: "#fffaf1",
+                    },
+                  },
+                }}
+              />
             </ClientOnly>
           </main>
 
           <ClientOnly>
             <Footer />
-          </ClientOnly>
-
-          {/* PWA registration + install prompt */}
-          <ClientOnly>
-            <PWARegister />
           </ClientOnly>
         </div>
       </ThemeProvider>

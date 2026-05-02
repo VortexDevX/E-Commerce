@@ -11,10 +11,6 @@ export const addReview = async (req, res) => {
     const comment =
       typeof req.body.comment === "string" ? req.body.comment : "";
 
-    console.log("[review] content-type:", req.headers["content-type"]);
-    console.log("[review] body.videoUrl:", req.body?.videoUrl);
-    console.log("[review] files keys:", Object.keys(req.files || {}));
-
     if (!productId || !rating) {
       return res
         .status(400)
@@ -124,7 +120,7 @@ export const addReview = async (req, res) => {
 
     res.status(201).json(review);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -138,6 +134,7 @@ export const getProductReviews = async (req, res) => {
       .sort({ createdAt: -1 });
     res.json(reviews);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+

@@ -78,7 +78,7 @@ export const getActiveBanner = async (req, res) => {
 
     res.json({ banner: banner || null });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -115,7 +115,7 @@ export const recordImpression = async (req, res) => {
 
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -152,7 +152,7 @@ export const recordClick = async (req, res) => {
 
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -164,7 +164,7 @@ export const listBanners = async (req, res) => {
     const items = await Banner.find(q).sort({ updatedAt: -1 }).lean();
     res.json(items);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -328,3 +328,4 @@ export const deleteBanner = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+

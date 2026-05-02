@@ -33,7 +33,7 @@ const STATUSES: AdminOrder["status"][] = [
 function Pill({ text, color }: { text: string; color: string }) {
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${color}`}
+      className={`inline-flex items-center px-2 py-0.5 border-[3px] border-border shadow-[2px_2px_0px_#111] text-xs font-black uppercase tracking-widest ${color}`}
     >
       {text}
     </span>
@@ -43,17 +43,17 @@ function Pill({ text, color }: { text: string; color: string }) {
 const statusColor = (s: AdminOrder["status"]) => {
   switch (s) {
     case "pending":
-      return "bg-yellow-100 text-yellow-800";
+      return "bg-amber-400 text-amber-950";
     case "confirmed":
-      return "bg-blue-100 text-blue-800";
+      return "bg-blue-400 text-blue-950";
     case "shipped":
-      return "bg-indigo-100 text-indigo-800";
+      return "bg-indigo-400 text-indigo-950";
     case "delivered":
-      return "bg-green-100 text-green-800";
+      return "bg-emerald-400 text-emerald-950";
     case "cancelled":
-      return "bg-red-100 text-red-800";
+      return "bg-rose-400 text-rose-950";
     default:
-      return "bg-gray-100 text-gray-700";
+      return "bg-gray-200 text-gray-900";
   }
 };
 
@@ -145,29 +145,29 @@ function AdminOrdersPage() {
   return (
     <ProtectedRoute roles={["admin"]}>
       <AdminLayout>
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-gray-900">Orders</h1>
+        <div className="flex items-center justify-between font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
+          <h1 className="text-3xl text-foreground">Orders</h1>
           <Link
             href="/admin/logs"
-            className="hidden md:inline-flex items-center px-3 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            className="hidden md:inline-flex items-center px-4 py-2 border-[3px] border-border bg-card text-foreground shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none text-xs"
           >
             View Logs
           </Link>
         </div>
 
         {/* Filters */}
-        <div className="card p-4 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+        <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-4 flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-8">
           <input
             placeholder="Search by order ID, email, or name…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 w-full md:w-96"
+            className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all w-full md:w-96"
           />
           <div className="flex gap-3">
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
-              className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900"
+              className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
             >
               <option value="all">All statuses</option>
               {STATUSES.map((s) => (
@@ -205,7 +205,7 @@ function AdminOrdersPage() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <div className="text-gray-900 font-medium">
+                  <div className="text-foreground font-black tracking-widest text-lg">
                     {currency(o.totalAmount)}
                   </div>
                   <div className="flex items-center gap-2">
@@ -232,35 +232,35 @@ function AdminOrdersPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mt-2">
                   <button
                     onClick={() => toggleExpand(o._id)}
-                    className="flex-1 text-left text-sm text-purple-700 hover:underline"
+                    className="flex-1 text-left text-sm font-bold uppercase tracking-widest text-primary hover:underline transition-all"
                   >
                     {expanded.has(o._id) ? "Hide details" : "Show details"}
                   </button>
                   <Link
                     href={`/admin/logs?orderId=${o._id}`}
-                    className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 text-sm hover:bg-gray-50"
+                    className="px-3 py-1.5 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
                   >
-                    View Logs
+                    Logs
                   </Link>
                 </div>
 
                 {expanded.has(o._id) && (
-                  <div className="border-t border-gray-200 pt-2 space-y-1">
+                  <div className="border-t-[3px] border-border pt-3 mt-3 space-y-2">
                     {o.items.map((it, idx) => (
                       <div
                         key={idx}
                         className="flex items-center justify-between text-sm"
                       >
-                        <div className="text-gray-700">
+                        <div className="text-foreground font-bold uppercase tracking-widest text-xs truncate pr-4">
                           {(typeof it.product === "string"
                             ? it.product
                             : it.product?.title) || "Product"}{" "}
-                          × {it.qty}
+                          <span className="text-muted-foreground ml-1">× {it.qty}</span>
                         </div>
-                        <div className="text-gray-900">
+                        <div className="text-emerald-600 font-black tracking-widest text-xs whitespace-nowrap">
                           {currency(it.price * it.qty)}
                         </div>
                       </div>
@@ -273,19 +273,19 @@ function AdminOrdersPage() {
         </div>
 
         {/* Desktop table */}
-        <div className="hidden md:block card overflow-x-auto">
+        <div className="hidden md:block bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead>
-              <tr className="text-left text-gray-600">
-                <th className="px-4 py-3">Order</th>
-                <th className="px-4 py-3">Customer</th>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Total</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+            <thead className="bg-muted border-b-[3px] border-border">
+              <tr className="text-left font-black uppercase tracking-widest text-foreground">
+                <th className="px-5 py-4 border-r-[3px] border-border">Order</th>
+                <th className="px-5 py-4 border-r-[3px] border-border">Customer</th>
+                <th className="px-5 py-4 border-r-[3px] border-border text-center">Date</th>
+                <th className="px-5 py-4 border-r-[3px] border-border text-right">Total</th>
+                <th className="px-5 py-4 border-r-[3px] border-border text-center">Status</th>
+                <th className="px-5 py-4 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y-[3px] divide-border font-bold uppercase tracking-widest text-xs text-foreground bg-card">
               {loading ? (
                 <tr>
                   <td className="px-4 py-6 text-gray-600" colSpan={6}>
@@ -301,23 +301,23 @@ function AdminOrdersPage() {
               ) : (
                 filtered.map((o) => (
                   <Fragment key={o._id}>
-                    <tr className="border-t border-gray-200">
-                      <td className="px-4 py-3 font-medium text-gray-900">
+                    <tr className="hover:bg-muted/50 transition-colors">
+                      <td className="px-5 py-4 border-r-[3px] border-border font-black">
                         #{o._id.slice(-6).toUpperCase()}
                       </td>
-                      <td className="px-4 py-3 text-gray-700">
+                      <td className="px-5 py-4 border-r-[3px] border-border max-w-[200px] truncate" title={o.user?.email || "—"}>
                         <div>{o.user?.name || "—"}</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-[10px] text-muted-foreground mt-1">
                           {o.user?.email || "—"}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-gray-700">
+                      <td className="px-5 py-4 border-r-[3px] border-border text-center whitespace-nowrap">
                         {shortDate(o.createdAt)}
                       </td>
-                      <td className="px-4 py-3 text-gray-900">
+                      <td className="px-5 py-4 border-r-[3px] border-border text-right text-emerald-600 font-black whitespace-nowrap">
                         {currency(o.totalAmount)}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-4 border-r-[3px] border-border">
                         <div className="flex items-center gap-2">
                           <Pill text={o.status} color={statusColor(o.status)} />
                           <select
@@ -329,7 +329,7 @@ function AdminOrdersPage() {
                                 e.target.value as AdminOrder["status"]
                               )
                             }
-                            className="bg-white border border-gray-300 rounded px-2 py-1 text-gray-900"
+                            className="bg-card border-[3px] border-border rounded-none px-2 py-1 text-foreground font-bold uppercase tracking-widest shadow-[2px_2px_0px_#111] focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none transition-all text-[10px] cursor-pointer"
                           >
                             {STATUSES.map((s) => (
                               <option key={s} value={s}>
@@ -339,17 +339,17 @@ function AdminOrdersPage() {
                           </select>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="px-5 py-4 text-center">
+                        <div className="flex items-center justify-center gap-3">
                           <Link
                             href={`/admin/logs?orderId=${o._id}`}
-                            className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                            className="px-3 py-1.5 border-[3px] border-border bg-card text-foreground shadow-[2px_2px_0px_#111] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-[10px]"
                           >
-                            View Logs
+                            Logs
                           </Link>
                           <button
                             onClick={() => toggleExpand(o._id)}
-                            className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                            className="px-3 py-1.5 border-[3px] border-border bg-card text-foreground shadow-[2px_2px_0px_#111] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-[10px]"
                           >
                             {expanded.has(o._id) ? "Hide" : "Details"}
                           </button>
@@ -357,21 +357,21 @@ function AdminOrdersPage() {
                       </td>
                     </tr>
                     {expanded.has(o._id) && (
-                      <tr className="bg-gray-50 border-t border-gray-200">
-                        <td colSpan={6} className="px-4 py-3">
-                          <div className="space-y-2">
+                      <tr className="bg-muted/30 border-t-[3px] border-dashed border-border">
+                        <td colSpan={6} className="px-5 py-4">
+                          <div className="space-y-3 max-w-3xl">
                             {o.items.map((it, idx) => (
                               <div
                                 key={idx}
-                                className="flex items-center justify-between text-sm"
+                                className="flex items-center justify-between text-xs font-bold uppercase tracking-widest bg-card border-[3px] border-border p-3 shadow-[2px_2px_0px_#111]"
                               >
-                                <div className="text-gray-700">
+                                <div className="text-foreground truncate pr-4">
                                   {(typeof it.product === "string"
                                     ? it.product
                                     : it.product?.title) || "Product"}{" "}
-                                  × {it.qty}
+                                  <span className="text-muted-foreground ml-2">× {it.qty}</span>
                                 </div>
-                                <div className="text-gray-900">
+                                <div className="text-emerald-600 font-black whitespace-nowrap">
                                   {currency(it.price * it.qty)}
                                 </div>
                               </div>
@@ -389,10 +389,10 @@ function AdminOrdersPage() {
 
         {/* Modal: confirm status change with optional note */}
         {modalOpen && targetOrder && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-            <div className="w-full max-w-lg rounded-xl bg-white shadow-xl">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="w-full max-w-lg rounded-none bg-card border-[3px] border-border shadow-[12px_12px_0px_#111]">
+              <div className="flex items-center justify-between px-6 py-4 border-b-[3px] border-border bg-primary/10">
+                <h3 className="text-xl font-black uppercase tracking-widest text-foreground">
                   Update Order Status
                 </h3>
                 <button
@@ -401,73 +401,73 @@ function AdminOrdersPage() {
                     setTargetOrder(null);
                     setNote("");
                   }}
-                  className="px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
+                  className="px-3 py-1.5 font-bold uppercase tracking-widest text-xs border-[3px] border-border bg-card text-foreground shadow-[2px_2px_0px_#111] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                 >
                   Close
                 </button>
               </div>
 
-              <div className="p-4 space-y-3 text-sm">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <div className="text-gray-500">Order</div>
-                    <div className="text-gray-900 font-mono">
+              <div className="p-6 space-y-6 text-sm">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-muted/50 p-3 border-[3px] border-border border-dashed">
+                    <div className="text-muted-foreground font-bold uppercase tracking-widest text-[10px] mb-1">Order ID</div>
+                    <div className="text-foreground font-black tracking-widest">
                       #{targetOrder._id.slice(-6).toUpperCase()}
                     </div>
                   </div>
-                  <div>
-                    <div className="text-gray-500">Customer</div>
-                    <div className="text-gray-900">
+                  <div className="bg-muted/50 p-3 border-[3px] border-border border-dashed">
+                    <div className="text-muted-foreground font-bold uppercase tracking-widest text-[10px] mb-1">Customer</div>
+                    <div className="text-foreground font-bold truncate">
                       {targetOrder.user?.name || "—"}
-                      <div className="text-xs text-gray-500">
+                      <div className="text-[10px] text-muted-foreground">
                         {targetOrder.user?.email || "—"}
                       </div>
                     </div>
                   </div>
-                  <div className="col-span-2">
-                    <div className="text-gray-500 mb-1">From → To</div>
-                    <div className="flex items-center gap-2">
+                  <div className="col-span-2 bg-muted p-4 border-[3px] border-border flex flex-col items-center justify-center gap-3">
+                    <div className="text-foreground font-bold uppercase tracking-widest text-[10px]">Status Change</div>
+                    <div className="flex items-center gap-4">
                       <Pill
                         text={targetOrder.status}
                         color={statusColor(targetOrder.status)}
                       />
-                      <span className="text-gray-400">→</span>
+                      <span className="text-foreground font-black">→</span>
                       <Pill text={nextStatus} color={statusColor(nextStatus)} />
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-1">
+                  <label className="block text-foreground font-bold uppercase tracking-widest text-xs mb-2">
                     Optional note / reason
                   </label>
                   <textarea
                     rows={3}
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    placeholder="e.g., Payment verified, handed to courier, customer requested cancel…"
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    placeholder="e.g., Payment verified, handed to courier..."
+                    className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all resize-none"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-100">
+              <div className="flex items-center justify-end gap-4 px-6 py-4 border-t-[3px] border-border bg-muted">
                 <button
                   onClick={() => {
                     setModalOpen(false);
                     setTargetOrder(null);
                     setNote("");
                   }}
-                  className="px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-black uppercase tracking-widest text-xs shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmStatusChange}
                   disabled={updatingId === targetOrder._id}
-                  className="px-4 py-1.5 rounded-md bg-purple-600 text-white hover:bg-purple-500 disabled:opacity-60"
+                  className="px-4 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {updatingId === targetOrder._id ? "Updating..." : "Update"}
+                  {updatingId === targetOrder._id ? "Updating..." : "Confirm Update"}
                 </button>
               </div>
             </div>

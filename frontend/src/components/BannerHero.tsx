@@ -7,8 +7,6 @@ type BannerData = {
   imageUrl: string;
   linkUrl?: string;
   altText?: string;
-
-  // Layout/content (optional)
   layout?: "image_full" | "split_asym";
   imagePosition?: "left" | "right";
   imageFit?: "contain" | "cover";
@@ -20,7 +18,7 @@ type BannerData = {
 type Props = {
   banner: BannerData;
   showAdBadge?: boolean;
-  disableTracking?: boolean; // used for Admin preview
+  disableTracking?: boolean;
 };
 
 export default function BannerHero({
@@ -45,54 +43,38 @@ export default function BannerHero({
     layout === "split_asym" || Boolean(headline || subheadline || ctaLabel);
   const isImageRight = imagePosition !== "left";
 
-  // Desktop smart-fit: auto switch to "cover" if "contain" would letterbox vertically
-  const imgBoxRef = useRef<HTMLAnchorElement | HTMLDivElement | null>(null);
-  const naturalRatioRef = useRef<number | null>(null); // width/height of the actual image
-  const [smartFit, setSmartFit] = useState<"contain" | "cover">(
-    imageFit || "contain"
-  );
+  const imgBoxRef = useRef<HTMLAnchorElement | null>(null);
+  const naturalRatioRef = useRef<number | null>(null);
+  const [smartFit, setSmartFit] = useState<"contain" | "cover">(imageFit || "contain");
 
   const computeSmartFit = () => {
     if (imageFit === "cover") {
       setSmartFit("cover");
       return;
     }
-    const r = naturalRatioRef.current;
-    const el = imgBoxRef.current as HTMLElement | null;
-    if (!r || !el) {
+    const imageRatio = naturalRatioRef.current;
+    const element = imgBoxRef.current;
+    if (!imageRatio || !element) {
       setSmartFit(imageFit || "contain");
       return;
     }
-    const width = el.clientWidth || 0;
-    const height = el.clientHeight || 0; // should be ~ h-72 (288px), but read actual
-    if (width === 0 || height === 0) {
-      setSmartFit(imageFit || "contain");
-      return;
-    }
-    const containerAspect = width / height;
-    // If image is much wider than container aspect, contain would produce top/bottom gaps.
-    // Threshold +5% to avoid flicker around equality.
-    if (r >= containerAspect * 1.05) {
-      setSmartFit("cover");
-    } else {
-      setSmartFit("contain");
-    }
+
+    const containerAspect = element.clientWidth / element.clientHeight;
+    setSmartFit(imageRatio >= containerAspect * 1.05 ? "cover" : "contain");
   };
 
   const onImgLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    if (img.naturalWidth && img.naturalHeight) {
-      naturalRatioRef.current = img.naturalWidth / img.naturalHeight;
+    const image = e.currentTarget;
+    if (image.naturalWidth && image.naturalHeight) {
+      naturalRatioRef.current = image.naturalWidth / image.naturalHeight;
       computeSmartFit();
     }
   };
 
   useEffect(() => {
-    // Recompute on resize to keep fit optimal across breakpoints
     const onResize = () => computeSmartFit();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const recordClick = () => {
@@ -100,137 +82,62 @@ export default function BannerHero({
     try {
       const url = `/api/banners/${_id}/click`;
       if ("sendBeacon" in navigator) {
-        const blob = new Blob([], { type: "application/octet-stream" });
-        navigator.sendBeacon(url, blob);
+        navigator.sendBeacon(url, new Blob([], { type: "application/octet-stream" }));
       } else {
         fetch(url, { method: "POST", keepalive: true }).catch(() => {});
       }
     } catch {}
   };
 
-  // Legacy image-only banner
   if (!isSplit) {
     return (
-      <section className="relative overflow-hidden rounded-2xl border border-gray-200">
-        {showAdBadge && (
-          <span className="absolute top-2 left-2 z-10 text-[11px] px-2 py-0.5 rounded-full bg-gray-900/80 text-white">
-            Advertisement
-          </span>
-        )}
+      <section className="surface-card relative overflow-hidden">
+        {showAdBadge ? (
+          <div className="absolute left-4 top-4 z-10">
+            <span className="tag-chip">Featured</span>
+          </div>
+        ) : null}
         <a href={linkUrl} onClick={recordClick} className="block">
           <img
             src={getImageUrl(imageUrl)}
-            alt={altText || headline || "Banner"}
-            className="block w-full h-72 md:h-96 object-cover"
-            onError={(e) =>
-              ((e.currentTarget as HTMLImageElement).src = "/fallback.png")
-            }
+            alt={altText || headline || "Promotional banner"}
+            className="block h-72 w-full object-cover md:h-96"
+            onError={(e) => ((e.currentTarget as HTMLImageElement).src = "/fallback.png")}
           />
         </a>
       </section>
     );
   }
 
-  // Split (asymmetric, brand-safe)
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-gray-200">
-      {showAdBadge && (
-        <span className="absolute top-2 left-2 z-10 text-[11px] px-2 py-0.5 rounded-full bg-gray-900/80 text-white">
-          Advertisement
-        </span>
-      )}
+    <section className="surface-card relative overflow-hidden">
+      {showAdBadge ? (
+        <div className="absolute left-4 top-4 z-10">
+          <span className="tag-chip tag-chip-primary">Featured</span>
+        </div>
+      ) : null}
 
-      {/* Mobile: stacked with overlay card */}
-      <div className="md:hidden relative">
-        {/* If CTA exists, do NOT wrap the whole banner with <a> to avoid nested anchors */}
-        {ctaLabel ? (
-          <div className="relative">
-            <img
-              src={getImageUrl(imageUrl)}
-              alt={altText || headline || "Banner"}
-              className="block w-full h-64 object-cover"
-              onError={(e) =>
-                ((e.currentTarget as HTMLImageElement).src = "/fallback.png")
-              }
-            />
-            {/* Brand gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-purple-600/25 via-transparent to-transparent" />
-            {/* Glass card */}
-            <div className="absolute inset-x-4 bottom-4">
-              <div className="bg-white/70 backdrop-blur-md border border-white/60 rounded-xl shadow p-4 text-center">
-                {headline && (
-                  <h3 className="text-base font-semibold text-gray-900">
-                    {headline}
-                  </h3>
-                )}
-                {subheadline && (
-                  <p className="text-sm text-gray-700 mt-1">{subheadline}</p>
-                )}
-                <div className="mt-3">
-                  <Link
-                    href={linkUrl}
-                    onClick={recordClick}
-                    className="inline-block px-4 py-2 rounded-md bg-purple-600 text-white text-sm font-medium hover:bg-purple-500"
-                  >
-                    {ctaLabel}
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <a href={linkUrl} onClick={recordClick} className="block relative">
-            <img
-              src={getImageUrl(imageUrl)}
-              alt={altText || headline || "Banner"}
-              className="block w-full h-64 object-cover"
-              onError={(e) =>
-                ((e.currentTarget as HTMLImageElement).src = "/fallback.png")
-              }
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-purple-600/25 via-transparent to-transparent" />
-            {(headline || subheadline) && (
-              <div className="absolute inset-x-4 bottom-4">
-                <div className="bg-white/70 backdrop-blur-md border border-white/60 rounded-xl shadow p-4 text-center">
-                  {headline && (
-                    <h3 className="text-base font-semibold text-gray-900">
-                      {headline}
-                    </h3>
-                  )}
-                  {subheadline && (
-                    <p className="text-sm text-gray-700 mt-1">{subheadline}</p>
-                  )}
-                </div>
-              </div>
-            )}
-          </a>
-        )}
-      </div>
-
-      {/* Desktop: asymmetric split (md and up) */}
-      <div className="hidden md:grid grid-cols-12">
-        {/* Text side ~ 5/12 (≈42%) */}
+      <div className="grid gap-0 md:grid-cols-12">
         <div
-          className={`${
-            isImageRight ? "order-1" : "order-2"
-          } col-span-12 md:col-span-5 p-6 lg:p-8 flex items-center`}
+          className={`${isImageRight ? "md:order-1" : "md:order-2"} flex items-center bg-secondary p-6 md:col-span-5 md:p-8`}
         >
-          <div className="bg-white/75 backdrop-blur-md border border-white/60 rounded-xl shadow p-6 w-full">
-            {headline && (
-              <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">
+          <div className="w-full">
+            <div className="mb-4 inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+              Curated Offer
+            </div>
+            {headline ? (
+              <h3 className="text-2xl font-semibold text-foreground md:text-4xl">
                 {headline}
               </h3>
-            )}
-            {subheadline && (
-              <p className="text-gray-700 mt-2 lg:mt-3">{subheadline}</p>
-            )}
+            ) : null}
+            {subheadline ? (
+              <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground md:text-base">
+                {subheadline}
+              </p>
+            ) : null}
             {ctaLabel ? (
-              <div className="mt-4">
-                <Link
-                  href={linkUrl}
-                  onClick={recordClick}
-                  className="inline-block px-5 py-2 rounded-md bg-purple-600 text-white font-medium hover:bg-purple-500"
-                >
+              <div className="mt-6">
+                <Link href={linkUrl} onClick={recordClick} className="btn-primary">
                   {ctaLabel}
                 </Link>
               </div>
@@ -238,42 +145,16 @@ export default function BannerHero({
           </div>
         </div>
 
-        {/* Image side ~ 7/12 (≈58%) */}
         <div
-          className={`${
-            isImageRight ? "order-2" : "order-1"
-          } col-span-12 md:col-span-7 relative`}
+          className={`${isImageRight ? "md:order-2" : "md:order-1"} relative min-h-[280px] bg-background md:col-span-7`}
         >
-          {/* Blurred cover background to always fill, no bands */}
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <a ref={imgBoxRef} href={linkUrl} onClick={recordClick} className="block h-full w-full">
             <img
               src={getImageUrl(imageUrl)}
-              alt=""
-              aria-hidden="true"
-              className="block w-full h-full object-cover blur-md scale-105 opacity-40"
-              onError={(e) =>
-                ((e.currentTarget as HTMLImageElement).style.display = "none")
-              }
-            />
-          </div>
-
-          {/* Foreground image area */}
-          <a
-            ref={imgBoxRef as any}
-            href={linkUrl}
-            onClick={recordClick}
-            className="relative block"
-          >
-            <img
-              src={getImageUrl(imageUrl)}
-              alt={altText || headline || "Banner"}
+              alt={altText || headline || "Promotional banner"}
               onLoad={onImgLoad}
-              className={`block w-full h-72 object-${
-                smartFit === "cover" ? "cover" : "contain"
-              }`}
-              onError={(e) =>
-                ((e.currentTarget as HTMLImageElement).src = "/fallback.png")
-              }
+              className={`block h-full min-h-[280px] w-full object-${smartFit === "cover" ? "cover" : "contain"} bg-card`}
+              onError={(e) => ((e.currentTarget as HTMLImageElement).src = "/fallback.png")}
             />
           </a>
         </div>

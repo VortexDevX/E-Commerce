@@ -1,4 +1,8 @@
 export default function welcomeEmail(user) {
+  const frontend = process.env.FRONTEND_URL || "http://localhost:3000";
+  const year = new Date().getFullYear();
+  const name = user?.name || "there";
+
   return `
   <!DOCTYPE html>
   <html lang="en">
@@ -22,7 +26,7 @@ export default function welcomeEmail(user) {
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       }
       .hero {
-        background: linear-gradient(135deg, #1e1b4b, #4f46e5);
+        background: linear-gradient(135deg, #075985, #0f766e);
         color: #ffffff;
         text-align: center;
         padding: 45px 25px;
@@ -35,7 +39,7 @@ export default function welcomeEmail(user) {
       .hero p {
         margin-top: 12px;
         font-size: 16px;
-        color: #c7d2fe;
+        color: #dbeafe;
       }
       .content {
         padding: 30px 25px;
@@ -56,7 +60,7 @@ export default function welcomeEmail(user) {
         display: inline-block;
         margin-top: 20px;
         padding: 14px 32px;
-        background: #4f46e5;
+        background: #0369a1;
         color: #ffffff;
         text-decoration: none;
         border-radius: 6px;
@@ -65,7 +69,7 @@ export default function welcomeEmail(user) {
         transition: background 0.2s ease-in-out;
       }
       .btn:hover {
-        background: #3730a3;
+        background: #075985;
       }
       .features {
         display: flex;
@@ -94,14 +98,13 @@ export default function welcomeEmail(user) {
   <body>
     <div class="container">
       <div class="hero">
-        <h1>Welcome to Luxora ✨</h1>
-        <p>Shopping made simple & reliable</p>
+        <h1>Welcome to Luxora</h1>
+        <p>Trusted marketplace for buyers and sellers</p>
       </div>
       <div class="content">
-        <h2>Hello {{user.name}},</h2>
-        <p>We’re delighted to have you join <strong>Luxora</strong>.  
-          Browse quality products and enjoy the convenience of Cash on Delivery at checkout.</p>
-        <a class="btn" href="https://localhost:3000/">Start Shopping</a>
+        <h2>Hello ${name},</h2>
+        <p>We’re glad you joined <strong>Luxora</strong>. Browse verified products, track orders in real time, and shop with confidence.</p>
+        <a class="btn" href="${frontend}/products">Start Shopping</a>
 
         <div class="divider"></div>
 
@@ -121,7 +124,7 @@ export default function welcomeEmail(user) {
         </div>
       </div>
       <div class="footer">
-        © 2025 Luxora. All rights reserved.
+        © ${year} Luxora Marketplace. All rights reserved.
       </div>
     </div>
   </body>

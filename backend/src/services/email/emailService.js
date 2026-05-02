@@ -16,6 +16,7 @@ dotenv.config();
 const IS_DEV = process.env.NODE_ENV !== "production";
 const EMAIL_DISABLED =
   String(process.env.EMAIL_DISABLED || "").toLowerCase() === "true";
+const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
 function createTransport() {
   if (EMAIL_DISABLED) {
@@ -25,13 +26,18 @@ function createTransport() {
 
   const provider = (process.env.EMAIL_PROVIDER || "").toLowerCase();
 
-  if (provider === "mailhog" || (!provider && IS_DEV)) {
-    // Default to MailHog in dev if not explicitly set
+  if (provider === "mailpit" || provider === "mailhog" || (!provider && IS_DEV)) {
+    // Default to Mailpit/MailHog in dev if not explicitly set
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST || "127.0.0.1",
       port: Number(process.env.SMTP_PORT || 1025),
       secure: false,
     });
+  }
+
+  if (provider === "brevo") {
+    // Brevo is handled via HTTP API in sendEmail().
+    return nodemailer.createTransport({ jsonTransport: true });
   }
 
   if (provider === "mailersend") {
@@ -55,6 +61,57 @@ function createTransport() {
 
 const transporter = createTransport();
 
+const sendViaBrevoApi = async ({
+  to,
+  subject,
+  html,
+  attachments,
+  replyTo,
+}) => {
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) {
+    throw new Error("BREVO_API_KEY is not configured");
+  }
+
+  const fromEmail = process.env.EMAIL_FROM || "no-reply@localhost";
+  const fromName = process.env.EMAIL_FROM_NAME || "Luxora";
+  const replyEmail = replyTo || process.env.EMAIL_REPLY_TO || undefined;
+
+  const toList = Array.isArray(to) ? to : [to];
+  const payload = {
+    sender: { email: fromEmail, name: fromName },
+    to: toList.map((email) => ({ email: String(email) })),
+    subject,
+    htmlContent: html,
+    ...(replyEmail ? { replyTo: { email: replyEmail } } : {}),
+    ...(attachments?.length
+      ? {
+          attachment: attachments.map((a) => ({
+            name: a.filename,
+            content: Buffer.from(a.content).toString("base64"),
+          })),
+        }
+      : {}),
+  };
+
+  const resp = await fetch(BREVO_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "api-key": apiKey,
+      accept: "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!resp.ok) {
+    const errBody = await resp.text().catch(() => "");
+    throw new Error(`Brevo API error ${resp.status}: ${errBody}`);
+  }
+
+  return await resp.json().catch(() => ({ ok: true }));
+};
+
 // -------------------------
 // Generic sendEmail (never throws fatally)
 // -------------------------
@@ -74,15 +131,21 @@ export const sendEmail = async ({
   replyTo,
 }) => {
   try {
-    const from = process.env.EMAIL_FROM || "no-reply@localhost";
-    const info = await transporter.sendMail({
-      from,
-      to,
-      subject,
-      html,
-      attachments,
-      replyTo,
-    });
+    const provider = (process.env.EMAIL_PROVIDER || "").toLowerCase();
+    let info;
+    if (provider === "brevo") {
+      info = await sendViaBrevoApi({ to, subject, html, attachments, replyTo });
+    } else {
+      const from = process.env.EMAIL_FROM || "no-reply@localhost";
+      info = await transporter.sendMail({
+        from,
+        to,
+        subject,
+        html,
+        attachments,
+        replyTo,
+      });
+    }
 
     if (IS_DEV) {
       console.log(
@@ -179,7 +242,7 @@ export const sendWelcomeEmail = async (user) => {
   const { subject, html } = await renderWithOverride(
     "welcome",
     { user },
-    "Welcome to Shop 🎉",
+    "Welcome to Luxora Marketplace",
     (d) => welcomeEmail(d.user)
   );
   return sendEmail({ to: user.email, subject, html });

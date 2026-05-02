@@ -61,7 +61,7 @@ export const requestSellerRole = async (req, res) => {
       sellerRequest: user.sellerRequest,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -84,7 +84,7 @@ export const updateMe = async (req, res) => {
     const clean = await User.findById(user._id).select("-password");
     res.json(clean);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -119,7 +119,7 @@ export const changePassword = async (req, res) => {
 
     res.json({ message: "Password updated. Please log in again." });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -135,7 +135,7 @@ export const addAddress = async (req, res) => {
     await user.save();
     res.status(201).json(user.addresses);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -167,7 +167,7 @@ export const updateAddress = async (req, res) => {
     await user.save();
     res.json(user.addresses);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -181,7 +181,7 @@ export const deleteAddress = async (req, res) => {
     await user.save();
     res.json(user.addresses);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -196,7 +196,7 @@ export const setDefaultAddress = async (req, res) => {
     await user.save();
     res.json(user.addresses);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -206,7 +206,7 @@ export const getPriceDropAlertsStatus = async (req, res) => {
     const user = await User.findById(req.user._id).select("alerts");
     res.json({ enabled: !!user?.alerts?.priceDropEnabled });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -221,6 +221,7 @@ export const setPriceDropAlertsStatus = async (req, res) => {
     await user.save();
     res.json({ enabled: user.alerts.priceDropEnabled });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+

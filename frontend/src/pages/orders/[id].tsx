@@ -396,7 +396,7 @@ export default function OrderDetailsPage() {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Invoice #${o._id.slice(-6).toUpperCase()}</title>
   <style>
-    :root { --brand:#4f46e5; --text:#111827; --muted:#6b7280; --border:#e5e7eb; }
+    :root { --brand:#0369a1; --text:#111827; --muted:#6b7280; --border:#e5e7eb; }
     @page { size: A4; margin: 14mm; }
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif; color: var(--text); background: #fff; }
@@ -897,3 +897,4 @@ export default function OrderDetailsPage() {
     </ProtectedRoute>
   );
 }
+

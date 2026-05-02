@@ -134,33 +134,33 @@ function AdminUserDetailsPage() {
   return (
     <ProtectedRoute roles={["admin"]}>
       <AdminLayout>
-        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">User Details</h1>
+        <div className="flex items-center justify-between flex-wrap gap-4 border-b-[3px] border-border pb-4 mb-8">
+          <h1 className="text-3xl font-black uppercase tracking-widest text-foreground">User Details</h1>
           <a
             href="/admin/users"
-            className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-black uppercase tracking-widest text-xs shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all"
           >
             Back to Users
           </a>
         </div>
 
         {/* Profile card */}
-        <section className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
-          <div className="grid md:grid-cols-4 gap-4">
+        <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 mb-8">
+          <div className="grid md:grid-cols-4 gap-6">
             <div>
-              <div className="text-sm text-gray-500">Name</div>
-              <div className="text-gray-900 break-words">{user.name}</div>
+              <div className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">Name</div>
+              <div className="text-foreground font-bold text-lg break-words">{user.name}</div>
             </div>
             <div>
-              <div className="text-sm text-gray-500">Email</div>
-              <div className="text-gray-900 break-words">{user.email}</div>
+              <div className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">Email</div>
+              <div className="text-foreground font-bold text-lg break-words">{user.email}</div>
             </div>
             <div>
-              <div className="text-sm text-gray-500">Role</div>
+              <div className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">Role</div>
               <select
                 value={permInfo.role}
                 onChange={(e) => changeRole(e.target.value as Role)}
-                className="mt-1 bg-white border border-gray-300 rounded px-3 py-2 text-gray-900"
+                className="mt-1 bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all uppercase"
               >
                 <option value="user">User</option>
                 <option value="seller">Seller</option>
@@ -170,36 +170,37 @@ function AdminUserDetailsPage() {
               </select>
             </div>
             <div>
-              <div className="text-sm text-gray-500">Status</div>
-              <div className="text-gray-900 capitalize">{user.status}</div>
+              <div className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">Status</div>
+              <div className="text-foreground font-bold text-lg capitalize">{user.status}</div>
             </div>
           </div>
         </section>
 
         {/* Access management */}
-        <section className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">
+        <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 mb-8">
+          <h3 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4 mb-6">
             Access Control
           </h3>
 
           {/* Sub-admin permissions */}
           {permInfo.role === "subadmin" && (
-            <div className="space-y-3">
-              <div className="text-sm text-gray-700">
+            <div className="space-y-6">
+              <div className="text-sm font-bold uppercase tracking-widest bg-amber-400 text-amber-950 p-4 border-[3px] border-border shadow-[4px_4px_0px_#111] leading-relaxed">
                 Assign permissions for this sub-admin. Admins always bypass
                 permissions.
               </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {permCatalog.map((p) => {
                   const checked = selectedPerms.includes(p);
                   return (
                     <label
                       key={p}
-                      className="flex items-center gap-2 text-sm text-gray-800"
+                      className="flex items-center gap-3 text-sm text-foreground cursor-pointer group"
                     >
                       <input
                         type="checkbox"
                         checked={checked}
+                        className="w-6 h-6 border-[3px] border-border rounded-none text-primary focus:ring-0 focus:ring-offset-0 disabled:opacity-50"
                         onChange={(e) => {
                           if (e.target.checked) {
                             setSelectedPerms((arr) =>
@@ -212,7 +213,7 @@ function AdminUserDetailsPage() {
                           }
                         }}
                       />
-                      <span className="font-mono">{p}</span>
+                      <span className="font-bold uppercase tracking-widest text-xs group-hover:text-primary transition-colors">{p}</span>
                     </label>
                   );
                 })}
@@ -220,7 +221,7 @@ function AdminUserDetailsPage() {
               <button
                 onClick={savePermissions}
                 disabled={savingPerms}
-                className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-500 disabled:opacity-60"
+                className="px-6 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {savingPerms ? "Saving..." : "Save permissions"}
               </button>
@@ -229,26 +230,26 @@ function AdminUserDetailsPage() {
 
           {/* Seller assistant link + permissions */}
           {permInfo.role === "seller_assistant" && (
-            <div className="space-y-6">
+            <div className="space-y-8 pt-4 border-t-[3px] border-border">
               {/* Link assistant to an approved seller */}
-              <div className="space-y-3">
-                <div className="text-sm text-gray-700">
+              <div className="space-y-4">
+                <div className="text-sm font-bold uppercase tracking-widest bg-amber-400 text-amber-950 p-4 border-[3px] border-border shadow-[4px_4px_0px_#111] leading-relaxed">
                   Link this assistant to an approved seller to grant access to
                   that seller’s data.
                 </div>
-                <div className="grid sm:grid-cols-2 gap-3">
+                <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
+                    <label className="block text-sm font-black uppercase tracking-widest text-foreground mb-2">
                       Linked seller
                     </label>
                     <select
                       value={selectedSeller}
                       onChange={(e) => setSelectedSeller(e.target.value)}
-                      className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 w-full"
+                      className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 text-foreground font-bold shadow-[4px_4px_0px_transparent] focus:outline-none focus:shadow-[4px_4px_0px_#111] transition-all"
                     >
                       <option value="">— None —</option>
                       {sellerList.map((s) => (
-                        <option key={s._id} value={s._id}>
+                        <option key={s._id} value={s._id} className="font-bold">
                           {s.name} · {s.email}
                         </option>
                       ))}
@@ -258,36 +259,37 @@ function AdminUserDetailsPage() {
                     <button
                       onClick={updateAssistantLink}
                       disabled={linking}
-                      className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-500 disabled:opacity-60"
+                      className="w-full sm:w-auto px-6 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {linking ? "Saving..." : "Save link"}
                     </button>
                   </div>
                 </div>
                 {permInfo.assistantFor && (
-                  <div className="text-xs text-gray-600">
+                  <div className="text-sm font-bold uppercase tracking-widest text-foreground bg-primary/10 border-[3px] border-primary p-4 shadow-[4px_4px_0px_#111]">
                     Currently linked to seller:{" "}
-                    <span className="font-mono">{permInfo.assistantFor}</span>
+                    <span className="font-black text-primary">{permInfo.assistantFor}</span>
                   </div>
                 )}
               </div>
 
               {/* Seller assistant granular permissions */}
-              <div className="space-y-3">
-                <div className="text-sm text-gray-700">
+              <div className="space-y-6 pt-6 border-t-[3px] border-border">
+                <div className="text-sm font-bold uppercase tracking-widest text-foreground">
                   Assign granular permissions for this seller assistant.
                 </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {sellerPermCatalog.map((p) => {
                     const checked = selectedPerms.includes(p);
                     return (
                       <label
                         key={p}
-                        className="flex items-center gap-2 text-sm text-gray-800"
+                        className="flex items-center gap-3 text-sm text-foreground cursor-pointer group"
                       >
                         <input
                           type="checkbox"
                           checked={checked}
+                          className="w-6 h-6 border-[3px] border-border rounded-none text-primary focus:ring-0 focus:ring-offset-0 disabled:opacity-50"
                           onChange={(e) => {
                             if (e.target.checked) {
                               setSelectedPerms((arr) =>
@@ -300,7 +302,7 @@ function AdminUserDetailsPage() {
                             }
                           }}
                         />
-                        <span className="font-mono">{p}</span>
+                        <span className="font-bold uppercase tracking-widest text-xs group-hover:text-primary transition-colors">{p}</span>
                       </label>
                     );
                   })}
@@ -308,7 +310,7 @@ function AdminUserDetailsPage() {
                 <button
                   onClick={savePermissions}
                   disabled={savingPerms}
-                  className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-500 disabled:opacity-60"
+                  className="px-6 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {savingPerms ? "Saving..." : "Save permissions"}
                 </button>
@@ -318,29 +320,29 @@ function AdminUserDetailsPage() {
 
           {/* Seller-only notice */}
           {permInfo.role === "seller" && (
-            <div className="text-sm text-gray-700">
+            <div className="text-sm font-bold uppercase tracking-widest bg-emerald-400 text-emerald-950 p-4 border-[3px] border-border shadow-[4px_4px_0px_#111] leading-relaxed mt-4">
               Seller accounts get access to their own data once approved.
             </div>
           )}
         </section>
 
         {/* Summary */}
-        <section className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Summary</h3>
-          <div className="grid md:grid-cols-3 gap-4">
-            <div>
-              <div className="text-sm text-gray-500">Total Orders</div>
-              <div className="text-gray-900">{summary?.ordersCount ?? 0}</div>
+        <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 mb-8">
+          <h3 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4 mb-6">Summary</h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-primary/5 border-[3px] border-border p-4 shadow-[4px_4px_0px_#111]">
+              <div className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">Total Orders</div>
+              <div className="text-3xl font-black text-foreground">{summary?.ordersCount ?? 0}</div>
             </div>
-            <div>
-              <div className="text-sm text-gray-500">Total Spent</div>
-              <div className="text-gray-900">
+            <div className="bg-emerald-400/10 border-[3px] border-emerald-950 p-4 shadow-[4px_4px_0px_#111]">
+              <div className="text-sm font-black uppercase tracking-widest text-emerald-950 mb-1">Total Spent</div>
+              <div className="text-3xl font-black text-emerald-950">
                 {currency(summary?.totalSpent ?? 0)}
               </div>
             </div>
-            <div>
-              <div className="text-sm text-gray-500">Last Order</div>
-              <div className="text-gray-900">
+            <div className="bg-rose-400/10 border-[3px] border-rose-950 p-4 shadow-[4px_4px_0px_#111]">
+              <div className="text-sm font-black uppercase tracking-widest text-rose-950 mb-1">Last Order</div>
+              <div className="text-xl font-bold uppercase tracking-widest text-rose-950 mt-2">
                 {summary?.lastOrderAt ? shortDate(summary.lastOrderAt) : "-"}
               </div>
             </div>
@@ -348,30 +350,47 @@ function AdminUserDetailsPage() {
         </section>
 
         {/* Orders */}
-        <section className="bg-white border border-gray-200 rounded-xl p-4">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Orders</h3>
-          <div className="overflow-x-auto">
+        <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6">
+          <h3 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4 mb-6">Orders</h3>
+          <div className="overflow-x-auto border-[3px] border-border shadow-[4px_4px_0px_#111]">
             <table className="min-w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-600">
-                  <th className="py-2">Order</th>
-                  <th className="py-2">Date</th>
-                  <th className="py-2">Status</th>
-                  <th className="py-2">Total</th>
+                <tr className="text-left bg-primary/5 text-foreground border-b-[3px] border-border">
+                  <th className="px-4 py-4 font-black uppercase tracking-widest">Order</th>
+                  <th className="px-4 py-4 font-black uppercase tracking-widest">Date</th>
+                  <th className="px-4 py-4 font-black uppercase tracking-widest">Status</th>
+                  <th className="px-4 py-4 font-black uppercase tracking-widest">Total</th>
                 </tr>
               </thead>
               <tbody>
                 {(orders || []).map((o: any) => (
                   <tr
                     key={o._id}
-                    className="border-t border-gray-200 text-gray-900"
+                    className="border-b-[3px] border-border/50 text-foreground font-bold hover:bg-muted/50 transition-colors"
                   >
-                    <td className="py-2">#{o._id.slice(-6).toUpperCase()}</td>
-                    <td className="py-2">{shortDate(o.createdAt)}</td>
-                    <td className="py-2 capitalize">{o.status}</td>
-                    <td className="py-2">{currency(o.totalAmount)}</td>
+                    <td className="px-4 py-4 text-primary font-black uppercase tracking-widest cursor-pointer hover:underline decoration-[3px] underline-offset-4">
+                      #{o._id.slice(-6).toUpperCase()}
+                    </td>
+                    <td className="px-4 py-4 font-bold uppercase tracking-widest">{shortDate(o.createdAt)}</td>
+                    <td className="px-4 py-4">
+                      <span className={`px-2 py-1 border-[3px] border-border shadow-[2px_2px_0px_#111] font-black uppercase tracking-widest text-xs ${
+                        o.status === "delivered" ? "bg-emerald-400 text-emerald-950" : 
+                        o.status === "cancelled" ? "bg-rose-400 text-rose-950" : 
+                        "bg-primary/20 text-foreground"
+                      }`}>
+                        {o.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 font-black">{currency(o.totalAmount)}</td>
                   </tr>
                 ))}
+                {(!orders || orders.length === 0) && (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-8 text-center font-bold uppercase tracking-widest text-muted-foreground">
+                      No orders found for this user
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

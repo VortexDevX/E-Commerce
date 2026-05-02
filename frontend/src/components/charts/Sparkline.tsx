@@ -10,8 +10,8 @@ export default function Sparkline({
   data,
   width = 120,
   height = 28,
-  stroke = "#7c3aed",
-  fill = "rgba(124, 58, 237, 0.14)",
+  stroke = "#0369a1",
+  fill = "rgba(3, 105, 161, 0.14)",
   thickness = 2,
 }: Props) {
   if (!data || data.length < 2) return <svg width={width} height={height} />;

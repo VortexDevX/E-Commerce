@@ -348,8 +348,8 @@ function SellerAnalyticsPage() {
           scope="seller"
           perm="seller:analytics:read"
           fallback={
-            <div className="card p-6 text-gray-700">
-              You don’t have access to Analytics.
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">
+              You don&apos;t have access to Analytics.
             </div>
           }
         >
@@ -367,20 +367,61 @@ function SellerAnalyticsPage() {
           {loading && <div className="card p-6 text-gray-600">Loading…</div>}
 
           {!loading && (
-            <div className="mt-6 flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Performance
-              </h2>
-              <div className="flex items-center gap-3">
-                <Tabs value={tab} onValueChange={setTab}>
-                  <TabsList>
-                    <TabsTrigger value="7d">7d</TabsTrigger>
-                    <TabsTrigger value="14d">14d</TabsTrigger>
-                    <TabsTrigger value="30d">30d</TabsTrigger>
-                    <TabsTrigger value="90d">90d</TabsTrigger>
-                    <TabsTrigger value="custom">Custom</TabsTrigger>
-                  </TabsList>
-                </Tabs>
+            <div className="mt-6 flex items-center justify-between gap-4 flex-wrap bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-4 font-bold mb-6">
+              <h2 className="text-xl font-black uppercase tracking-widest text-foreground">Performance</h2>
+              <div className="flex items-center gap-2">
+                <div className="inline-flex items-center gap-2">
+                  <button
+                    onClick={() => setTab("7d")}
+                    className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
+                      tab === "7d"
+                        ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
+                        : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
+                    }`}
+                  >
+                    7d
+                  </button>
+                  <button
+                    onClick={() => setTab("14d")}
+                    className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
+                      tab === "14d"
+                        ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
+                        : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
+                    }`}
+                  >
+                    14d
+                  </button>
+                  <button
+                    onClick={() => setTab("30d")}
+                    className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
+                      tab === "30d"
+                        ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
+                        : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
+                    }`}
+                  >
+                    30d
+                  </button>
+                  <button
+                    onClick={() => setTab("90d")}
+                    className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
+                      tab === "90d"
+                        ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
+                        : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
+                    }`}
+                  >
+                    90d
+                  </button>
+                  <button
+                    onClick={() => setTab("custom")}
+                    className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
+                      tab === "custom"
+                        ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
+                        : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
+                    }`}
+                  >
+                    Custom
+                  </button>
+                </div>
                 {tab === "custom" && (
                   <div className="flex items-center gap-2">
                     <input
@@ -389,7 +430,7 @@ function SellerAnalyticsPage() {
                       onChange={(e) =>
                         setRange((r) => ({ ...r, from: e.target.value }))
                       }
-                      className="bg-white border border-gray-300 rounded-md px-3 py-2 text-gray-700 hover:bg-gray-50"
+                      className="bg-card border-[3px] border-border rounded-none px-3 py-1.5 text-foreground font-black uppercase tracking-widest shadow-[2px_2px_0px_#111] focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] hover:shadow-none transition-all text-[10px]"
                     />
                     <input
                       type="date"
@@ -397,7 +438,7 @@ function SellerAnalyticsPage() {
                       onChange={(e) =>
                         setRange((r) => ({ ...r, to: e.target.value }))
                       }
-                      className="bg-white border border-gray-300 rounded-md px-3 py-2 text-gray-700 hover:bg-gray-50"
+                      className="bg-card border-[3px] border-border rounded-none px-3 py-1.5 text-foreground font-black uppercase tracking-widest shadow-[2px_2px_0px_#111] focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] hover:shadow-none transition-all text-[10px]"
                     />
                   </div>
                 )}
@@ -412,42 +453,60 @@ function SellerAnalyticsPage() {
               <div className="mt-4 grid grid-cols-1 xl:grid-cols-12 gap-6">
                 <div className="xl:col-span-7 space-y-6">
                   {/* Revenue & Orders */}
-                  <Card>
-                    <CardHeader className="flex-row items-center justify-between">
-                      <CardTitle>Revenue & Orders</CardTitle>
-                      <Button variant="outline" onClick={exportSalesCSV}>
+                  <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
+                    <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
+                      <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Revenue & Orders {tab !== "custom" && `(last ${days} days)`}</h3>
+                      <button onClick={exportSalesCSV} className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all">
                         Export Sales CSV
-                      </Button>
-                    </CardHeader>
-                    <CardContent className="pt-0">
+                      </button>
+                    </div>
+                    <div className="p-6 pt-6">
                       <div className="w-full h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart
                             data={sales}
                             margin={{ top: 12, right: 16, left: 8, bottom: 8 }}
                           >
-                            <CartesianGrid stroke="#e5e7eb" vertical={false} />
+                            <CartesianGrid stroke="#e5e7eb" vertical={false} strokeDasharray="3 3" />
                             <XAxis
                               dataKey="date"
-                              tick={{ fill: "#6b7280", fontSize: 11 }}
+                              tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
+                              axisLine={{ stroke: "#000", strokeWidth: 3 }}
+                              tickLine={{ stroke: "#000", strokeWidth: 3 }}
                             />
                             <YAxis
                               yAxisId="left"
-                              tick={{ fill: "#6b7280", fontSize: 11 }}
+                              tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
+                              axisLine={{ stroke: "#000", strokeWidth: 3 }}
+                              tickLine={{ stroke: "#000", strokeWidth: 3 }}
                             />
                             <YAxis
                               yAxisId="right"
                               orientation="right"
-                              tick={{ fill: "#6b7280", fontSize: 11 }}
+                              tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
+                              axisLine={{ stroke: "#000", strokeWidth: 3 }}
+                              tickLine={{ stroke: "#000", strokeWidth: 3 }}
                             />
                             <Tooltip
+                              contentStyle={{
+                                backgroundColor: "hsl(var(--card))",
+                                border: "3px solid hsl(var(--border))",
+                                boxShadow: "4px 4px 0px #111",
+                                borderRadius: "0",
+                                fontWeight: "bold",
+                                fontFamily: "Inter",
+                                fontSize: "12px",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.05em",
+                              }}
+                              itemStyle={{ color: "hsl(var(--foreground))" }}
                               formatter={(v: any, n: any) =>
                                 n === "revenue"
                                   ? `₹${Number(v).toLocaleString("en-IN")}`
                                   : v
                               }
                             />
-                            <Legend />
+                            <Legend wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em' }} />
                             <Line
                               isAnimationActive
                               animationDuration={350}
@@ -455,9 +514,10 @@ function SellerAnalyticsPage() {
                               yAxisId="left"
                               type="monotone"
                               dataKey="orders"
-                              stroke="#7c3aed"
-                              strokeWidth={2}
-                              dot={false}
+                              stroke="#9333ea"
+                              strokeWidth={4}
+                              dot={{ stroke: '#000', strokeWidth: 2, fill: '#fff', r: 4 }}
+                              activeDot={{ stroke: '#000', strokeWidth: 3, r: 6, fill: '#9333ea' }}
                               name="Orders"
                             />
                             <Line
@@ -467,26 +527,27 @@ function SellerAnalyticsPage() {
                               yAxisId="right"
                               type="monotone"
                               dataKey="revenue"
-                              stroke="#10b981"
-                              strokeWidth={2}
-                              dot={false}
+                              stroke="#d97706"
+                              strokeWidth={4}
+                              dot={{ stroke: '#000', strokeWidth: 2, fill: '#fff', r: 4 }}
+                              activeDot={{ stroke: '#000', strokeWidth: 3, r: 6, fill: '#d97706' }}
                               name="Revenue"
                             />
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
                   {/* AOV */}
-                  <Card>
-                    <CardHeader className="flex-row items-center justify-between">
-                      <CardTitle>Average Order Value (AOV)</CardTitle>
-                      <Button variant="outline" onClick={exportAOVCSV}>
+                  <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
+                    <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
+                      <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Average Order Value (AOV)</h3>
+                      <button onClick={exportAOVCSV} className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all">
                         Export AOV CSV
-                      </Button>
-                    </CardHeader>
-                    <CardContent className="pt-0">
+                      </button>
+                    </div>
+                    <div className="p-6 pt-6">
                       <div className="w-full h-[240px]">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart
@@ -498,49 +559,64 @@ function SellerAnalyticsPage() {
                             }))}
                             margin={{ top: 12, right: 16, left: 8, bottom: 8 }}
                           >
-                            <CartesianGrid stroke="#e5e7eb" vertical={false} />
+                            <CartesianGrid stroke="#e5e7eb" vertical={false} strokeDasharray="3 3"/>
                             <XAxis
                               dataKey="date"
-                              tick={{ fill: "#6b7280", fontSize: 11 }}
+                              tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
+                              axisLine={{ stroke: "#000", strokeWidth: 3 }}
+                              tickLine={{ stroke: "#000", strokeWidth: 3 }}
                             />
-                            <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+                            <YAxis tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }} axisLine={{ stroke: "#000", strokeWidth: 3 }} tickLine={{ stroke: "#000", strokeWidth: 3 }} />
                             <Tooltip
+                              contentStyle={{
+                                backgroundColor: "hsl(var(--card))",
+                                border: "3px solid hsl(var(--border))",
+                                boxShadow: "4px 4px 0px #111",
+                                borderRadius: "0",
+                                fontWeight: "bold",
+                                fontFamily: "Inter",
+                                fontSize: "12px",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.05em",
+                              }}
+                              itemStyle={{ color: "hsl(var(--foreground))" }}
                               formatter={(v: any) =>
                                 `₹${Number(v).toLocaleString("en-IN")}`
                               }
                             />
-                            <Legend />
+                            <Legend wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em' }} />
                             <Line
                               isAnimationActive
                               animationDuration={350}
                               animationEasing="ease-out"
                               type="monotone"
                               dataKey="aov"
-                              stroke="#6366f1"
-                              strokeWidth={2}
-                              dot={false}
+                              stroke="#9333ea"
+                              strokeWidth={4}
+                              dot={{ stroke: '#000', strokeWidth: 2, fill: '#fff', r: 4 }}
+                              activeDot={{ stroke: '#000', strokeWidth: 3, r: 6, fill: '#9333ea' }}
                               name="AOV"
                             />
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Orders by Category + Ratings */}
                 <div className="xl:col-span-5 space-y-6">
-                  <Card>
-                    <CardHeader className="flex-row items-center justify-between">
-                      <CardTitle>Orders by Category</CardTitle>
-                      <Button variant="outline" onClick={exportCategoriesCSV}>
+                  <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
+                    <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
+                      <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Orders by Category</h3>
+                      <button onClick={exportCategoriesCSV} className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all">
                         Export CSV
-                      </Button>
-                    </CardHeader>
-                    <CardContent className="pt-0">
+                      </button>
+                    </div>
+                    <div className="p-6">
                       <div className="w-full h-[260px]">
                         {categoryBars.length === 0 ? (
-                          <div className="text-sm text-gray-600 p-3">
+                          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-4 text-center">
                             No category data.
                           </div>
                         ) : (
@@ -554,10 +630,24 @@ function SellerAnalyticsPage() {
                               <YAxis
                                 type="category"
                                 dataKey="name"
-                                tick={{ fill: "#6b7280", fontSize: 12 }}
+                                tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
+                                axisLine={{ stroke: "#000", strokeWidth: 3 }}
+                                tickLine={{ stroke: "#000", strokeWidth: 3 }}
                                 width={120}
                               />
                               <Tooltip
+                                contentStyle={{
+                                  backgroundColor: "hsl(var(--card))",
+                                  border: "3px solid hsl(var(--border))",
+                                  boxShadow: "4px 4px 0px #111",
+                                  borderRadius: "0",
+                                  fontWeight: "bold",
+                                  fontFamily: "Inter",
+                                  fontSize: "12px",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.05em",
+                                }}
+                                itemStyle={{ color: "hsl(var(--foreground))", fontWeight: "black" }}
                                 formatter={(value: any) => [
                                   `${value}`,
                                   "Units",
@@ -569,9 +659,10 @@ function SellerAnalyticsPage() {
                               />
                               <Bar
                                 dataKey="qty"
-                                radius={[4, 4, 4, 4]}
                                 isAnimationActive
                                 animationDuration={350}
+                                stroke="#000"
+                                strokeWidth={2}
                               >
                                 {categoryBars.map((entry) => (
                                   <Cell
@@ -585,14 +676,14 @@ function SellerAnalyticsPage() {
                         )}
                       </div>
                       {categoryBars.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
+                        <div className="mt-6 flex flex-wrap gap-2">
                           {categoryBars.map((c) => (
                             <span
                               key={c.name}
-                              className="inline-flex items-center gap-2 text-xs text-gray-700 border border-gray-200 rounded-full px-2 py-1 bg-white"
+                              className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-foreground border-[3px] border-border shadow-[2px_2px_0px_#111] px-2 py-1 bg-card hover:translate-x-[2px] hover:translate-y-[2px] transition-all hover:shadow-none"
                             >
                               <span
-                                className="inline-block w-2.5 h-2.5 rounded-full"
+                                className="inline-block w-2.5 h-2.5 shadow-[2px_2px_0px_#111] border-[2px] border-border"
                                 style={{ background: categoryColor(c.name) }}
                               />
                               {c.name}
@@ -600,14 +691,13 @@ function SellerAnalyticsPage() {
                           ))}
                         </div>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
-                  <Card>
-                    <CardHeader className="flex-row items-center justify-between">
-                      <CardTitle>Ratings Overview</CardTitle>
-                      <Button
-                        variant="outline"
+                  <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
+                    <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
+                      <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Ratings Overview</h3>
+                      <button
                         onClick={() =>
                           downloadCSV(
                             "seller-reviews.csv",
@@ -623,53 +713,54 @@ function SellerAnalyticsPage() {
                             }
                           )
                         }
+                        className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all"
                       >
                         Export CSV
-                      </Button>
-                    </CardHeader>
-                    <CardContent className="pt-0">
+                      </button>
+                    </div>
+                    <div className="p-6">
                       <StarsBar
                         distribution={reviews?.distribution || {}}
                         avg={reviews?.overallAvgRating || 0}
                       />
-                      <div className="text-sm text-gray-600 mt-2">
+                      <div className="mt-6 font-black uppercase tracking-widest text-xs text-foreground p-3 border-[3px] border-border bg-muted text-center shadow-[4px_4px_0px_#111]">
                         Total reviews:{" "}
-                        <span className="text-gray-900 font-medium">
+                        <span className="text-primary text-xl">
                           {reviews?.totalReviews || 0}
                         </span>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Recent Orders + Top Products */}
-              <div className="mt-4 grid grid-cols-1 xl:grid-cols-12 gap-6">
-                <Card className="xl:col-span-7">
-                  <CardHeader className="flex-row items-center justify-between">
-                    <CardTitle>Recent Orders</CardTitle>
-                    <Button variant="outline" onClick={exportOrdersCSV}>
+              <div className="mt-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
+                <div className="xl:col-span-7 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
+                  <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
+                    <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Recent Orders</h3>
+                    <button onClick={exportOrdersCSV} className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all">
                       Export CSV
-                    </Button>
-                  </CardHeader>
-                  <CardContent className="pt-0">
+                    </button>
+                  </div>
+                  <div className="p-0">
                     {orders.length === 0 ? (
-                      <div className="text-sm text-gray-600">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-8 text-center">
                         No orders found.
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="min-w-full text-sm">
-                          <thead>
-                            <tr className="text-left text-gray-600">
-                              <th className="py-2">Order</th>
-                              <th className="py-2">Date</th>
-                              <th className="py-2">Status</th>
-                              <th className="py-2">Total</th>
-                              <th className="py-2">Customer</th>
+                          <thead className="bg-muted border-b-[3px] border-border">
+                            <tr className="text-left font-black uppercase tracking-widest text-foreground text-[10px]">
+                              <th className="px-6 py-4 border-r-[3px] border-border">Order</th>
+                              <th className="px-6 py-4 border-r-[3px] border-border">Date</th>
+                              <th className="px-6 py-4 border-r-[3px] border-border">Status</th>
+                              <th className="px-6 py-4 border-r-[3px] border-border">Total</th>
+                              <th className="px-6 py-4">Customer</th>
                             </tr>
                           </thead>
-                          <tbody>
+                          <tbody className="divide-y-[3px] divide-border">
                             {orders.slice(0, 10).map((o) => {
                               const total = (o.items || []).reduce(
                                 (s, it) => s + it.qty * it.price,
@@ -678,21 +769,31 @@ function SellerAnalyticsPage() {
                               return (
                                 <tr
                                   key={o._id}
-                                  className="border-t border-gray-200 text-gray-900"
+                                  className="hover:bg-muted/50 transition-colors"
                                 >
-                                  <td className="py-2">
-                                    #{(o._id || "").slice(-6).toUpperCase()}
+                                  <td className="px-6 py-4 border-r-[3px] border-border font-black text-xs text-foreground uppercase tracking-widest">
+                                    #{(o._id || "").slice(-6)}
                                   </td>
-                                  <td className="py-2">
+                                  <td className="px-6 py-4 border-r-[3px] border-border font-bold text-[10px] tracking-widest text-foreground">
                                     {o.createdAt ? csvDate(o.createdAt) : "—"}
                                   </td>
-                                  <td className="py-2 capitalize">
-                                    {o.status}
+                                  <td className="px-6 py-4 border-r-[3px] border-border">
+                                     <span className={`px-2 py-1 border-[2px] font-bold uppercase tracking-widest text-[10px]
+                                      ${
+                                        o.status === "delivered"
+                                          ? "bg-emerald-400 text-emerald-950 border-emerald-950"
+                                          : o.status === "cancelled"
+                                          ? "bg-rose-400 text-rose-950 border-rose-950"
+                                          : o.status === "processing"
+                                          ? "bg-blue-400 text-blue-950 border-blue-950"
+                                          : "bg-amber-400 text-amber-950 border-amber-950"
+                                      }
+                                    `}>
+                                      {o.status}
+                                    </span>
                                   </td>
-                                  <td className="py-2">{currency(total)}</td>
-                                  <td className="py-2">
-                                    {o.user?.email || "—"}
-                                  </td>
+                                  <td className="px-6 py-4 border-r-[3px] border-border font-black text-xs text-foreground">{currency(total)}</td>
+                                  <td className="px-6 py-4 font-bold text-[10px] tracking-widest text-muted-foreground truncate max-w-[200px]">{o.user?.email || "—"}</td>
                                 </tr>
                               );
                             })}
@@ -700,14 +801,13 @@ function SellerAnalyticsPage() {
                         </table>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
-                <Card className="xl:col-span-5">
-                  <CardHeader className="flex-row items-center justify-between">
-                    <CardTitle>Top Products</CardTitle>
-                    <Button
-                      variant="outline"
+                <div className="xl:col-span-5 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
+                  <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
+                    <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Top Products</h3>
+                    <button
                       onClick={() =>
                         downloadCSV(
                           "seller-top-products.csv",
@@ -723,32 +823,33 @@ function SellerAnalyticsPage() {
                           }
                         )
                       }
+                      className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all"
                     >
                       Export CSV
-                    </Button>
-                  </CardHeader>
-                  <CardContent className="pt-0">
+                    </button>
+                  </div>
+                  <div className="p-6">
                     {topProducts.length === 0 ? (
-                      <div className="text-sm text-gray-600">No data</div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-4 text-center">No data</div>
                     ) : (
-                      <div className="overflow-x-auto">
+                      <div className="overflow-x-auto border-[3px] border-border">
                         <table className="min-w-full text-sm">
-                          <thead>
-                            <tr className="text-left text-gray-600">
-                              <th className="py-2">Product</th>
-                              <th className="py-2">Sold</th>
-                              <th className="py-2">Revenue</th>
+                          <thead className="bg-muted border-b-[3px] border-border">
+                            <tr className="text-left font-black uppercase tracking-widest text-foreground text-[10px]">
+                              <th className="px-4 py-3 border-r-[3px] border-border">Product</th>
+                              <th className="px-4 py-3 border-r-[3px] border-border">Sold</th>
+                              <th className="px-4 py-3">Revenue</th>
                             </tr>
                           </thead>
-                          <tbody>
+                          <tbody className="divide-y-[3px] divide-border">
                             {topProducts.map((t, idx) => (
                               <tr
                                 key={idx}
-                                className="border-t border-gray-200 text-gray-900"
+                                className="hover:bg-muted/50 transition-colors"
                               >
-                                <td className="py-2">{t.product}</td>
-                                <td className="py-2">{t.sold}</td>
-                                <td className="py-2">
+                                <td className="px-4 py-3 border-r-[3px] border-border font-bold text-[10px] tracking-widest text-foreground truncate max-w-[200px]" title={t.product}>{t.product}</td>
+                                <td className="px-4 py-3 border-r-[3px] border-border font-black text-xs text-foreground">{t.sold}</td>
+                                <td className="px-4 py-3 font-black text-xs text-primary">
                                   ₹{t.revenue.toLocaleString("en-IN")}
                                 </td>
                               </tr>
@@ -757,8 +858,8 @@ function SellerAnalyticsPage() {
                         </table>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -771,3 +872,4 @@ function SellerAnalyticsPage() {
 export default dynamic(() => Promise.resolve(SellerAnalyticsPage), {
   ssr: false,
 });
+

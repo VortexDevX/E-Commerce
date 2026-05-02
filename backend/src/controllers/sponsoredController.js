@@ -32,7 +32,7 @@ export const listPlacements = async (req, res) => {
       .lean();
     res.json(items);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -223,7 +223,7 @@ export const sponsoredImpression = async (req, res) => {
     } catch {}
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -243,6 +243,7 @@ export const sponsoredClick = async (req, res) => {
     } catch {}
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+

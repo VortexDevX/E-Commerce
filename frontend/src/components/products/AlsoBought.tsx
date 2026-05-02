@@ -37,7 +37,7 @@ export default function AlsoBought({ productId, limit = 8 }: Props) {
     <section className="mt-10">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-900">
-          Customers also bought
+          Shoppers who viewed this also bought
         </h2>
       </div>
 

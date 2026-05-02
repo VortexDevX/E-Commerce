@@ -145,6 +145,7 @@ export const withSellerScope =
 
       return res.status(403).json({ message: "Forbidden" });
     } catch (err) {
-      return res.status(500).json({ message: err.message });
+      return res.status(500).json({ message: "Internal server error" });
     }
   };
+

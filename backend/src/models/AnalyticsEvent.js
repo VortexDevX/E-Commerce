@@ -53,6 +53,8 @@ AnalyticsEventSchema.pre("save", function (next) {
 
 AnalyticsEventSchema.index({ ymd: 1, event: 1 });
 AnalyticsEventSchema.index({ createdAt: 1, event: 1 });
+AnalyticsEventSchema.index({ event: 1, createdAt: -1 });
+AnalyticsEventSchema.index({ event: 1, "meta.query": 1, createdAt: -1 });
 
 // De-dupe helpers
 AnalyticsEventSchema.index({

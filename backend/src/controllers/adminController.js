@@ -18,6 +18,12 @@ import {
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
+const clampInt = (value, min, max, fallback) => {
+  const parsed = Number.parseInt(String(value), 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+};
+
 // Permissions catalog for sub-admins
 export const PERMISSIONS_CATALOG = [
   "users:read",
@@ -57,21 +63,30 @@ export const SELLER_ASSISTANT_PERMISSIONS_CATALOG = [
 /** List all users */
 export const listUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password");
+    const limit = clampInt(req.query.limit, 1, 500, 200);
+    const users = await User.find()
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .select(
+        "_id name email role status sellerRequest seller createdAt assistantFor permissions"
+      )
+      .lean();
     res.json(users);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 // Get single user
 export const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("-password");
+    const user = await User.findById(req.params.id)
+      .select("-password")
+      .lean();
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -81,8 +96,10 @@ export const getUserDetailsWithOrders = async (req, res) => {
     const user = await User.findById(req.params.id).select("-password").lean();
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    const orderLimit = clampInt(req.query.orderLimit, 1, 200, 50);
     const orders = await Order.find({ user: req.params.id })
       .sort({ createdAt: -1 })
+      .limit(orderLimit)
       .populate("items.product", "title price")
       .lean();
 
@@ -94,7 +111,7 @@ export const getUserDetailsWithOrders = async (req, res) => {
 
     res.json({ user, orders, summary });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -161,7 +178,7 @@ export const updateUserRole = async (req, res) => {
 
     res.json({ message: "Role updated", user });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -191,7 +208,7 @@ export const toggleUserStatus = async (req, res) => {
 
     res.json({ message: `User ${status}`, user });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -219,7 +236,7 @@ export const getUserPermissions = async (req, res) => {
       sellerApproved: !!u.seller?.approved,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -272,7 +289,7 @@ export const updateUserPermissions = async (req, res) => {
 
     res.json({ message: "Permissions updated", permissions: user.permissions });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -329,7 +346,7 @@ export const setAssistantFor = async (req, res) => {
       assistantFor: assistant.assistantFor || null,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -344,8 +361,13 @@ export const handleSellerRequest = async (req, res) => {
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    const before = {
+      role: user.role,
+      sellerRequest: user.sellerRequest,
+      seller: user.seller,
+    };
+
     if (action === "approve") {
-      const before = { sellerRequest: user.sellerRequest };
       user.role = "seller";
       user.sellerRequest = "approved";
       user.seller = { approved: true, approvedAt: new Date() };
@@ -378,7 +400,7 @@ export const handleSellerRequest = async (req, res) => {
       return res.status(400).json({ message: "Invalid action" });
     }
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -398,20 +420,25 @@ export const getSellerApplication = async (req, res) => {
       user,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 /** List all pending seller requests */
 export const listSellerRequests = async (req, res) => {
   try {
+    const limit = clampInt(req.query.limit, 1, 500, 200);
     const pending = await User.find({
       sellerRequest: "pending",
-    }).select("-password");
+    })
+      .select("_id name email role status sellerRequest seller createdAt")
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
 
     res.json(pending);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -420,10 +447,18 @@ export const listSellerRequests = async (req, res) => {
 /** Admin: Get all products (active + blocked) */
 export const listAllProducts = async (req, res) => {
   try {
-    const products = await Product.find().populate("owner", "name email role");
+    const limit = clampInt(req.query.limit, 1, 500, 250);
+    const products = await Product.find()
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .select(
+        "_id title slug price discountPrice stock category status owner avgRating ratingsCount createdAt"
+      )
+      .populate("owner", "name email role")
+      .lean();
     res.json(products);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -452,7 +487,7 @@ export const toggleProductStatus = async (req, res) => {
 
     res.json(product);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -476,7 +511,7 @@ export const deleteProductAdmin = async (req, res) => {
 
     res.json({ message: "Product deleted by admin" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -487,6 +522,7 @@ export const listAllOrders = async (req, res) => {
   try {
     const { from, to } = req.query;
     const query = {};
+    const limit = clampInt(req.query.limit, 1, 500, 200);
     if (from || to) {
       query.createdAt = {};
       if (from) query.createdAt.$gte = new Date(from);
@@ -498,11 +534,17 @@ export const listAllOrders = async (req, res) => {
     }
 
     const orders = await Order.find(query)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .select(
+        "_id user items subtotal tax shippingMethod shippingCost totalAmount address paymentMethod status createdAt updatedAt"
+      )
       .populate("user", "name email")
-      .populate("items.product", "title price category");
+      .populate("items.product", "title price category")
+      .lean();
     res.json(orders);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -515,7 +557,7 @@ export const getOrderById = async (req, res) => {
     if (!order) return res.status(404).json({ message: "Order not found" });
     res.json(order);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -533,7 +575,7 @@ export const getOrderAuditTrail = async (req, res) => {
 
     res.json(audit);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -587,7 +629,7 @@ export const updateOrderStatus = async (req, res) => {
 
     res.json({ message: `Order status updated to ${status}`, order });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -611,7 +653,7 @@ export const deleteOrder = async (req, res) => {
 
     res.json({ message: "Order deleted" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -654,7 +696,7 @@ export const getAdminOverview = async (req, res) => {
 
     res.json({ totalUsers, totalOrders, totalProducts, totalRevenue });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -695,7 +737,7 @@ export const getAdminSales = async (req, res) => {
       sales.map((s) => ({ date: s._id, orders: s.orders, revenue: s.revenue }))
     );
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -804,7 +846,7 @@ export const listOrderAuditLogs = async (req, res) => {
       hasNext: p * l < total,
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -878,7 +920,7 @@ export const listAdminActionLogs = async (req, res) => {
 
     res.json({ data, page: p, limit: l, total, hasNext: p * l < total });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -949,7 +991,7 @@ export const getAdminTopProducts = async (req, res) => {
 
     res.json(top);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -1000,7 +1042,7 @@ export const listReturnRequests = async (req, res) => {
 
     res.json({ data, page: p, limit: l, total, hasNext: p * l < total });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -1099,6 +1141,7 @@ export const updateReturnRequestStatus = async (req, res) => {
 
     res.json({ message: `Return ${status}`, request: rr });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+

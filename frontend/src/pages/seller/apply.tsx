@@ -24,7 +24,7 @@ const TextField = memo(function TextField({
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 w-full"
+      className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
       autoComplete="off"
     />
   );
@@ -82,16 +82,16 @@ function SellerApplyPage() {
   return (
     <ProtectedRoute roles={["user", "seller", "admin"]}>
       <SellerLayout>
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold text-gray-900">
+        <div className="space-y-2 mb-8 border-b-[3px] border-border pb-4">
+          <h1 className="text-3xl font-black uppercase tracking-widest text-foreground">
             Apply for Seller
           </h1>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground mt-2">
             Share your business details. Our team will review and reach out.
           </p>
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
+        <div className="rounded-none border-[3px] border-border bg-card shadow-[8px_8px_0px_hsl(var(--foreground))] p-6 space-y-6">
           <div className="grid md:grid-cols-2 gap-3">
             <TextField
               placeholder="Business Name"
@@ -132,7 +132,7 @@ function SellerApplyPage() {
             onChange={(e) =>
               setForm((f) => ({ ...f, message: e.target.value }))
             }
-            className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
             rows={4}
           />
 
@@ -147,7 +147,7 @@ function SellerApplyPage() {
             />
             <label
               htmlFor="media-upload"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-3 uppercase tracking-widest text-xs font-black border-[3px] border-border bg-card text-foreground cursor-pointer shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
             >
               <svg
                 className="w-4 h-4 text-gray-500"
@@ -162,7 +162,7 @@ function SellerApplyPage() {
             <button
               onClick={uploadDoc}
               disabled={!docFile || uploading}
-              className="px-3 py-2 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="px-6 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50"
             >
               {uploading ? "Uploading..." : "Upload document"}
             </button>
@@ -186,11 +186,11 @@ function SellerApplyPage() {
             </ul>
           )}
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-4 border-t-[3px] border-border">
             <button
               onClick={submit}
               disabled={submitting}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 disabled:opacity-50"
+              className="px-8 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50 mt-4 w-full md:w-auto"
             >
               {submitting ? "Submitting..." : "Submit Application"}
             </button>

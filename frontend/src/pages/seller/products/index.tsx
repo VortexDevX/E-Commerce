@@ -26,10 +26,10 @@ type MyProduct = {
 
 function StatusBadge({ status }: { status: "active" | "blocked" }) {
   const map: Record<string, string> = {
-    active: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    blocked: "bg-rose-50 text-rose-700 border-rose-200",
+    active: "bg-emerald-400 text-emerald-950",
+    blocked: "bg-rose-400 text-rose-950",
   };
-  return <span className={`badge border ${map[status]}`}>{status}</span>;
+  return <span className={`px-2 py-0.5 border-[3px] border-border shadow-[2px_2px_0px_#111] text-xs font-black uppercase tracking-widest ${map[status]}`}>{status}</span>;
 }
 
 function SellerProductsPage() {
@@ -214,27 +214,27 @@ function SellerProductsPage() {
           scope="seller"
           perm="seller:products:read"
           fallback={
-            <div className="card p-6 text-gray-700">
-              You don’t have access to Products.
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">
+              You don&apos;t have access to Products.
             </div>
           }
         >
           {/* Header + actions */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <h1 className="text-2xl font-semibold text-gray-900">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
+            <h1 className="text-3xl text-foreground">
               My Products
             </h1>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 onClick={exportCsv}
-                className="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-xs"
               >
                 Export CSV
               </button>
               <PermissionGate scope="seller" perm="seller:products:write">
                 <Link
                   href="/seller/products/new"
-                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-500"
+                  className="px-6 py-2 border-[3px] border-primary bg-primary text-primary-foreground shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 block"
                 >
                   + Add Product
                 </Link>
@@ -244,28 +244,28 @@ function SellerProductsPage() {
 
           {/* Bulk Upload */}
           <PermissionGate scope="seller" perm="seller:products:write">
-            <div className="card p-4 mt-4 space-y-4">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <h2 className="text-lg font-semibold text-gray-900">
+            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 mb-8 space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <h2 className="text-xl font-black uppercase tracking-widest text-foreground">
                   Bulk Upload (CSV + ZIP)
                 </h2>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                   <button
                     onClick={downloadTemplate}
-                    className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                    className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-xs"
                   >
                     Download Template
                   </button>
                   <button
                     onClick={downloadCategoriesCsv}
-                    className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                    className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-xs"
                     title="Use this to find category IDs or slugs"
                   >
                     Download Categories
                   </button>
                   <button
                     onClick={() => setShowGuide((s) => !s)}
-                    className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                    className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-xs"
                   >
                     {showGuide ? "Hide Guide" : "How to format CSV"}
                   </button>
@@ -368,7 +368,7 @@ function SellerProductsPage() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
                     CSV ZIP
                   </label>
                   <input
@@ -380,10 +380,10 @@ function SellerProductsPage() {
                   />
                   <label
                     htmlFor="csv-upload"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+                    className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all cursor-pointer font-bold uppercase tracking-widest text-sm"
                   >
                     <svg
-                      className="w-4 h-4 text-gray-500"
+                      className="w-4 h-4 text-foreground"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
@@ -392,13 +392,13 @@ function SellerProductsPage() {
                     </svg>
                     Choose file
                   </label>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-2 font-bold tracking-widest px-1">
                     Required: title, price, stock, and category_id or
                     category_slug.
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
                     Media ZIP (optional)
                   </label>
                   <input
@@ -410,10 +410,10 @@ function SellerProductsPage() {
                   />
                   <label
                     htmlFor="zip-upload"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+                    className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all cursor-pointer font-bold uppercase tracking-widest text-sm"
                   >
                     <svg
-                      className="w-4 h-4 text-gray-500"
+                      className="w-4 h-4 text-foreground"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
@@ -422,24 +422,24 @@ function SellerProductsPage() {
                     </svg>
                     Choose file
                   </label>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-2 font-bold tracking-widest px-1">
                     Up to 5 images and 1 video per product. Max 50MB.
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-3 pt-4 border-t-[3px] border-border">
                 <button
                   onClick={handleImport}
                   disabled={importing || !csvFile}
-                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-500 disabled:opacity-50"
+                  className="px-6 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50"
                 >
                   {importing ? "Importing..." : "Import"}
                 </button>
                 {result?.errors?.length ? (
                   <button
                     onClick={downloadErrorsCsv}
-                    className="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                    className="px-6 py-2 border-[3px] border-border bg-card text-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1"
                   >
                     Download errors CSV
                   </button>
@@ -473,19 +473,19 @@ function SellerProductsPage() {
           </PermissionGate>
 
           {/* Filters */}
-          <div className="card p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 mt-4">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
+          <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full">
               <input
                 placeholder="Search title..."
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                className="bg-white border border-gray-300 rounded-md px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 w-full md:w-72"
+                className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all flex-1 md:max-w-xs"
               />
               <div className="flex items-center gap-3">
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as any)}
-                  className="bg-white border border-gray-300 rounded-md px-3 py-2 text-gray-700 hover:bg-gray-50"
+                  className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                 >
                   <option value="all">All statuses</option>
                   <option value="active">Active</option>
@@ -494,7 +494,7 @@ function SellerProductsPage() {
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as any)}
-                  className="bg-white border border-gray-300 rounded-md px-3 py-2 text-gray-700 hover:bg-gray-50"
+                  className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
                 >
                   <option value="newest">Newest</option>
                   <option value="priceAsc">Price: Low → High</option>
@@ -502,80 +502,82 @@ function SellerProductsPage() {
                 </select>
               </div>
             </div>
-            <div className="text-sm text-gray-600 self-end sm:self-auto">
+            <div className="text-sm font-black uppercase tracking-widest text-muted-foreground self-end sm:self-auto shrink-0 px-2 flex items-center h-full">
               {filtered.length} item{filtered.length === 1 ? "" : "s"}
             </div>
           </div>
 
           {/* Mobile list */}
-          <div className="md:hidden space-y-3 mt-4">
+          <div className="md:hidden space-y-4 mt-4">
             {loading ? (
-              <div className="card p-4 text-gray-600">Loading...</div>
+              <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-bold uppercase tracking-widest text-sm">Loading...</div>
             ) : filtered.length === 0 ? (
-              <div className="card p-4 text-gray-600">No products found.</div>
+              <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-bold uppercase tracking-widest text-sm text-center">No products found.</div>
             ) : (
               filtered.map((p) => {
                 const thumb = getImageUrl(p.images?.[0]);
                 return (
-                  <div key={p._id} className="card p-3">
+                  <div key={p._id} className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-4 flex flex-col gap-3">
                     <div className="flex items-center gap-3">
-                      <img
-                        src={thumb}
-                        alt={p.title}
-                        className="w-14 h-14 rounded-lg border border-gray-200 object-cover shrink-0"
-                        onError={(e) =>
-                          ((e.currentTarget as HTMLImageElement).src =
-                            "/fallback.png")
-                        }
-                      />
+                      <div className="w-16 h-16 border-[3px] border-border bg-muted overflow-hidden shrink-0">
+                        <img
+                          src={thumb}
+                          alt={p.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) =>
+                            ((e.currentTarget as HTMLImageElement).src =
+                              "/fallback.png")
+                          }
+                        />
+                      </div>
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium truncate">{p.title}</div>
-                        <div className="text-xs text-gray-500 truncate">
+                        <div className="font-black text-foreground uppercase tracking-widest text-sm truncate">{p.title}</div>
+                        <div className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase truncate mt-1">
                           {p.brand ? `${p.brand} · ` : ""}
                           {p.category || ""}
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                    <div className="mt-2 grid grid-cols-2 gap-3 border-y-[3px] border-border py-3">
                       <div>
-                        <div className="text-gray-500">Price</div>
-                        <div className="text-gray-900">{currency(p.price)}</div>
+                        <div className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase mb-1">Price</div>
+                        <div className="text-sm font-black text-primary">{currency(p.price)}</div>
                       </div>
                       <div>
-                        <div className="text-gray-500">Stock</div>
-                        <div className="text-gray-900">{p.stock}</div>
+                        <div className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase mb-1">Stock</div>
+                        <div className="text-sm font-black text-foreground">{p.stock}</div>
                       </div>
                       <div>
-                        <div className="text-gray-500">Status</div>
-                        <div className="text-gray-900">
+                        <div className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase mb-1">Status</div>
+                        <div>
                           <StatusBadge status={p.status} />
                         </div>
                       </div>
                       <div>
-                        <div className="text-gray-500">Created</div>
-                        <div className="text-gray-900">
+                        <div className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase mb-1">Created</div>
+                        <div className="text-xs font-bold text-foreground">
                           {shortDate(p.createdAt)}
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-1 flex flex-wrap gap-2 pt-2">
                       <Link
                         href={`/seller/products/${p._id}`}
-                        className="px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                        className="flex-1 text-center py-2 px-3 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-bold uppercase text-[10px]"
                       >
                         Details
                       </Link>
                       <Link
                         href={`/seller/products/edit/${p._id}`}
-                        className="px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                        className="flex-1 text-center py-2 px-3 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-bold uppercase text-[10px]"
                       >
                         Edit
                       </Link>
                       <button
                         onClick={() => remove(p._id)}
-                        className="px-3 py-1 border border-rose-300 rounded-md bg-white text-rose-700 hover:bg-rose-50"
+                        className="flex-1 text-center py-2 px-3 border-[3px] border-rose-600 bg-rose-600 text-white shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-bold uppercase text-[10px]"
                       >
                         Delete
                       </button>
@@ -587,28 +589,28 @@ function SellerProductsPage() {
           </div>
 
           {/* Desktop table */}
-          <div className="hidden md:block card overflow-x-auto mt-4">
+          <div className="hidden md:block bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] overflow-x-auto mt-4">
             <table className="min-w-full text-sm">
-              <thead>
-                <tr className="text-left text-gray-500">
-                  <th className="px-4 py-3">Item</th>
-                  <th className="px-4 py-3">Price</th>
-                  <th className="px-4 py-3">Stock</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Created</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+              <thead className="bg-muted border-b-[3px] border-border">
+                <tr className="text-left font-black uppercase tracking-widest text-[10px] text-foreground">
+                  <th className="px-6 py-4 border-r-[3px] border-border">Item</th>
+                  <th className="px-6 py-4 border-r-[3px] border-border text-center">Price</th>
+                  <th className="px-6 py-4 border-r-[3px] border-border text-center">Stock</th>
+                  <th className="px-6 py-4 border-r-[3px] border-border text-center">Status</th>
+                  <th className="px-6 py-4 border-r-[3px] border-border text-center">Created</th>
+                  <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y-[3px] divide-border">
                 {loading ? (
                   <tr>
-                    <td className="px-4 py-6 text-gray-500" colSpan={6}>
+                    <td className="px-6 py-8 text-foreground font-bold uppercase tracking-widest text-[10px] text-center bg-muted/30" colSpan={6}>
                       Loading...
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td className="px-4 py-6 text-gray-500" colSpan={6}>
+                    <td className="px-6 py-8 text-foreground font-bold uppercase tracking-widest text-[10px] text-center bg-muted/30" colSpan={6}>
                       No products found.
                     </td>
                   </tr>
@@ -618,53 +620,55 @@ function SellerProductsPage() {
                     return (
                       <tr
                         key={p._id}
-                        className="border-t border-gray-200 text-gray-900"
+                        className="hover:bg-muted/50 transition-colors"
                       >
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={thumb}
-                              alt={p.title}
-                              className="w-12 h-12 rounded-lg border border-gray-200 object-cover"
-                              onError={(e) =>
-                                ((e.currentTarget as HTMLImageElement).src =
-                                  "/fallback.png")
-                              }
-                            />
+                        <td className="px-6 py-4 border-r-[3px] border-border">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 border-[3px] border-border bg-muted overflow-hidden shrink-0">
+                              <img
+                                src={thumb}
+                                alt={p.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) =>
+                                  ((e.currentTarget as HTMLImageElement).src =
+                                    "/fallback.png")
+                                }
+                              />
+                            </div>
                             <div className="min-w-0">
-                              <div className="font-medium truncate">
+                              <div className="font-black text-xs text-foreground uppercase tracking-widest truncate max-w-[250px]" title={p.title}>
                                 {p.title}
                               </div>
-                              <div className="text-xs text-gray-500 truncate">
+                              <div className="font-bold text-[10px] text-muted-foreground tracking-widest uppercase truncate mt-1">
                                 {p.brand ? `${p.brand} · ` : ""}
                                 {p.category || ""}
                               </div>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3">{currency(p.price)}</td>
-                        <td className="px-4 py-3">{p.stock}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-6 py-4 border-r-[3px] border-border text-center font-black text-primary text-sm">{currency(p.price)}</td>
+                        <td className="px-6 py-4 border-r-[3px] border-border text-center font-black text-foreground text-sm">{p.stock}</td>
+                        <td className="px-6 py-4 border-r-[3px] border-border text-center">
                           <StatusBadge status={p.status} />
                         </td>
-                        <td className="px-4 py-3">{shortDate(p.createdAt)}</td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex gap-2 justify-end">
+                        <td className="px-6 py-4 border-r-[3px] border-border text-center font-bold text-[10px] tracking-widest text-foreground">{shortDate(p.createdAt)}</td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex gap-2 justify-center flex-wrap">
                             <Link
                               href={`/seller/products/${p._id}`}
-                              className="px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                              className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-[10px] flex items-center h-8"
                             >
                               Details
                             </Link>
                             <Link
                               href={`/seller/products/edit/${p._id}`}
-                              className="px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                              className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-[10px] flex items-center h-8"
                             >
                               Edit
                             </Link>
                             <button
                               onClick={() => remove(p._id)}
-                              className="px-3 py-1 border border-rose-300 rounded-md bg-white text-rose-700 hover:bg-rose-50"
+                              className="px-3 py-1.5 border-[3px] border-rose-600 bg-rose-600 shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-white font-bold uppercase text-[10px] h-8"
                             >
                               Delete
                             </button>

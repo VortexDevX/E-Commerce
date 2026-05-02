@@ -83,9 +83,9 @@ export default function WishlistPage() {
       const { data } = await api.post("/wishlist/share/enable");
       setShareEnabled(!!data?.enabled);
       setShareId(data?.id || null);
-      toast.success("Sharing enabled");
+      toast.success("Share link is ready");
     } catch (e: any) {
-      toast.error(e?.response?.data?.message || "Failed to enable share");
+      toast.error(e?.response?.data?.message || "We could not create a share link");
     }
   };
 
@@ -94,9 +94,9 @@ export default function WishlistPage() {
       const { data } = await api.post("/wishlist/share/disable");
       setShareEnabled(!!data?.enabled);
       setShareId(null); // id cleared on disable
-      toast.success("Sharing disabled");
+      toast.success("Share link turned off");
     } catch (e: any) {
-      toast.error(e?.response?.data?.message || "Failed to disable share");
+      toast.error(e?.response?.data?.message || "We could not turn off sharing");
     }
   };
 
@@ -104,9 +104,9 @@ export default function WishlistPage() {
     if (!shareUrl) return;
     try {
       await navigator.clipboard.writeText(shareUrl);
-      toast.success("Share link copied");
+      toast.success("Link copied");
     } catch {
-      toast.error("Failed to copy link");
+      toast.error("We could not copy the link");
     }
   };
 
@@ -118,38 +118,43 @@ export default function WishlistPage() {
       setAlertsEnabled(!!data?.enabled);
       toast.success(
         data?.enabled
-          ? "Price drop alerts enabled"
-          : "Price drop alerts disabled"
+          ? "Price alerts turned on"
+          : "Price alerts turned off"
       );
     } catch (e: any) {
-      toast.error(e?.response?.data?.message || "Failed to update alerts");
+      toast.error(e?.response?.data?.message || "We could not update your alerts");
     }
   };
 
   if (!items || items.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-6 py-16 text-center">
-        <HeartIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-          Your wishlist is empty
-        </h2>
-        <p className="text-gray-600 mb-6">
-          Save products you love to view them later.
-        </p>
-        <Link href="/products" className="btn btn-primary">
-          Browse Products
-        </Link>
+        <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-12 max-w-xl mx-auto flex flex-col items-center">
+          <HeartIcon className="w-16 h-16 text-muted-foreground mx-auto mb-6" />
+          <h2 className="text-3xl font-black uppercase tracking-widest text-foreground mb-4">
+            Your wishlist is empty
+          </h2>
+          <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-8">
+            Save items here so you can compare them and buy when you are ready.
+          </p>
+          <Link
+            href="/products"
+            className="px-8 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 block max-w-xs mx-auto text-center"
+          >
+            Start shopping
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">My Wishlist</h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 border-b-[3px] border-border pb-6">
+        <h1 className="text-4xl font-black uppercase tracking-widest text-foreground">Saved items</h1>
         {/* Price drop alerts toggle */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-700">Price drop alerts</span>
+          <span className="text-sm text-gray-700">Price alerts</span>
           {alertsLoading ? (
             <div className="h-5 w-10 bg-gray-100 border border-gray-200 rounded-full animate-pulse" />
           ) : (
@@ -159,7 +164,7 @@ export default function WishlistPage() {
                 alertsEnabled ? "bg-emerald-500" : "bg-gray-300"
               }`}
               aria-pressed={alertsEnabled}
-              title={alertsEnabled ? "Disable alerts" : "Enable alerts"}
+              title={alertsEnabled ? "Turn off alerts" : "Turn on alerts"}
             >
               <span
                 className={`block w-5 h-5 bg-white rounded-full shadow transform transition ${
@@ -169,37 +174,37 @@ export default function WishlistPage() {
             </button>
           )}
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {statusLoading ? (
-            <div className="h-10 w-[320px] bg-gray-100 border border-gray-200 rounded animate-pulse" />
+            <div className="h-10 w-[320px] bg-card border-[3px] border-border animate-pulse" />
           ) : !shareEnabled ? (
             <button
               onClick={enableShare}
-              className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-500"
+              className="px-4 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 text-xs"
             >
-              Enable Share
+              Share wishlist
             </button>
           ) : (
             <>
-              <div className="flex items-center gap-2">
+              <div className="flex items-stretch gap-2">
                 <input
                   readOnly
                   value={shareUrl}
-                  className="w-[260px] sm:w-[340px] bg-white border border-gray-300 rounded px-3 py-2 text-gray-900"
+                  className="w-[260px] sm:w-[340px] bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40 text-xs"
                 />
                 <button
                   onClick={copyLink}
-                  className="px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                  title="Copy share link"
+                  className="px-3 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all"
+                  title="Copy link"
                 >
-                  <LinkIcon className="w-5 h-5" />
+                  <LinkIcon className="w-4 h-4 text-foreground" />
                 </button>
               </div>
               <button
                 onClick={disableShare}
-                className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all text-xs"
               >
-                Disable
+                Turn off
               </button>
             </>
           )}
@@ -208,15 +213,17 @@ export default function WishlistPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {items.map((p) => (
-          <div key={p._id} className="relative group">
+          <div key={p._id} className="relative group bg-card border-[3px] border-border shadow-[8px_8px_0px_#111]">
             <ProductCard p={p} />
-            <button
-              onClick={() => dispatch(removeFromWishlist(p._id))}
-              className="absolute top-2 right-2 bg-white/90 rounded-full p-2 text-rose-600 hover:bg-white"
-              title="Remove"
-            >
-              <HeartIcon className="w-5 h-5" />
-            </button>
+            <div className="absolute top-2 right-2">
+              <button
+                onClick={() => dispatch(removeFromWishlist(p._id))}
+                className="border-[3px] border-rose-600 bg-rose-50 text-rose-600 p-2 shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all z-10"
+                title="Remove from saved items"
+              >
+                <HeartIcon className="w-5 h-5 fill-rose-600" />
+              </button>
+            </div>
           </div>
         ))}
       </div>

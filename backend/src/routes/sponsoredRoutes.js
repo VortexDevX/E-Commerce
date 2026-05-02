@@ -59,7 +59,7 @@ router.post("/:id/impression", async (req, res) => {
     }
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
@@ -92,8 +92,9 @@ router.post("/:id/click", async (req, res) => {
     }
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
 export default router;
+

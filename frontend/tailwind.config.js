@@ -9,8 +9,13 @@ module.exports = {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
-      screens: { "2xl": "1400px" },
+      padding: "1rem",
+      screens: { "2xl": "1280px" },
+    },
+    fontFamily: {
+      sans: ["var(--font-body)", "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "sans-serif"],
+      display: ["var(--font-display)", "Georgia", "serif"],
+      mono: ['"JetBrains Mono"', '"Courier New"', "monospace"],
     },
     extend: {
       colors: {
@@ -19,8 +24,21 @@ module.exports = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        surface: "hsl(var(--secondary))",
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        error: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
         primary: {
-          DEFAULT: "hsl(var(--primary))", // purple
+          DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
@@ -49,9 +67,14 @@ module.exports = {
         },
       },
       borderRadius: {
-        lg: "0.625rem", // ~10px
-        xl: "0.75rem", // ~12px
-        "2xl": "0.875rem", // ~14px
+        DEFAULT: "0.125rem",
+        sm: "0.125rem",
+        md: "0.125rem",
+        lg: "0.125rem",
+        xl: "0.125rem",
+        "2xl": "0.125rem",
+        "3xl": "0.125rem",
+        full: "0.125rem",
       },
       keyframes: {
         "accordion-down": {
@@ -62,10 +85,25 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "fade-in-up": {
+          "0%": { opacity: "0", transform: "translateY(16px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in-up": "fade-in-up 0.6s ease-out forwards",
+        "fade-in": "fade-in 0.4s ease-out forwards",
+        "float": "float 3s ease-in-out infinite",
       },
     },
   },

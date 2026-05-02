@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import type { RootState, AppDispatch } from "../store";
@@ -39,7 +40,10 @@ function CheckoutInner() {
 
   const items = useSelector((s: RootState) => s.cart.items ?? []);
   const user = useSelector((s: RootState) => s.auth.user);
-  const addresses = (user?.addresses as Address[] | undefined) || [];
+  const addresses = useMemo(
+    () => ((user?.addresses as Address[] | undefined) || []),
+    [user?.addresses]
+  );
 
   // Track checkout view once when page has items
   const trackedRef = useRef(false);
@@ -93,7 +97,6 @@ function CheckoutInner() {
   const [shipping, setShipping] = useState<"standard" | "express">("standard");
 
   const {
-    subtotal: cartSubtotal,
     discount: cartDiscount,
     discountedSubtotal: cartDiscountedSubtotal,
     appliedCoupon,
@@ -114,6 +117,8 @@ function CheckoutInner() {
 
   const [placing, setPlacing] = useState(false);
   const [acceptedPolicies, setAcceptedPolicies] = useState(false);
+  const [addressError, setAddressError] = useState("");
+  const [liveMessage, setLiveMessage] = useState("");
 
   const formatAddress = (a: Address) =>
     [a.label, a.line1, a.line2, a.city, a.state, a.zip, a.country, a.phone]
@@ -131,17 +136,20 @@ function CheckoutInner() {
       (mode === "new" && !!newAddr.line1 && !!newAddr.city));
 
   const placeOrder = async () => {
+    setAddressError("");
     if (!canPlaceOrder) {
-      toast.error("Please select or enter a valid address.");
+      setAddressError("Select a saved address or add a complete shipping address.");
+      toast.error("Select a saved address or add a complete shipping address.");
       return;
     }
     if (!acceptedPolicies) {
-      toast.error("Please accept the Terms and Privacy Policy to continue.");
+      setLiveMessage("Accept the terms and privacy policy to place your order.");
+      toast.error("Accept the terms and privacy policy to place your order.");
       return;
     }
 
     setPlacing(true);
-    const t = toast.loading("Placing your order...");
+    const t = toast.loading("Sending your order...");
 
     try {
       if (mode === "new" && saveToProfile) {
@@ -156,11 +164,16 @@ function CheckoutInner() {
       });
 
       dispatch(clearCart());
+      setLiveMessage("Your order was placed.");
 
-      toast.success("Order placed successfully!", { id: t });
+      toast.success("Order placed", { id: t });
       router.push("/orders");
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to place order.", {
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || "We could not place your order.";
+      setLiveMessage("We could not place your order.");
+      toast.error(message, {
         id: t,
       });
     } finally {
@@ -170,81 +183,97 @@ function CheckoutInner() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10 grid md:grid-cols-3 gap-8">
+      <div className="md:col-span-3 mb-2">
+        <ol className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+          {["Address", "Delivery", "Review", "Pay"].map((step, idx) => (
+            <li
+              key={step}
+              className={`px-3 py-2 rounded-md border text-center font-semibold ${
+                idx <= 1
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-border bg-surface text-muted-foreground"
+              }`}
+            >
+              {idx + 1}. {step}
+            </li>
+          ))}
+        </ol>
+      </div>
       {/* Left: Address + Shipping */}
       <div className="md:col-span-2 space-y-8">
         {/* Address selection */}
-        <section className="p-6 rounded-xl border border-gray-200 bg-white shadow-sm">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900">
+        <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 space-y-6">
+          <h2 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4">
             Shipping Address
           </h2>
 
           {/* Mode toggle */}
-          <div className="flex gap-3 mb-4">
+          <div className="flex flex-wrap gap-2 mb-6">
             <button
               onClick={() => setMode("existing")}
-              className={`px-3 py-2 rounded-lg border text-sm font-medium transition ${
+              className={`px-6 py-3 border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all text-xs flex-1 ${
                 mode === "existing"
-                  ? "bg-purple-600 text-white border-purple-600 shadow"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  ? "bg-foreground text-background"
+                  : "bg-card text-foreground"
               }`}
               disabled={addresses.length === 0}
               title={
                 addresses.length === 0
-                  ? "No saved addresses — add a new one below"
+                  ? "No saved addresses. Add one below."
                   : ""
               }
             >
-              Use Saved Address
+              Use saved address
             </button>
             <button
               onClick={() => setMode("new")}
-              className={`px-3 py-2 rounded-lg border text-sm font-medium transition ${
+              className={`px-6 py-3 border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all text-xs flex-1 ${
                 mode === "new"
-                  ? "bg-purple-600 text-white border-purple-600 shadow"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  ? "bg-foreground text-background"
+                  : "bg-card text-foreground"
               }`}
             >
-              Enter New Address
+              Add new address
             </button>
           </div>
 
           {/* Existing addresses */}
           {mode === "existing" && addresses.length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {addresses.map((a) => (
                 <label
                   key={a._id}
-                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition ${
+                  className={`flex flex-col sm:flex-row items-start gap-3 p-4 border-[3px] border-border cursor-pointer transition-all hover:-translate-y-1 shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] ${
                     selectedAddressId === a._id
-                      ? "border-purple-500 bg-purple-50"
-                      : "border-gray-200 bg-white hover:bg-gray-50"
+                      ? "bg-primary/10 shadow-[4px_4px_0px_#111]"
+                      : "bg-card"
                   }`}
                 >
                   <input
                     type="radio"
                     name="addr"
-                    className="mt-1"
+                    className="mt-1 w-5 h-5 border-[3px] border-border text-primary focus:ring-primary focus:ring-offset-0 shrink-0"
                     checked={selectedAddressId === a._id}
                     onChange={() => setSelectedAddressId(a._id)}
                   />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900">
-                        {a.label || "Address"}
+                  <div className="flex-1 space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-black uppercase tracking-widest text-foreground text-lg">
+                        {a.label || "Saved address"}
                       </p>
                       {a.isDefault && (
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
+                        <span className="text-[10px] bg-emerald-300 border-[3px] border-emerald-950 font-black uppercase tracking-widest text-emerald-950 px-2 py-0.5 shadow-[2px_2px_0px_#111]">
                           Default
                         </span>
                       )}
                     </div>
-                    <p className="text-gray-600 text-sm">
+                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">
                       {[a.line1, a.line2, a.city, a.state, a.zip, a.country]
                         .filter(Boolean)
                         .join(", ")}
                     </p>
                     {a.phone && (
-                      <p className="text-gray-500 text-sm">📞 {a.phone}</p>
+                      <p className="text-foreground font-bold uppercase tracking-widest text-xs mt-1">📞 {a.phone}</p>
                     )}
                   </div>
                 </label>
@@ -254,34 +283,34 @@ function CheckoutInner() {
 
           {/* New address form */}
           {mode === "new" && (
-            <div className="grid md:grid-cols-2 gap-3 mt-2">
+            <div className="grid md:grid-cols-2 gap-4 mt-2">
               <input
-                placeholder="Label (e.g., Home)"
-                className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                placeholder="Address label"
+                className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
                 value={newAddr.label || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, label: e.target.value })
                 }
               />
               <input
-                placeholder="Phone"
-                className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                placeholder="Phone number"
+                className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
                 value={newAddr.phone || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, phone: e.target.value })
                 }
               />
               <input
-                placeholder="Address line 1"
-                className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 md:col-span-2 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                placeholder="Street address"
+                className="md:col-span-2 w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
                 value={newAddr.line1 || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, line1: e.target.value })
                 }
               />
               <input
-                placeholder="Address line 2"
-                className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 md:col-span-2 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                placeholder="Apartment, suite, or landmark"
+                className="md:col-span-2 w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
                 value={newAddr.line2 || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, line2: e.target.value })
@@ -289,7 +318,7 @@ function CheckoutInner() {
               />
               <input
                 placeholder="City"
-                className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
                 value={newAddr.city || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, city: e.target.value })
@@ -297,15 +326,15 @@ function CheckoutInner() {
               />
               <input
                 placeholder="State"
-                className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
                 value={newAddr.state || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, state: e.target.value })
                 }
               />
               <input
-                placeholder="ZIP"
-                className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                placeholder="Postal code"
+                className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
                 value={newAddr.zip || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, zip: e.target.value })
@@ -313,147 +342,152 @@ function CheckoutInner() {
               />
               <input
                 placeholder="Country"
-                className="bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
                 value={newAddr.country || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, country: e.target.value })
                 }
               />
-              <label className="inline-flex items-center gap-2 text-sm md:col-span-2 text-gray-700">
+              <label className="inline-flex items-center gap-2 text-sm md:col-span-2 font-bold uppercase tracking-widest text-foreground mt-2">
                 <input
                   type="checkbox"
+                  className="w-5 h-5 border-[3px] border-border text-primary rounded-none focus:ring-primary focus:ring-offset-0 shrink-0"
                   checked={saveToProfile}
                   onChange={(e) => setSaveToProfile(e.target.checked)}
                 />
-                Save to my profile as{" "}
-                <span className="font-medium text-gray-900">
+                Save this address as{" "}
+                <span className="font-black text-primary bg-primary/10 px-2 py-0.5 border-[3px] border-primary">
                   {newAddr.label || "Home"}
                 </span>
               </label>
             </div>
           )}
+          {addressError && (
+            <p className="text-sm text-rose-600 font-semibold">{addressError}</p>
+          )}
         </section>
 
         {/* Shipping method */}
-        <section className="p-6 rounded-xl border border-gray-200 bg-white shadow-sm">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900">
+        <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 space-y-6">
+          <h2 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4">
             Shipping Method
           </h2>
-          <div className="grid sm:grid-cols-2 gap-3">
+          <div className="grid sm:grid-cols-2 gap-4">
             <button
               onClick={() => setShipping("standard")}
-              className={`p-4 rounded-lg border text-left transition ${
+              className={`p-4 border-[3px] border-border text-left transition-all hover:-translate-y-1 shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] ${
                 shipping === "standard"
-                  ? "border-purple-500 bg-purple-50"
-                  : "border-gray-200 bg-white hover:bg-gray-50"
+                  ? "bg-primary/10 shadow-[4px_4px_0px_#111]"
+                  : "bg-card"
               }`}
             >
-              <p className="font-medium text-gray-900">Standard</p>
-              <p className="text-gray-600 text-sm">4-7 days · ₹0</p>
+              <p className="font-black uppercase tracking-widest text-foreground text-lg mb-1">Standard delivery</p>
+              <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">Arrives in 4 to 7 days · Free</p>
             </button>
             <button
               onClick={() => setShipping("express")}
-              className={`p-4 rounded-lg border text-left transition ${
+              className={`p-4 border-[3px] border-border text-left transition-all hover:-translate-y-1 shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] ${
                 shipping === "express"
-                  ? "border-purple-500 bg-purple-50"
-                  : "border-gray-200 bg-white hover:bg-gray-50"
+                  ? "bg-primary/10 shadow-[4px_4px_0px_#111]"
+                  : "bg-card"
               }`}
             >
-              <p className="font-medium text-gray-900">Express</p>
-              <p className="text-gray-600 text-sm">1-2 days · ₹99</p>
+              <p className="font-black uppercase tracking-widest text-foreground text-lg mb-1">Express delivery</p>
+              <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">Arrives in 1 to 2 days · ₹99</p>
             </button>
           </div>
         </section>
       </div>
 
       {/* Right: Order Summary */}
-      <aside className="p-6 rounded-xl border border-gray-200 bg-white shadow-sm h-fit md:sticky md:top-24 space-y-4">
-        <h2 className="text-xl font-semibold text-gray-900">Order Summary</h2>
+      <aside className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 h-fit md:sticky md:top-24 space-y-6">
+        <h2 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4">Order Summary</h2>
 
         {items.length === 0 ? (
-          <div className="text-gray-600">
+          <div className="text-muted-foreground font-bold uppercase tracking-widest text-sm">
             Your cart is empty.{" "}
-            <Link href="/products" className="text-purple-600 underline">
-              Continue shopping
+            <Link href="/products" className="text-primary hover:underline decoration-2 underline-offset-4">
+              Shop products
             </Link>
           </div>
         ) : (
           <>
-            <div className="max-h-60 overflow-auto divide-y divide-gray-200">
+            <div className="max-h-60 overflow-auto pr-2 space-y-4">
               {items.map((i) => (
-                <div key={i._id} className="flex items-center gap-3 py-3">
-                  <img
-                    src={getImageUrl(i.product.images?.[0])}
-                    alt={i.product.title}
-                    className="w-14 h-14 object-cover rounded border border-gray-200"
-                    onError={(e) =>
-                      ((e.currentTarget as HTMLImageElement).src =
-                        "/fallback.png")
-                    }
-                  />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-900">{i.product.title}</p>
-                    <p className="text-xs text-gray-500">Qty: {i.qty}</p>
+                <div key={i._id} className="flex items-center gap-4">
+                  <div className="relative w-16 h-16 shrink-0 border-[3px] border-border shadow-[2px_2px_0px_#111] overflow-hidden">
+                    <Image
+                      src={getImageUrl(i.product.images?.[0])}
+                      alt={i.product.title}
+                      fill
+                      sizes="64px"
+                      className="object-cover"
+                      unoptimized
+                    />
                   </div>
-                  <div className="text-sm text-gray-900">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-black uppercase text-foreground truncate">{i.product.title}</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mt-1">Qty: {i.qty}</p>
+                  </div>
+                  <div className="text-sm font-black text-foreground">
                     {currency((i.priceAtAdd ?? i.product.price) * i.qty)}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="space-y-2 text-gray-700">
-              <p className="flex justify-between">
-                <span>Subtotal</span>
-                <span>{currency(rawSubtotal)}</span>
-              </p>
-              <p className="flex justify-between">
-                <span>Shipping</span>
-                <span>
-                  {shippingCost === 0 ? "Free" : currency(shippingCost)}
-                </span>
-              </p>
-              {appliedCoupon && cartDiscount > 0 && (
-                <p className="flex justify-between">
-                  <span>Discount ({appliedCoupon.code})</span>
-                  <span>-{currency(cartDiscount)}</span>
-                </p>
-              )}
-              <p className="flex justify-between">
-                <span>Tax (5%)</span>
-                <span>{currency(tax)}</span>
-              </p>
-              <hr className="border-gray-200" />
-              <p className="flex justify-between font-semibold text-lg text-gray-900">
-                <span>Total</span>
-                <span>{currency(grandTotal)}</span>
-              </p>
-            </div>
+            <div className="space-y-3 pt-6 border-t-[3px] border-border font-bold uppercase tracking-widest text-sm">
+               <p className="flex justify-between text-muted-foreground">
+                 <span>Subtotal</span>
+                 <span>{currency(rawSubtotal)}</span>
+               </p>
+               <p className="flex justify-between text-muted-foreground">
+                 <span>Delivery</span>
+                 <span>
+                   {shippingCost === 0 ? "Free" : currency(shippingCost)}
+                 </span>
+               </p>
+               {appliedCoupon && cartDiscount > 0 && (
+                 <p className="flex justify-between text-emerald-600">
+                   <span>Discount ({appliedCoupon.code})</span>
+                   <span>-{currency(cartDiscount)}</span>
+                 </p>
+               )}
+               <p className="flex justify-between text-muted-foreground">
+                 <span>Tax (5%)</span>
+                 <span>{currency(tax)}</span>
+               </p>
+             </div>
+             
+             <p className="flex justify-between font-black uppercase tracking-widest text-2xl text-foreground pt-4 border-t-[3px] border-border">
+               <span>Total</span>
+               <span>{currency(grandTotal)}</span>
+             </p>
 
             {/* Explicit legal acceptance */}
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-3 bg-muted p-4 border-[3px] border-border mt-6">
               <input
                 id="accept-policies"
                 type="checkbox"
-                className="mt-0.5"
+                className="mt-0.5 w-5 h-5 border-[3px] border-border text-primary focus:ring-primary focus:ring-offset-0 shrink-0"
                 checked={acceptedPolicies}
                 onChange={(e) => setAcceptedPolicies(e.target.checked)}
               />
               <label
                 htmlFor="accept-policies"
-                className="text-xs text-gray-600"
+                className="text-xs font-bold uppercase tracking-widest text-foreground leading-relaxed"
               >
                 I agree to the{" "}
                 <Link
                   href="/policies/terms"
-                  className="underline text-gray-700 hover:text-gray-900"
+                  className="underline decoration-2 underline-offset-4 hover:text-primary transition-colors"
                 >
                   Terms of Service
                 </Link>{" "}
                 and{" "}
                 <Link
                   href="/policies/privacy"
-                  className="underline text-gray-700 hover:text-gray-900"
+                  className="underline decoration-2 underline-offset-4 hover:text-primary transition-colors"
                 >
                   Privacy Policy
                 </Link>
@@ -461,18 +495,34 @@ function CheckoutInner() {
               </label>
             </div>
 
-            <button
-              onClick={placeOrder}
-              disabled={placing || !canPlaceOrder || !acceptedPolicies}
-              className="w-full bg-purple-600 text-white py-3 rounded-md shadow hover:bg-purple-500 disabled:opacity-50"
-            >
-              {placing ? "Placing Order..." : "Place Order (COD)"}
-            </button>
+            <div className="pt-2">
+              <div className="mb-3 grid grid-cols-1 gap-2 text-xs text-gray-600">
+                <p className="rounded-md border border-gray-200 px-3 py-2 bg-gray-50">
+                  Buyer protection included
+                </p>
+                <p className="rounded-md border border-gray-200 px-3 py-2 bg-gray-50">
+                  Easy returns on eligible items
+                </p>
+                <p className="rounded-md border border-gray-200 px-3 py-2 bg-gray-50">
+                  Secure checkout and protected payment data
+                </p>
+              </div>
+              <button
+                onClick={placeOrder}
+                disabled={placing || !canPlaceOrder || !acceptedPolicies}
+                className="w-full text-center px-6 py-4 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50 text-base"
+              >
+                {placing ? "Sending order..." : "Place order"}
+              </button>
+            </div>
             {!canPlaceOrder && (
-              <p className="text-xs text-red-600">
-                Select a saved address or enter a valid new address.
+              <p className="text-xs font-bold uppercase tracking-widest text-rose-600 text-center mt-2">
+                Select a saved address or add a complete shipping address.
               </p>
             )}
+            <p aria-live="polite" className="sr-only">
+              {liveMessage}
+            </p>
           </>
         )}
       </aside>

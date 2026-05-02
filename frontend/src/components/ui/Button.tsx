@@ -1,7 +1,14 @@
+import { ButtonHTMLAttributes } from "react";
 
-import { ButtonHTMLAttributes } from 'react';
+type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "primary" | "secondary";
+};
 
-export default function Button(props: ButtonHTMLAttributes<HTMLButtonElement>) {
-  const { className = '', ...rest } = props;
-  return <button className={`px-4 py-2 rounded border ${className}`} {...rest} />;
+export default function Button({
+  className = "",
+  variant = "secondary",
+  ...rest
+}: Props) {
+  const base = variant === "primary" ? "btn-primary" : "btn";
+  return <button className={`${base} ${className}`.trim()} {...rest} />;
 }

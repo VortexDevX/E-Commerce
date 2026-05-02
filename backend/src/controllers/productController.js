@@ -8,6 +8,22 @@ import { sendPriceDropEmail } from "../services/email/emailService.js";
 import SponsoredPlacement from "../models/SponsoredPlacement.js";
 import AnalyticsEvent from "../models/AnalyticsEvent.js";
 
+const escapeRegex = (input = "") =>
+  String(input).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const LIST_PRODUCT_SELECT =
+  "title slug price discountPrice stock category tags brand images avgRating ratingsCount attributes seo status createdAt updatedAt";
+
+const ALLOWED_SORT_FIELDS = new Set([
+  "createdAt",
+  "updatedAt",
+  "price",
+  "avgRating",
+  "ratingsCount",
+  "stock",
+  "title",
+]);
+
 // ---------------- Helpers ----------------
 const ALSO_BOUGHT_TTL = 10 * 60 * 1000; // 10 minutes
 const alsoBoughtCache = new Map(); // key: `${productId}:${limit}` -> { expires, items }
@@ -100,7 +116,7 @@ export const getAlsoBought = async (req, res) => {
 
     res.json({ items: ordered });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -141,25 +157,32 @@ async function fetchSponsoredForListing(
     ],
   };
 
-  const targeted = currentCategorySlug
-    ? await SponsoredPlacement.find({
-        ...baseMatch,
-        targetCategorySlug: currentCategorySlug,
-      })
-        .sort({ priority: -1, updatedAt: -1, createdAt: -1 })
-        .lean()
-    : [];
+  const placementFetchLimit = Math.max(limitNum * 8, 24);
 
-  const general = await SponsoredPlacement.find({
-    ...baseMatch,
-    $or: [
-      { targetCategorySlug: { $exists: false } },
-      { targetCategorySlug: null },
-      { targetCategorySlug: "" },
-    ],
-  })
-    .sort({ priority: -1, updatedAt: -1, createdAt: -1 })
-    .lean();
+  const [targeted, general] = await Promise.all([
+    currentCategorySlug
+      ? SponsoredPlacement.find({
+          ...baseMatch,
+          targetCategorySlug: currentCategorySlug,
+        })
+          .sort({ priority: -1, updatedAt: -1, createdAt: -1 })
+          .select("_id product priority")
+          .limit(placementFetchLimit)
+          .lean()
+      : Promise.resolve([]),
+    SponsoredPlacement.find({
+      ...baseMatch,
+      $or: [
+        { targetCategorySlug: { $exists: false } },
+        { targetCategorySlug: null },
+        { targetCategorySlug: "" },
+      ],
+    })
+      .sort({ priority: -1, updatedAt: -1, createdAt: -1 })
+      .select("_id product priority")
+      .limit(placementFetchLimit)
+      .lean(),
+  ]);
 
   const placements = [...targeted, ...general];
   if (placements.length === 0) return { items: [], usedPlacementIds: [] };
@@ -168,6 +191,7 @@ async function fetchSponsoredForListing(
   const prodFilter = { ...filter, _id: { $in: ids }, status: "active" };
 
   const prods = await Product.find(prodFilter)
+    .select(LIST_PRODUCT_SELECT)
     .sort(sortBy)
     .limit(limitNum * 3)
     .lean();
@@ -340,7 +364,7 @@ export const createProduct = async (req, res) => {
 
     res.status(201).json(product);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -363,8 +387,12 @@ export const listProducts = async (req, res) => {
 
     const filter = { status: "active" };
 
-    if (q) {
-      const regex = new RegExp(q, "i");
+    const qText = String(q || "")
+      .trim()
+      .slice(0, 80);
+
+    if (qText) {
+      const regex = new RegExp(escapeRegex(qText), "i");
       filter.$or = [
         { title: regex },
         { description: regex },
@@ -413,21 +441,30 @@ export const listProducts = async (req, res) => {
 
     // Safe sort defaults
     const [fieldRaw, directionRaw] = String(sort).split(":");
-    const field = fieldRaw && fieldRaw.trim() ? fieldRaw.trim() : "createdAt";
+    const parsedField =
+      fieldRaw && fieldRaw.trim() ? fieldRaw.trim() : "createdAt";
+    const field = ALLOWED_SORT_FIELDS.has(parsedField)
+      ? parsedField
+      : "createdAt";
     const direction = (directionRaw || "desc").toLowerCase() === "asc" ? 1 : -1;
     const sortBy = { [field]: direction };
 
     const pageNum = Math.max(1, parseInt(page));
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+    const limitNum = Math.min(48, Math.max(1, parseInt(limit)));
     const skip = (pageNum - 1) * limitNum;
 
     const [organicSlice, total] = await Promise.all([
-      Product.find(filter).sort(sortBy).skip(skip).limit(limitNum).lean(),
+      Product.find(filter)
+        .select(LIST_PRODUCT_SELECT)
+        .sort(sortBy)
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
       Product.countDocuments(filter),
     ]);
 
     // Sponsored blending: skip when searching (q present) to avoid heavy work during search
-    const isSearching = Boolean(q);
+    const isSearching = Boolean(qText);
     const envRatio = Number(process.env.SPONSORED_RATIO || 0.25);
     const ratio = isSearching ? 0 : Math.max(0, Math.min(0.5, envRatio));
     const targetSponsored = Math.floor(limitNum * ratio);
@@ -547,7 +584,7 @@ export const listProducts = async (req, res) => {
     });
   } catch (err) {
     console.error("[listProducts] failed:", err?.message || err);
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -813,3 +850,4 @@ export const setProductStatus = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
