@@ -1,137 +1,214 @@
-# E-Commerce Application
+# Luxora E-Commerce
 
-A modern, full-stack E-Commerce platform built with **Next.js 15** and **Node.js/Express**. This project features a polished user interface, a dedicated seller portal, and a comprehensive admin dashboard.
+Full-stack e-commerce app with a Next.js frontend and an Express/MongoDB backend.
 
-## 🚀 Features
+## Stack
 
-## 🌟 Features Overview
+- Frontend: Next.js 15, React 19, TypeScript, Tailwind CSS, Redux Toolkit
+- Backend: Node.js, Express 5, MongoDB, Mongoose
+- Uploads: local storage or Cloudinary
+- Email: Nodemailer with Brevo support
 
-### 🛍️ Client / Shopper
+## What It Covers
 
-- **Advanced Search & Filtering**: Find products instantly with full-text search and multi-faceted filters (category, price, rating).
-- **Secure Authentication**: JWT-based login, registration, and password reset.
-- **Cart & Checkout**: Persistent shopping cart with a smooth, secure checkout process.
-- **Order Tracking**: Real-time status updates on orders (Processing, Shipped, Delivered).
-- **User Dashboard**: Manage profile, view order history, and save items to Wishlist.
-- **Reviews**: Rate and review purchased products.
+- Product catalog with search, filters, categories, reviews, banners, and sponsored products
+- User auth with JWT, refresh tokens, password reset, optional hCaptcha, and admin 2FA
+- Cart, coupons, checkout, orders, returns, wishlist, and profile addresses
+- Seller area for products, orders, and analytics
+- Admin area for users, products, orders, returns, categories, coupons, media, banners, sponsored placements, email templates, and logs
+- Contact form and analytics routes
 
-### 💼 Seller Portal
+## Project Structure
 
-- **Inventory Management**: Add, edit, and delete products with ease.
-- **Sales Analytics**: Visual charts to track revenue and order trends.
-- **Order Management**: View and process customer orders specific to your products.
-
-### 🛡️ Admin Dashboard
-
-- **User & Seller Oversight**: Manage all user accounts and monitor seller activities.
-- **Content Management**: Update homepage banners, sponsored listings, and contact inquiries.
-- **Marketing Tools**: Create and manage discount coupons/vouchers.
-- **Email Campaigns**: Send system-wide announcements via Brevo SMTP.
-- **Media Library**: Manage all uploaded images through Cloudinary integration.
-
-## 📊 Feature Matrix
-
-| Module             | Key Capabilities                                                                       |
-| :----------------- | :------------------------------------------------------------------------------------- |
-| **Authentication** | Secure JWT-based login, Registration, Password Reset, Role-based Access Control (RBAC) |
-| **Catalog**        | Categories, Advanced Search, Sorting, Filtering, Product Reviews, Sponsored Listings   |
-| **Checkout**       | Persistent Cart, Order Summary, Shipping Address Management, Payment Integration       |
-| **Communication**  | Automated Email Notifications, Contact Form Management, Admin Announcement Emails      |
-| **Media**          | High-performance image hosting with Cloudinary, Admin Media Library                    |
-| **Analytics**      | Dashboard Charts, Sales Reports, Traffic Monitoring                                    |
-
-## 🛠️ Tech Stack
-
-- **Frontend**: Next.js 15, TypeScript, TailwindCSS, Redux Toolkit.
-- **Backend**: Node.js, Express, MongoDB.
-- **Services**: Cloudinary (Image Hosting), Brevo SMTP (Emails).
-
-## 📦 Installation & Setup
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v16+ recommended)
-- [MongoDB](https://www.mongodb.com/) (Local or Atlas)
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/VortexDevX/E-Commerce.git
-cd E-Commerce
+```text
+backend/    Express API, MongoDB models, routes, services
+frontend/   Next.js app, pages, components, Redux store
 ```
 
-### 2. Backend Setup
+## Frontend Modules
 
-Navigate to the backend directory and install dependencies:
+- Public storefront: home, product listing, product details, policies, contact
+- Shopper flows: auth, cart, checkout, orders, wishlist, profile
+- Seller workspace: dashboard, analytics, product CRUD, order handling
+- Admin workspace: operations dashboard + management pages
+
+## Backend Modules
+
+- Auth and security: login/register, refresh, password reset, role checks, 2FA
+- Catalog: products, categories, search, reviews, sponsored placements
+- Commerce: cart, coupons, orders, returns
+- User data: profile and addresses
+- Operations: analytics, logs, contact, banners, email templates, media
+
+## API Route Groups
+
+- `/api/auth`
+- `/api/products`
+- `/api/categories`
+- `/api/search`
+- `/api/reviews`
+- `/api/cart`
+- `/api/orders`
+- `/api/wishlist`
+- `/api/users`
+- `/api/seller`
+- `/api/admin`
+- `/api/admin/emails`
+- `/api/admin/media`
+- `/api/admin/coupons`
+- `/api/admin/banners`
+- `/api/admin/sponsored`
+- `/api/banners`
+- `/api/sponsored`
+- `/api/contact`
+- `/api/analytics`
+- `/api/health`
+
+## Requirements
+
+- Node.js
+- MongoDB connection string
+- Optional: Cloudinary account for cloud uploads
+- Optional: Brevo API key for email sending
+- Optional: hCaptcha keys for CAPTCHA
+
+## Setup
+
+Install backend dependencies:
 
 ```bash
 cd backend
 npm install
 ```
 
-Create a `.env` file in the `backend` directory with the following variables:
+Create backend env:
+
+```bash
+cp .env.example .env
+```
+
+Edit `backend/.env`:
 
 ```env
 PORT=8080
-MONGODB_URI=your_mongodb_connection_string
-JWT_ACCESS_SECRET=your_secure_random_string
-JWT_MFA_SECRET=your_secure_random_string
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-EMAIL_PROVIDER=brevo
-EMAIL_FROM=no-reply@yourdomain.com
-EMAIL_FROM_NAME=Luxora
-EMAIL_REPLY_TO=support@yourdomain.com
-BREVO_API_KEY=your_brevo_api_key
-ENABLE_TEST_EMAIL_ROUTE=false
+NODE_ENV=development
+MONGODB_URI=your_mongodb_uri
+JWT_ACCESS_SECRET=replace_with_strong_secret
+JWT_MFA_SECRET=replace_with_strong_secret
+ACCESS_TOKEN_TTL=15m
+REFRESH_TOKEN_TTL=30d
+MFA_CHALLENGE_TTL=5m
+FRONTEND_URL=http://localhost:3000
 CORS_ORIGINS=http://localhost:3000
+STORAGE_MODE=local
+MAX_UPLOAD_BYTES=20971520
+EMAIL_PROVIDER=brevo
+EMAIL_FROM=no-reply@example.com
+EMAIL_FROM_NAME=Luxora
+EMAIL_REPLY_TO=support@example.com
+EMAIL_DISABLED=false
+BREVO_API_KEY=
+HCAPTCHA_SECRET=
+ENABLE_TEST_EMAIL_ROUTE=false
+TAX_RATE=0.05
+RETURN_WINDOW_DAYS=7
 ```
 
-Start the backend server:
+Start backend:
 
 ```bash
 npm run dev
-# Server will start on http://localhost:8080
 ```
 
-### 3. Frontend Setup
-
-Open a new terminal, navigate to the frontend directory and install dependencies:
+Install frontend dependencies:
 
 ```bash
 cd ../frontend
 npm install
 ```
 
-Create a `.env.local` file in the `frontend` directory:
+Create frontend env:
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `frontend/.env.local`:
 
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api
 NEXT_PUBLIC_BACKEND_ORIGIN=http://localhost:8080
+NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
 ```
 
-Start the frontend development server:
+Start frontend:
 
 ```bash
 npm run dev
-# App will run on http://localhost:3000
 ```
 
-## 📖 Documentation
+Open:
 
-For a deep dive into the project structure, API endpoints, and architectural decisions, please refer to the [Technical Documentation](./PROJECT_DOCS.md).
+```text
+http://localhost:3000
+```
 
-## 🤝 Contributing
+## Scripts
 
-Contributions are welcome! Please follow these steps:
+Backend:
 
-1. Fork the project.
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4. Push to the branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
+```bash
+npm run dev
+npm start
+```
 
-## 📄 License
+Frontend:
 
-Distributed under the ISC License.
+```bash
+npm run dev
+npm run build
+npm start
+npm run lint
+```
+
+## API Base
+
+Backend runs on:
+
+```text
+http://localhost:8080/api
+```
+
+Health check:
+
+```text
+GET /api/health
+```
+
+## Auth Model
+
+- Access token + refresh token flow
+- Role-aware access for shopper/seller/admin/subadmin
+- Optional hCaptcha check in login flow
+- Admin/subadmin two-factor flow supported
+
+## Upload and Email Modes
+
+- Upload mode:
+  - `STORAGE_MODE=local` uses local uploads
+  - Cloudinary keys enable cloud upload flow
+- Email mode:
+  - `EMAIL_DISABLED=true` disables sending
+  - Brevo key enables Brevo-backed email delivery
+
+## Notes
+
+- `backend/.env` and `frontend/.env.local` are local config files. Do not commit secrets.
+- Set `STORAGE_MODE=local` for local uploads.
+- Fill Cloudinary variables only when using Cloudinary uploads.
+- Set `EMAIL_DISABLED=true` if email sending should be disabled locally.
+- Set `ENABLE_TEST_EMAIL_ROUTE=true` only in non-production environments.
+
+## License
+
+ISC
