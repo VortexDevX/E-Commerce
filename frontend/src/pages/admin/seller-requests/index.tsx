@@ -35,68 +35,75 @@ function AdminSellerRequestsPage() {
   return (
     <ProtectedRoute roles={["admin"]}>
       <AdminLayout>
-        <div className="flex items-center justify-between font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
-          <h1 className="text-3xl text-foreground">Seller Applications</h1>
+        <div className="border-b border-border/40 pb-5 mb-8">
+          <h1 className="display-font text-3xl font-semibold tracking-wide text-foreground">Seller Applications</h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Review applicant profiles, registered business verification documents, and approve store merchant requests.
+          </p>
         </div>
-        <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] overflow-x-auto mt-4 mb-8">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="text-left bg-primary/5 text-foreground border-b-[3px] border-border">
-                <th className="px-4 py-4 font-black uppercase tracking-widest">Applicant</th>
-                <th className="px-4 py-4 font-black uppercase tracking-widest">Business</th>
-                <th className="px-4 py-4 font-black uppercase tracking-widest">Submitted</th>
-                <th className="px-4 py-4 font-black uppercase tracking-widest">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td className="px-4 py-6 text-gray-600" colSpan={4}>
-                    Loading...
-                  </td>
+
+        <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft overflow-hidden mt-4 mb-8">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-xs">
+              <thead className="bg-secondary/25 border-b border-border/35">
+                <tr className="text-left font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+                  <th className="px-6 py-4 border-r border-border/20">Applicant</th>
+                  <th className="px-6 py-4 border-r border-border/20">Business</th>
+                  <th className="px-6 py-4 border-r border-border/20">Submitted</th>
+                  <th className="px-6 py-4 text-center">Action</th>
                 </tr>
-              ) : list.length === 0 ? (
-                <tr>
-                  <td className="px-4 py-6 text-foreground font-bold uppercase" colSpan={4}>
-                    No pending applications.
-                  </td>
-                </tr>
-              ) : (
-                list.map((u) => (
-                  <tr
-                    key={u._id}
-                    className="border-b-[3px] border-border/50 text-foreground font-bold hover:bg-muted/50 transition-colors"
-                  >
-                    <td className="px-4 py-4">
-                      <div className="font-black uppercase tracking-widest">{u.name}</div>
-                      <div className="text-xs text-muted-foreground">{u.email}</div>
-                    </td>
-                    <td className="px-4 py-4 font-bold uppercase tracking-widest">
-                      {u.sellerApplication?.businessName || "-"}
-                    </td>
-                    <td className="px-4 py-4 font-bold uppercase tracking-widest">
-                      {u.sellerApplication?.submittedAt
-                        ? shortDate(u.sellerApplication.submittedAt)
-                        : "-"}
-                    </td>
-                    <td className="px-4 py-4">
-                      <Link
-                        href={`/admin/seller-requests/${u._id}`}
-                        className="px-4 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all font-black uppercase text-xs flex items-center w-fit text-foreground"
-                      >
-                        Review
-                      </Link>
+              </thead>
+              <tbody className="divide-y divide-border/20">
+                {loading ? (
+                  <tr>
+                    <td className="px-6 py-10 text-center bg-secondary/5" colSpan={4}>
+                      <div className="h-5 w-5 animate-spin border-2 border-primary/20 border-t-primary rounded-full mx-auto" />
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : list.length === 0 ? (
+                  <tr>
+                    <td className="px-6 py-10 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground italic bg-secondary/5" colSpan={4}>
+                      No pending applications.
+                    </td>
+                  </tr>
+                ) : (
+                  list.map((u) => (
+                    <tr
+                      key={u._id}
+                      className="hover:bg-secondary/5 transition-colors"
+                    >
+                      <td className="px-6 py-4 border-r border-border/20 font-semibold">
+                        <div className="text-foreground text-sm">{u.name}</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">{u.email}</div>
+                      </td>
+                      <td className="px-6 py-4 border-r border-border/20 text-foreground font-semibold">
+                        {u.sellerApplication?.businessName || "—"}
+                      </td>
+                      <td className="px-6 py-4 border-r border-border/20 text-muted-foreground font-semibold">
+                        {u.sellerApplication?.submittedAt
+                          ? shortDate(u.sellerApplication.submittedAt)
+                          : "—"}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <Link
+                          href={`/admin/seller-requests/${u._id}`}
+                          className="btn px-4 py-2 text-[10px] font-semibold uppercase tracking-wider w-fit inline-flex"
+                        >
+                          Review Detail
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </AdminLayout>
     </ProtectedRoute>
   );
 }
+
 export default dynamic(() => Promise.resolve(AdminSellerRequestsPage), {
   ssr: false,
 });

@@ -117,7 +117,6 @@ export default function AdminDashboard() {
     [sales]
   );
 
-  // Exports
   const exportSalesCSV = () =>
     downloadCSV(
       "dashboard-sales.csv",
@@ -147,7 +146,6 @@ export default function AdminDashboard() {
       { product: "Product", sold: "Sold", revenue: "Revenue" }
     );
 
-  // Quick shortcuts based on permissions
   const shortcuts = [
     {
       href: "/admin/analytics",
@@ -222,12 +220,12 @@ export default function AdminDashboard() {
       <AdminLayout>
         <div className="flex flex-col gap-6">
           {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-card/60 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft mb-6">
             <div>
-              <h1 className="text-3xl font-black uppercase tracking-widest text-foreground">
+              <h1 className="display-font text-3xl font-semibold tracking-wide text-foreground">
                 Admin Dashboard
               </h1>
-              <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground mt-2">
+              <p className="text-xs text-muted-foreground mt-1.5">
                 Welcome{user?.name ? `, ${user.name}` : ""}.{" "}
                 {isAdmin
                   ? "You have full administrative access."
@@ -236,10 +234,10 @@ export default function AdminDashboard() {
             </div>
             {hasPerm("analytics:read") && (
               <Link href="/admin/analytics" className="inline-flex">
-                <Button className="gap-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 rounded-none px-6 py-6 h-auto">
-                  <ChartBarIcon className="w-5 h-5" />
+                <button className="btn-primary py-3 px-6 text-xs font-semibold uppercase tracking-wider flex items-center gap-2">
+                  <ChartBarIcon className="w-4 h-4" />
                   Open Analytics
-                </Button>
+                </button>
               </Link>
             )}
           </div>
@@ -248,29 +246,31 @@ export default function AdminDashboard() {
           {analyticsRead ? (
             <>
               {loading ? (
-                <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-bold uppercase tracking-widest text-sm">Loading analytics…</div>
+                <div className="bg-card/60 backdrop-blur-md border border-border/40 p-12 text-center rounded-xl shadow-soft">
+                  <div className="h-6 w-6 animate-spin border-2 border-primary/20 border-t-primary rounded-full mx-auto" />
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-3">Loading dashboard analytics...</p>
+                </div>
               ) : (
                 <>
                   {stats && <OverviewCards stats={stats} trends={trends} />}
 
                   {/* Charts grid */}
-                  <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+                  <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mt-6">
                     {/* Left column: 2 charts stacked */}
                     <div className="xl:col-span-7 space-y-6">
-                      <Card className="border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none bg-card">
-                        <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
-                          <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">
+                      <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+                        <div className="flex flex-row items-center justify-between p-5 border-b border-border/35 bg-secondary/15">
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                             Last {days} Days — Revenue & Orders
-                          </CardTitle>
-                          <Button 
-                            variant="outline" 
+                          </h3>
+                          <button 
                             onClick={exportSalesCSV}
-                            className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                            className="btn py-1.5 px-3 text-[10px]"
                           >
                             Export CSV
-                          </Button>
-                        </CardHeader>
-                        <CardContent className="pt-0">
+                          </button>
+                        </div>
+                        <div className="p-5">
                           <div className="w-full h-[280px]">
                             <ResponsiveContainer width="100%" height="100%">
                               <LineChart
@@ -282,67 +282,81 @@ export default function AdminDashboard() {
                                   bottom: 8,
                                 }}
                               >
-                                <CartesianGrid
-                                  stroke="#e5e7eb"
-                                  vertical={false}
-                                />
+                                <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} strokeDasharray="3 3" />
                                 <XAxis
                                   dataKey="date"
-                                  tick={{ fill: "#6b7280", fontSize: 11 }}
+                                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10, fontWeight: "500" }}
+                                  axisLine={{ stroke: "rgba(255,255,255,0.1)", strokeWidth: 1 }}
+                                  tickLine={{ stroke: "rgba(255,255,255,0.1)", strokeWidth: 1 }}
                                 />
                                 <YAxis
                                   yAxisId="left"
-                                  tick={{ fill: "#6b7280", fontSize: 11 }}
+                                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                                  axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                                  tickLine={{ stroke: "rgba(255,255,255,0.1)" }}
                                 />
                                 <YAxis
                                   yAxisId="right"
                                   orientation="right"
-                                  tick={{ fill: "#6b7280", fontSize: 11 }}
+                                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                                  axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                                  tickLine={{ stroke: "rgba(255,255,255,0.1)" }}
                                 />
                                 <Tooltip
+                                  contentStyle={{
+                                    backgroundColor: "hsl(var(--card))",
+                                    border: "1px solid border-border/40",
+                                    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+                                    borderRadius: "8px",
+                                    fontWeight: "600",
+                                    fontFamily: "Outfit, sans-serif",
+                                    fontSize: "11px",
+                                  }}
+                                  itemStyle={{ color: "hsl(var(--foreground))" }}
                                   formatter={(v: any, n: any) =>
                                     n === "revenue"
                                       ? `₹${Number(v).toLocaleString("en-IN")}`
                                       : v
                                   }
                                 />
-                                <Legend />
+                                <Legend wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
                                 <Line
                                   yAxisId="left"
                                   type="monotone"
                                   dataKey="orders"
-                                  stroke="#0369a1"
+                                  stroke="hsl(var(--primary))"
                                   strokeWidth={2}
-                                  dot={false}
+                                  dot={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, fill: 'hsl(var(--card))', r: 3 }}
+                                  activeDot={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, r: 5, fill: 'hsl(var(--primary))' }}
                                   name="Orders"
                                 />
                                 <Line
                                   yAxisId="right"
                                   type="monotone"
                                   dataKey="revenue"
-                                  stroke="#10b981"
+                                  stroke="#c5a059"
                                   strokeWidth={2}
-                                  dot={false}
+                                  dot={{ stroke: '#c5a059', strokeWidth: 1, fill: 'hsl(var(--card))', r: 3 }}
+                                  activeDot={{ stroke: '#c5a059', strokeWidth: 2, r: 5, fill: '#c5a059' }}
                                   name="Revenue"
                                 />
                               </LineChart>
                             </ResponsiveContainer>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
 
-                      <Card className="border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none bg-card">
-                        <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
-                          <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Average Order Value (AOV)</CardTitle>
-                          <Button 
-                            variant="outline" 
+                      <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+                        <div className="flex flex-row items-center justify-between p-5 border-b border-border/35 bg-secondary/15">
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Average Order Value (AOV)</h3>
+                          <button 
                             onClick={exportAOVCSV}
-                            className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                            className="btn py-1.5 px-3 text-[10px]"
                           >
                             Export CSV
-                          </Button>
-                        </CardHeader>
-                        <CardContent className="pt-0">
+                          </button>
+                        </div>
+                        <div className="p-5">
                           <div className="w-full h-[220px]">
                             <ResponsiveContainer width="100%" height="100%">
                               <LineChart
@@ -354,74 +368,81 @@ export default function AdminDashboard() {
                                   bottom: 8,
                                 }}
                               >
-                                <CartesianGrid
-                                  stroke="#e5e7eb"
-                                  vertical={false}
-                                />
+                                <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} strokeDasharray="3 3" />
                                 <XAxis
                                   dataKey="date"
-                                  tick={{ fill: "#6b7280", fontSize: 11 }}
+                                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                                  axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                                  tickLine={{ stroke: "rgba(255,255,255,0.1)" }}
                                 />
-                                <YAxis
-                                  tick={{ fill: "#6b7280", fontSize: 11 }}
-                                />
+                                <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} axisLine={{ stroke: "rgba(255,255,255,0.1)" }} tickLine={{ stroke: "rgba(255,255,255,0.1)" }} />
                                 <Tooltip
+                                  contentStyle={{
+                                    backgroundColor: "hsl(var(--card))",
+                                    border: "1px solid border-border/40",
+                                    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+                                    borderRadius: "8px",
+                                    fontWeight: "600",
+                                    fontFamily: "Outfit, sans-serif",
+                                    fontSize: "11px",
+                                  }}
+                                  itemStyle={{ color: "hsl(var(--foreground))" }}
                                   formatter={(v: any) =>
                                     `₹${Number(v).toLocaleString("en-IN")}`
                                   }
                                 />
-                                <Legend />
+                                <Legend wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
                                 <Line
                                   type="monotone"
                                   dataKey="aov"
-                                  stroke="#0f766e"
+                                  stroke="hsl(var(--primary))"
                                   strokeWidth={2}
-                                  dot={false}
+                                  dot={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, fill: 'hsl(var(--card))', r: 3 }}
+                                  activeDot={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, r: 5, fill: 'hsl(var(--primary))' }}
                                   name="AOV"
                                 />
                               </LineChart>
                             </ResponsiveContainer>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Right column: Top products */}
-                    <Card className="xl:col-span-5 border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none bg-card flex flex-col">
-                      <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
-                        <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Top Products</CardTitle>
-                        <Button
-                          variant="outline"
+                    <div className="xl:col-span-5 bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+                      <div className="flex flex-row items-center justify-between p-5 border-b border-border/35 bg-secondary/15">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Top Products</h3>
+                        <button
                           onClick={exportTopProductsCSV}
-                          className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                          className="btn py-1.5 px-3 text-[10px]"
                         >
                           Export CSV
-                        </Button>
-                      </CardHeader>
-                      <CardContent className="pt-0 flex-1 flex flex-col">
+                        </button>
+                      </div>
+                      <div className="p-5 flex-grow flex flex-col justify-between">
                         {top.length === 0 ? (
-                          <div className="text-sm font-bold uppercase tracking-widest text-muted-foreground m-auto">No data</div>
+                          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground p-12 text-center italic">No catalog statistics recorded</div>
                         ) : (
-                          <div className="overflow-x-auto border-[3px] border-border flex-1">
-                            <table className="min-w-full text-sm">
-                              <thead className="bg-muted border-b-[3px] border-border">
-                                <tr className="text-left font-black uppercase tracking-widest text-foreground">
-                                  <th className="px-4 py-3 border-r-[3px] border-border">Product</th>
-                                  <th className="px-4 py-3 border-r-[3px] border-border text-center">Sold</th>
+                          <div className="overflow-x-auto rounded-lg border border-border/30">
+                            <table className="min-w-full text-xs">
+                              <thead className="bg-secondary/25 border-b border-border/30">
+                                <tr className="text-left font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+                                  <th className="px-4 py-3 border-r border-border/20">Product</th>
+                                  <th className="px-4 py-3 border-r border-border/20 text-center">Sold</th>
                                   <th className="px-4 py-3 text-right">Revenue</th>
                                 </tr>
                               </thead>
-                              <tbody className="divide-y-[3px] divide-border font-bold uppercase tracking-widest text-xs text-foreground bg-card">
+                              <tbody className="divide-y divide-border/20">
                                 {top.slice(0, 8).map((t, idx) => (
                                   <tr
                                     key={idx}
-                                    className="hover:bg-muted/50 transition-colors"
+                                    className="hover:bg-secondary/10 transition-colors"
                                   >
-                                    <td className="px-4 py-3 border-r-[3px] border-border truncate max-w-[150px]" title={t.product}>{t.product}</td>
-                                    <td className="px-4 py-3 border-r-[3px] border-border text-center">
-                                      <span className="bg-primary/10 text-primary border-[2px] border-primary px-2 py-0.5">{t.sold}</span>
+                                    <td className="px-4 py-3 border-r border-border/20 font-semibold text-foreground truncate max-w-[150px]" title={t.product}>{t.product}</td>
+                                    <td className="px-4 py-3 border-r border-border/20 text-center">
+                                      <span className="font-bold text-foreground">{t.sold}</span>
                                     </td>
-                                    <td className="px-4 py-3 text-right text-emerald-600 font-black">
+                                    <td className="px-4 py-3 text-right text-primary font-semibold">
                                       {currency(t.revenue)}
                                     </td>
                                   </tr>
@@ -430,42 +451,42 @@ export default function AdminDashboard() {
                             </table>
                           </div>
                         )}
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
             </>
           ) : (
-            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 mb-8">
-              <h3 className="text-2xl font-black tracking-widest uppercase text-foreground">
+            <div className="bg-card/60 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft mb-8">
+              <h3 className="text-lg font-semibold tracking-wide text-foreground">
                 Analytics restricted
               </h3>
-              <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm mt-2 leading-relaxed">
-                You don’t have access to Analytics. You can still use the tools
+              <p className="text-muted-foreground text-xs mt-1 leading-relaxed">
+                You don't have access to Analytics. You can still use the tools
                 below based on your permissions.
               </p>
             </div>
           )}
 
-          {/* Shortcuts (always visible; filtered by permissions) */}
-          <section className="space-y-6 mt-4">
-            <h3 className="text-2xl font-black uppercase tracking-widest text-foreground border-l-[6px] border-primary pl-4">Quick Shortcuts</h3>
+          {/* Shortcuts */}
+          <section className="space-y-4 mt-6">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/30 pb-2">Quick Shortcuts</h3>
             {shortcuts.length === 0 ? (
-              <p className="text-foreground font-bold">
+              <p className="text-foreground font-semibold text-xs">
                 No admin areas available for your role. Please contact a full
                 admin to assign permissions.
               </p>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {shortcuts.map((s) => (
                   <Link
                     key={s.href}
                     href={s.href}
-                    className="flex flex-col items-center justify-center gap-4 p-6 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none hover:bg-muted group text-center"
+                    className="flex flex-col items-center justify-center gap-3 p-6 border border-border/40 rounded-xl bg-card/40 hover:bg-card/85 transition-all duration-200 text-center shadow-soft"
                   >
-                    <s.icon className="w-8 h-8 text-foreground group-hover:scale-110 transition-transform duration-300" />
-                    <span className="text-foreground font-black uppercase tracking-widest text-sm">{s.label}</span>
+                    <s.icon className="w-7 h-7 text-primary transition-transform duration-300" strokeWidth={1.5} />
+                    <span className="text-foreground font-semibold uppercase tracking-wider text-[11px]">{s.label}</span>
                   </Link>
                 ))}
               </div>
@@ -476,4 +497,3 @@ export default function AdminDashboard() {
     </ProtectedRoute>
   );
 }
-

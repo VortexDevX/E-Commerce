@@ -44,16 +44,16 @@ export default function ResetPasswordPage() {
   if (done) {
     return (
       <div className="max-w-md mx-auto px-6 py-16 text-center">
-        <h1 className="text-3xl font-black uppercase tracking-tighter text-foreground mb-4 border-b-[3px] border-border pb-4">
-          Password reset successful
+        <h1 className="display-font text-3xl font-bold tracking-[0.12em] uppercase text-foreground mb-4 border-b border-border/40 pb-4">
+          Reset successful
         </h1>
-        <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+        <p className="text-sm text-muted-foreground leading-relaxed">
           You can now sign in with your new password.
         </p>
         <div className="mt-8">
           <Link
             href="/auth/login"
-            className="px-6 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 inline-block"
+            className="btn-primary px-6 py-3"
           >
             Go to login
           </Link>
@@ -64,12 +64,12 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="max-w-md mx-auto px-6 py-16">
-      <h1 className="text-3xl font-black uppercase tracking-tighter text-foreground mb-8 text-center border-b-[3px] border-border pb-4">
-        Set a new password
+      <h1 className="display-font text-3xl font-bold tracking-[0.12em] uppercase text-foreground mb-8 text-center border-b border-border/40 pb-4">
+        New Password
       </h1>
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} className="space-y-5">
         <div>
-          <label className="block text-sm text-gray-700 mb-1">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
             New password
           </label>
           <input
@@ -77,12 +77,12 @@ export default function ResetPasswordPage() {
             value={password}
             placeholder="••••••••"
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+            className="w-full bg-card/60 backdrop-blur-md border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
             required
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-700 mb-1">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
             Confirm new password
           </label>
           <input
@@ -90,32 +90,32 @@ export default function ResetPasswordPage() {
             value={confirm}
             placeholder="Repeat password"
             onChange={(e) => setConfirm(e.target.value)}
-            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+            className="w-full bg-card/60 backdrop-blur-md border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
             required
           />
           {confirm.length > 0 && password !== confirm && (
-            <p className="text-xs text-red-600 mt-1">Passwords do not match</p>
+            <p className="text-xs text-rose-500 mt-1">Passwords do not match</p>
           )}
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-rose-500">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting || !token}
-          className="btn-primary w-full disabled:opacity-50"
+          className="btn-primary w-full disabled:opacity-50 mt-2"
         >
           {submitting ? "Updating..." : "Update password"}
         </button>
       </form>
 
-      <p className="text-sm text-gray-600 mt-4">
+      <p className="text-sm text-muted-foreground mt-6 text-center">
         Don’t have a token?{" "}
         <Link
           href="/auth/forgot-password"
-          className="font-black uppercase tracking-widest pt-1 border-b-[3px] border-primary text-primary hover:opacity-80 transition-all ml-1"
+          className="font-semibold uppercase tracking-wider text-primary hover:text-primary-hover transition-colors ml-1"
         >
-          Request a new reset link
+          Request new reset link
         </Link>
       </p>
     </div>

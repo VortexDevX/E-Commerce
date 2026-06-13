@@ -11,6 +11,7 @@ import ProductDetailsSkeleton from "../../components/products/ProductDetailsSkel
 import ProductGallery from "../../components/products/ProductGallery";
 import toast from "react-hot-toast";
 import { HeartIcon } from "@heroicons/react/24/solid";
+import { HeartIcon as HeartOutlineIcon } from "@heroicons/react/24/outline";
 import {
   addToWishlist,
   removeFromWishlist,
@@ -69,7 +70,6 @@ export default function ProductDetails() {
     if (id) dispatch(fetchReviews(id)).unwrap().then(setReviews);
   }, [id, dispatch]);
 
-  // Record this product as recently viewed when loaded
   useEffect(() => {
     if (p?._id) {
       addRecent({
@@ -78,19 +78,15 @@ export default function ProductDetails() {
         price: p.price,
         images: p.images || [],
       });
-      // Track product view
       trackProductView(p._id);
     }
-  }, [p?._id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [p?._id]);
 
-  // previews for images
   useEffect(() => {
     reviewImagePreviews.forEach((u) => URL.revokeObjectURL(u));
     const urls = reviewImages.map((f) => URL.createObjectURL(f));
     setReviewImagePreviews(urls);
-    // cleanup on unmount or change
     return () => urls.forEach((u) => URL.revokeObjectURL(u));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewImages.length]);
 
   if (!p) return <ProductDetailsSkeleton />;
@@ -143,11 +139,10 @@ export default function ProductDetails() {
       toast.error("Video must be <= 20MB");
       return;
     }
-    setReviewVideoUrl(""); // clear URL if file chosen
+    setReviewVideoUrl("");
     setReviewVideo(f);
   };
 
-  // update submitReview
   const submitReview = async () => {
     if (!reviewText.trim()) {
       toast.error("Write a short review before you submit.");
@@ -167,13 +162,11 @@ export default function ProductDetails() {
       await dispatch(addReview(fd)).unwrap();
       toast.success("Review submitted");
 
-      // reset form
       setReviewText("");
       setReviewImages([]);
       setReviewVideo(null);
       setReviewVideoUrl("");
 
-      // refresh list
       const updated = await dispatch(fetchReviews(p._id)).unwrap();
       setReviews(updated);
     } catch (e: any) {
@@ -222,26 +215,18 @@ export default function ProductDetails() {
     },
   ];
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const { left, top, width, height } =
-      e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - left) / width) * 100;
-    const y = ((e.clientY - top) / height) * 100;
-    setZoomPos({ x, y });
-  };
-
   return (
     <div className="page-shell grid grid-cols-1 items-start gap-8 overflow-x-clip md:grid-cols-2 md:gap-12">
-      {/* Left: Gallery */}
+      {/* Gallery */}
       <ProductGallery title={p.title} images={p.images} videoUrl={p.videoUrl} />
 
-      {/* Right: Details */}
-      <div className="flex flex-col border border-border bg-card p-5 shadow-card md:p-7">
+      {/* Details */}
+      <div className="flex flex-col border border-border/40 bg-card/65 backdrop-blur-md p-6 rounded-xl shadow-soft md:p-8">
         <h1 className="display-font text-4xl font-semibold leading-tight text-foreground md:text-5xl">
           {p.title}
         </h1>
 
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div className="mt-3.5 flex flex-wrap gap-2">
           {p.brand && <Chip>{p.brand}</Chip>}
           {p.tags?.slice(0, 5).map((t: string, i: number) => (
             <Chip key={`${t}-${i}`}>{t}</Chip>
@@ -249,57 +234,57 @@ export default function ProductDetails() {
           {p.tags && p.tags.length > 5 && <Chip>+{p.tags.length - 5}</Chip>}
         </div>
 
-        <p className="mt-4 text-2xl font-semibold text-primary md:text-3xl">
+        <p className="display-font mt-4 text-3xl font-semibold text-primary md:text-4xl">
           {currency(p.price)}
         </p>
 
-        <p className="mt-4 leading-7 text-muted-foreground">{p.description}</p>
+        <p className="mt-4 text-sm leading-6 text-muted-foreground">{p.description}</p>
 
-        <div className="mt-4 grid gap-2 sm:grid-cols-3">
-          <div className="border border-border bg-secondary px-3 py-3 text-sm text-foreground">
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <div className="border border-border/40 bg-secondary/40 rounded-lg px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-foreground text-center">
             {typeof p.stock === "number" && p.stock > 0
               ? p.stock <= 5
                 ? `Only ${p.stock} left`
                 : "In stock now"
               : "Check availability"}
           </div>
-          <div className="border border-border bg-secondary px-3 py-3 text-sm text-foreground">
+          <div className="border border-border/40 bg-secondary/40 rounded-lg px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-foreground text-center">
             {typeof p.avgRating === "number"
-              ? `${p.avgRating.toFixed(1)} average rating`
-              : "Reviews available after purchase"}
+              ? `${p.avgRating.toFixed(1)}★ average rating`
+              : "Reviews available"}
           </div>
-          <div className="border border-border bg-secondary px-3 py-3 text-sm text-foreground">
-            Standard delivery available at checkout
+          <div className="border border-border/40 bg-secondary/40 rounded-lg px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-foreground text-center">
+            Standard delivery available
           </div>
         </div>
 
         {p.attributes?.length ? (
-          <div className="mt-4">
-            <h3 className="font-semibold text-foreground">What to know</h3>
-            <ul className="ml-6 list-disc text-sm text-muted-foreground">
+          <div className="mt-5 space-y-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">What to know</h3>
+            <ul className="pl-5 list-disc text-xs text-muted-foreground space-y-1">
               {p.attributes.map((a: any, i: number) => (
                 <li key={i}>
-                  {a.key}: {a.value}
+                  <span className="font-semibold text-foreground/80">{a.key}:</span> {a.value}
                 </li>
               ))}
             </ul>
           </div>
         ) : null}
 
-        <div className="mt-5 border border-border bg-secondary p-4">
-          <h3 className="mb-3 text-sm font-semibold text-foreground">
+        <div className="mt-6 border border-border/40 bg-secondary/35 rounded-xl p-5">
+          <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-foreground border-b border-border/30 pb-2">
             Specifications
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {specs.map((spec) => (
               <div
                 key={spec.label}
-                className="border border-border bg-card px-3 py-2"
+                className="border border-border/40 bg-card/65 rounded-md px-3.5 py-2.5"
               >
-                <p className="text-[11px] font-semibold text-muted-foreground">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   {spec.label}
                 </p>
-                <p className="mt-1 text-sm font-medium text-foreground">
+                <p className="mt-1 text-xs font-semibold text-foreground">
                   {spec.value}
                 </p>
               </div>
@@ -307,58 +292,57 @@ export default function ProductDetails() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 mt-6">
+        <div className="flex flex-col sm:flex-row gap-3 mt-8">
           <button
             onClick={add}
             disabled={adding}
-            className={`btn-primary shadow-none ${
-              adding ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className="flex-1 btn-primary py-3.5 disabled:opacity-50"
           >
             {adding ? "Adding to cart..." : "Add to cart"}
           </button>
           <button
             onClick={toggleWishlist}
-            className={`btn shadow-none ${
+            className={`btn py-3.5 px-6 ${
               isWishlisted
-                ? "bg-foreground text-background border-foreground"
+                ? "border-primary bg-primary/10 text-primary"
                 : ""
             }`}
           >
-            <HeartIcon
-              className={`w-5 h-5 inline-block mr-2 ${
-                isWishlisted ? "text-white" : "text-sky-700"
-              }`}
-            />
+            {isWishlisted ? (
+              <HeartIcon className="w-5 h-5 inline-block mr-2 text-primary fill-current" />
+            ) : (
+              <HeartOutlineIcon className="w-5 h-5 inline-block mr-2" />
+            )}
             {isWishlisted ? "Saved" : "Save for later"}
           </button>
         </div>
       </div>
 
-      {/* Reviews */}
-      <div className="md:col-span-2 mt-10">
-        <h2 className="display-font mb-4 text-4xl font-semibold text-foreground">
+      {/* Customer Reviews */}
+      <div className="md:col-span-2 mt-10 space-y-6">
+        <h2 className="display-font text-3xl font-semibold text-foreground">
           Customer reviews
         </h2>
 
         {reviews.length === 0 ? (
-          <p className="text-muted-foreground italic">No reviews yet. Buy this item and share what you liked.</p>
+          <p className="text-muted-foreground italic text-sm">No reviews yet. Purchase this item to share your review.</p>
         ) : (
-          <ul className="space-y-3">
+          <ul className="space-y-4">
             {reviews.map((r, i) => (
-              <li key={i} className="card p-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="text-yellow-500">
+              <li key={i} className="bg-card/60 border border-border/40 p-5 rounded-xl shadow-soft">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="text-yellow-500 text-sm tracking-widest">
                     {"★".repeat(r.rating)}
                     {"☆".repeat(5 - r.rating)}
                   </div>
                   {r.verifiedPurchase && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-sm text-[10px] bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-semibold uppercase tracking-wider">
                       <svg
-                        width="14"
-                        height="14"
+                        width="10"
+                        height="10"
                         viewBox="0 0 24 24"
                         fill="currentColor"
+                        className="w-3 h-3"
                       >
                         <path d="M9 16.17l-3.88-3.88L4 13.41l5 5 12-12-1.41-1.41z" />
                       </svg>
@@ -366,14 +350,14 @@ export default function ProductDetails() {
                     </span>
                   )}
                 </div>
-                <p className="text-foreground">{r.comment || (r as any).text}</p>
-                <span className="mt-1 block text-sm text-muted-foreground">
+                <p className="text-sm text-foreground leading-relaxed">{r.comment || (r as any).text}</p>
+                <span className="mt-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   — {r.user?.name || "Customer"}
                 </span>
 
                 {/* Media render */}
                 {(r.media?.images?.length || r.media?.videoUrl) && (
-                  <div className="mt-3 space-y-2">
+                  <div className="mt-3.5 space-y-2">
                     {r.media?.images?.length ? (
                       <div className="flex gap-2 flex-wrap">
                         {r.media.images.map(
@@ -390,7 +374,7 @@ export default function ProductDetails() {
                                 key={idx}
                                 src={src}
                                 alt={img.alt || `review-img-${idx}`}
-                                className="h-20 w-20 cursor-zoom-in border border-border object-cover"
+                                className="h-16 w-16 cursor-zoom-in border border-border/40 rounded object-cover hover:border-primary/40 transition-colors"
                                 onClick={() => {
                                   setRvSlides(
                                     (r.media?.images || []).map(
@@ -424,7 +408,7 @@ export default function ProductDetails() {
                           return info.kind === "file" ? (
                             <video
                               src={info.src}
-                              className="w-full max-w-sm border border-border"
+                              className="w-full max-w-sm rounded-lg border border-border/40 shadow-sm mt-2"
                               controls
                               playsInline
                             />
@@ -432,7 +416,7 @@ export default function ProductDetails() {
                             <iframe
                               src={info.src}
                               title="Review video"
-                              className="w-full max-w-sm border border-border"
+                              className="w-full max-w-sm rounded-lg border border-border/40 shadow-sm mt-2"
                               style={{ border: 0, aspectRatio: "16 / 9" }}
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                               allowFullScreen
@@ -449,12 +433,12 @@ export default function ProductDetails() {
         )}
 
         {/* Review form */}
-        <div className="mt-4 card p-4">
-          <div className="flex flex-col sm:flex-row gap-2 items-center">
+        <div className="bg-card/65 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft space-y-4">
+          <div className="flex flex-col sm:flex-row gap-3 items-center">
             <select
               value={reviewRating}
               onChange={(e) => setReviewRating(Number(e.target.value))}
-              className="bg-card px-3 py-2 font-semibold text-foreground focus:border-primary focus:outline-none"
+              className="bg-card/65 border border-border/80 rounded-md px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200"
             >
               {[5, 4, 3, 2, 1].map((r) => (
                 <option key={r} value={r}>
@@ -465,15 +449,14 @@ export default function ProductDetails() {
             <input
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
-              placeholder="Share what helped you decide to buy"
-              className="w-full flex-1 bg-card px-4 py-2 text-foreground focus:border-primary focus:outline-none"
+              placeholder="Share what helped you decide to buy..."
+              className="w-full flex-1 bg-card/60 border border-border/80 rounded-md px-4 py-2.5 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/45 text-sm"
             />
           </div>
 
-          {/* Media pickers */}
-          <div className="mt-3 grid md:grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-sm text-muted-foreground">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Add up to 3 photos
               </label>
               <input
@@ -481,6 +464,7 @@ export default function ProductDetails() {
                 accept="image/jpeg,image/jpg,image/png,image/webp"
                 multiple
                 onChange={onPickImages}
+                className="block w-full text-xs text-muted-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
               />
               {reviewImagePreviews.length > 0 && (
                 <div className="flex gap-2 flex-wrap mt-2">
@@ -489,22 +473,23 @@ export default function ProductDetails() {
                       key={idx}
                       src={src}
                       alt={`preview-${idx}`}
-                      className="h-16 w-16 border border-border object-cover"
+                      className="h-12 w-12 border border-border/40 rounded object-cover"
                     />
                   ))}
                 </div>
               )}
             </div>
-            <div>
-              <label className="mb-1 block text-sm text-muted-foreground">
+            <div className="space-y-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Add a short video
               </label>
               <input
                 type="file"
                 accept="video/mp4,video/webm"
                 onChange={onPickVideo}
+                className="block w-full text-xs text-muted-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
               />
-              <p className="mt-1 text-xs text-muted-foreground">Or paste a video link</p>
+              <p className="text-[9px] text-muted-foreground">Or paste a video link</p>
               <input
                 type="url"
                 value={reviewVideoUrl}
@@ -512,16 +497,16 @@ export default function ProductDetails() {
                   setReviewVideoUrl(e.target.value);
                   if (e.target.value) setReviewVideo(null);
                 }}
-                placeholder="https://..."
-                className="mt-2 w-full bg-card px-4 py-2 text-foreground focus:border-primary focus:outline-none"
+                placeholder="https://youtube.com/..."
+                className="w-full bg-card/60 border border-border/80 rounded-md px-3 py-1.5 text-foreground focus:outline-none focus:border-primary transition-all text-xs"
               />
             </div>
           </div>
 
-          <div className="mt-3">
+          <div className="pt-2">
             <button
               onClick={submitReview}
-              className="btn-primary"
+              className="btn-primary py-2.5 px-6 text-xs"
             >
               Submit review
             </button>
@@ -534,7 +519,7 @@ export default function ProductDetails() {
         <AlsoBought productId={p._id} />
       </div>
 
-      {/* Recently viewed (exclude current product) */}
+      {/* Recently viewed */}
       <div className="md:col-span-2">
         <RecentlyViewed excludeId={p._id} />
       </div>

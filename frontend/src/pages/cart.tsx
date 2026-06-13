@@ -33,24 +33,24 @@ export default function CartPage() {
   if (!items || items.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-6 py-16 text-center">
-        <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-12 max-w-xl mx-auto flex flex-col items-center">
+        <div className="bg-card/60 backdrop-blur-md border border-border/40 shadow-soft p-12 max-w-xl mx-auto flex flex-col items-center rounded-xl">
           <img
             src="/empty-cart.svg"
             alt="Empty cart"
-            className="w-40 mx-auto mb-8 opacity-90"
+            className="w-40 mx-auto mb-8 opacity-80"
             onError={(e) =>
               ((e.currentTarget as HTMLImageElement).src = "/fallback.png")
             }
           />
-          <h2 className="text-3xl font-black uppercase tracking-widest text-foreground mb-4">
+          <h2 className="display-font text-3xl font-semibold uppercase tracking-wide text-foreground mb-4">
             Your cart is empty
           </h2>
-          <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-8">
+          <p className="text-sm text-muted-foreground mb-8">
             Add products to review pricing, delivery, and checkout.
           </p>
           <Link
             href="/products"
-            className="px-8 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 block max-w-xs mx-auto text-center"
+            className="btn-primary px-8 py-3 block max-w-xs mx-auto text-center"
           >
             Shop products
           </Link>
@@ -59,7 +59,6 @@ export default function CartPage() {
     );
   }
 
-  // Using same 5% tax logic as before, but on discounted subtotal
   const tax = Math.round(discountedSubtotal * 0.05);
   const total = discountedSubtotal + tax;
 
@@ -102,57 +101,57 @@ export default function CartPage() {
       {/* Cart Items */}
       <div className="md:col-span-2 space-y-4">
         {items.map((i) => (
-          <div key={i._id} className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-4 group">
-            <div className="grid grid-cols-[72px,1fr] sm:grid-cols-[112px,1fr,auto] gap-4 items-start sm:items-center">
+          <div key={i._id} className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl p-5 group transition-all duration-200 hover:border-primary/20 hover:shadow-soft">
+            <div className="grid grid-cols-[72px,1fr] sm:grid-cols-[112px,1fr,auto] gap-5 items-start sm:items-center">
               <img
                 src={getImageUrl(i.product.images?.[0])}
                 alt={i.product.title}
-                className="w-20 h-20 sm:w-28 sm:h-28 object-cover rounded-none border-[3px] border-border shadow-[2px_2px_0px_#111]"
+                className="w-20 h-20 sm:w-28 sm:h-28 object-cover rounded-lg border border-border/45 shadow-sm"
                 onError={(e) =>
                   ((e.currentTarget as HTMLImageElement).src = "/fallback.png")
                 }
               />
 
               <div className="min-w-0 pr-2">
-                <h3 className="font-black uppercase tracking-widest text-foreground text-lg truncate group-hover:underline underline-offset-4 decoration-[3px]">
+                <h3 className="font-semibold text-foreground text-lg truncate group-hover:text-primary transition-colors">
                   {i.product.title}
                 </h3>
-                <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm mt-1">
+                <p className="text-muted-foreground text-sm mt-1">
                   {currency(i.priceAtAdd ?? i.product.price)} each
                 </p>
 
                 {/* Quantity controls */}
-                <div className="flex items-center gap-2 mt-3">
+                <div className="flex items-center gap-2 mt-4">
                   <button
                     aria-label="Decrease quantity"
                     onClick={() => onDecrease(i._id, i.qty)}
-                    className="w-10 h-10 flex items-center justify-center rounded-none border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all focus:outline-none"
+                    className="w-9 h-9 flex items-center justify-center rounded-md border border-border/60 bg-card hover:bg-secondary/40 transition-colors focus:outline-none"
                   >
-                    <span className="font-black text-foreground">-</span>
+                    <span className="text-foreground font-semibold">-</span>
                   </button>
-                  <span className="w-10 text-center text-foreground font-black text-lg">{i.qty}</span>
+                  <span className="w-10 text-center text-foreground font-semibold text-base">{i.qty}</span>
                   <button
                     aria-label="Increase quantity"
                     onClick={() => onIncrease(i._id, i.qty)}
-                    className="w-10 h-10 flex items-center justify-center rounded-none border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all focus:outline-none"
+                    className="w-9 h-9 flex items-center justify-center rounded-md border border-border/60 bg-card hover:bg-secondary/40 transition-colors focus:outline-none"
                   >
-                    <span className="font-black text-foreground">+</span>
+                    <span className="text-foreground font-semibold">+</span>
                   </button>
                 </div>
               </div>
 
               {/* Price + Remove */}
-              <div className="flex sm:block items-center justify-between gap-3 sm:gap-2 mt-4 sm:mt-0 sm:self-start sm:text-right">
-                <p className="font-black text-2xl text-foreground">
+              <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 mt-4 sm:mt-0 sm:self-start sm:text-right">
+                <p className="display-font text-2xl font-semibold text-foreground">
                   {currency((i.priceAtAdd ?? i.product.price) * i.qty)}
                 </p>
                 <button
                   aria-label="Remove item"
                   onClick={() => onRemove(i._id)}
-                  className="mt-2 text-rose-600 hover:text-rose-500 hover:underline underline-offset-4 decoration-2 inline-flex items-center gap-1 text-sm font-bold uppercase tracking-widest"
+                  className="mt-2 text-rose-500 hover:text-rose-600 transition-colors inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider"
                 >
                   <TrashIcon className="w-4 h-4" />
-                  <span className="hidden sm:inline">Remove item</span>
+                  <span>Remove</span>
                 </button>
               </div>
             </div>
@@ -161,15 +160,15 @@ export default function CartPage() {
       </div>
 
       {/* Summary */}
-      <aside className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 h-fit md:sticky md:top-24 space-y-6">
-        <h2 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4">Order Summary</h2>
+      <aside className="bg-card/65 backdrop-blur-md border border-border/40 shadow-soft p-6 h-fit md:sticky md:top-24 rounded-xl space-y-6">
+        <h2 className="display-font text-2xl font-semibold uppercase tracking-wide text-foreground border-b border-border/30 pb-3">Order Summary</h2>
 
         {/* Coupon UI */}
         <div className="space-y-2">
           {appliedCoupon ? (
-            <div className="flex items-center justify-between bg-emerald-300 border-[3px] border-emerald-950 text-emerald-950 px-3 py-2 font-black uppercase tracking-widest shadow-[4px_4px_0px_#111]">
+            <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-md">
               <span>Code: {appliedCoupon.code}</span>
-              <button onClick={onRemoveCoupon} className="text-xs hover:underline decoration-2 underline-offset-2">
+              <button onClick={onRemoveCoupon} className="hover:underline">
                 Remove
               </button>
             </div>
@@ -179,46 +178,46 @@ export default function CartPage() {
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="Enter discount code"
-                className="flex-1 bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[2px_2px_0px_#111] focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-all uppercase placeholder:text-muted-foreground/50"
+                className="flex-1 bg-card/60 border border-border/80 rounded-md px-3 py-2 text-foreground focus:outline-none focus:border-primary transition-all uppercase placeholder:text-muted-foreground/45 text-sm"
               />
               <button
                 onClick={onApply}
-                className="px-4 py-2 border-[3px] border-foreground bg-foreground text-background font-black uppercase tracking-widest shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+                className="px-4 py-2 btn text-sm"
               >
                 Apply
               </button>
             </div>
           )}
           {couponError && (
-            <p className="text-sm font-bold text-rose-600 mt-2">{couponError}</p>
+            <p className="text-xs font-semibold text-rose-500 mt-1">{couponError}</p>
           )}
         </div>
 
-        <div className="space-y-3 pb-4 border-b-[3px] border-border font-bold uppercase tracking-widest text-sm">
-          <p className="flex justify-between text-muted-foreground">
+        <div className="space-y-3 pb-4 border-b border-border/30 text-xs font-semibold uppercase tracking-wider">
+          <div className="flex justify-between text-muted-foreground">
             <span>Subtotal</span>
-            <span>{currency(subtotal)}</span>
-          </p>
+            <span className="text-foreground">{currency(subtotal)}</span>
+          </div>
           {discount > 0 && (
-            <p className="flex justify-between text-emerald-600">
+            <div className="flex justify-between text-emerald-500">
               <span>Discount</span>
               <span>-{currency(discount)}</span>
-            </p>
+            </div>
           )}
-          <p className="flex justify-between text-muted-foreground">
-            <span>Estimated tax</span>
+          <div className="flex justify-between text-muted-foreground">
+            <span>Estimated tax (5%)</span>
             <span className="text-foreground">{currency(tax)}</span>
-          </p>
+          </div>
         </div>
         
-        <p className="flex justify-between font-black uppercase tracking-widest text-2xl text-foreground">
+        <div className="flex justify-between display-font font-semibold uppercase tracking-wide text-2xl text-foreground">
           <span>Total</span>
           <span>{currency(total)}</span>
-        </p>
+        </div>
 
         <Link
           href="/checkout"
-          className="w-full text-center px-6 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 block mt-4"
+          className="w-full text-center btn-primary py-3 block mt-4"
         >
           Continue to checkout
         </Link>

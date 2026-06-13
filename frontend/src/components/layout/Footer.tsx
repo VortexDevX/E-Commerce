@@ -43,27 +43,27 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-16 border-t border-border bg-foreground text-white">
+    <footer className="mt-20 border-t border-border/50 bg-secondary/30 backdrop-blur-md text-foreground">
       <div className="page-shell space-y-10">
-        <div className="grid gap-8 lg:grid-cols-[1.35fr_repeat(4,1fr)]">
+        <div className="grid gap-8 lg:grid-cols-[1.5fr_repeat(4,1fr)]">
           <div>
-            <div className="display-font mb-4 text-4xl font-semibold text-white">
+            <div className="display-font mb-4 text-2xl font-bold tracking-[0.2em] uppercase text-foreground">
               Luxora
             </div>
-            <p className="max-w-sm text-sm leading-6 text-white/70">
+            <p className="max-w-sm text-sm leading-6 text-muted-foreground">
               Curated products, clear seller tools, secure checkout, and simple
               order tracking in one marketplace.
             </p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <span className="tag-chip bg-white/10 text-white">Verified sellers</span>
-              <span className="tag-chip bg-white/10 text-white">Secure checkout</span>
-              <span className="tag-chip bg-white/10 text-white">Order tracking</span>
+            <div className="mt-6 flex flex-wrap gap-1.5">
+              <span className="rounded bg-primary/10 border border-primary/20 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-primary">Verified sellers</span>
+              <span className="rounded bg-primary/10 border border-primary/20 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-primary">Secure checkout</span>
+              <span className="rounded bg-primary/10 border border-primary/20 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-primary">Order tracking</span>
             </div>
           </div>
 
           {groups.map((group) => (
             <div key={group.title}>
-              <h3 className="mb-4 text-sm font-semibold text-white">
+              <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-foreground">
                 {group.title}
               </h3>
               <div className="space-y-3">
@@ -71,7 +71,7 @@ export default function Footer() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="block text-sm text-white/62 hover:text-white"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200"
                   >
                     {link.label}
                   </Link>
@@ -81,9 +81,9 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-white/15 pt-6 text-sm text-white/62 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-3 border-t border-border/40 pt-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
           <p>
-            © {year} <span className="text-white">Luxora</span>. All rights reserved.
+            © {year} <span className="font-semibold text-foreground">Luxora</span>. All rights reserved.
           </p>
           <p>Designed for buying, selling, and keeping operations tidy.</p>
         </div>

@@ -21,7 +21,6 @@ type Banner = {
   clicks?: number;
   updatedAt?: string;
 
-  // NEW fields for brand-safe split banner
   layout?: "image_full" | "split_asym";
   imagePosition?: "left" | "right";
   imageFit?: "contain" | "cover";
@@ -104,7 +103,6 @@ export default function BannersAdminPage() {
       startAt: toInputDateTime(b.startAt as string),
       endAt: toInputDateTime(b.endAt as string),
       priority: b.priority || 0,
-      // NEW
       layout: b.layout || "image_full",
       imagePosition: b.imagePosition || "right",
       imageFit: b.imageFit || "contain",
@@ -122,7 +120,7 @@ export default function BannersAdminPage() {
 
   const save = async () => {
     if (!form.imageUrl || !form.placement) {
-      toast.error("imageUrl and placement are required");
+      toast.error("Image URL and placement location are required fields.");
       return;
     }
     setSaving(true);
@@ -139,7 +137,6 @@ export default function BannersAdminPage() {
         startAt: form.startAt ? new Date(form.startAt).toISOString() : null,
         endAt: form.endAt ? new Date(form.endAt).toISOString() : null,
         priority: Number(form.priority) || 0,
-        // NEW
         layout: form.layout,
         imagePosition: form.imagePosition,
         imageFit: form.imageFit,
@@ -150,10 +147,10 @@ export default function BannersAdminPage() {
 
       if (editingId) {
         await api.put(`/admin/banners/${editingId}`, payload);
-        toast.success("Banner updated");
+        toast.success("Banner updated successfully");
       } else {
         await api.post("/admin/banners", payload);
-        toast.success("Banner created");
+        toast.success("Banner created successfully");
       }
       await fetchList();
       resetForm();
@@ -165,10 +162,10 @@ export default function BannersAdminPage() {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this banner?")) return;
+    if (!confirm("Are you sure you want to delete this banner?")) return;
     try {
       await api.delete(`/admin/banners/${id}`);
-      toast.success("Deleted");
+      toast.success("Banner deleted successfully");
       fetchList();
     } catch (e: any) {
       toast.error(e?.response?.data?.message || "Delete failed");
@@ -183,14 +180,21 @@ export default function BannersAdminPage() {
   return (
     <ProtectedRoute roles={["admin", "subadmin"]}>
       <AdminLayout>
-        <div className="card p-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-gray-900">Banners</h1>
+        {/* Banner config block */}
+        <section className="bg-card/65 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft mb-8">
+          <div className="flex items-center justify-between border-b border-border/20 pb-4 mb-6 flex-wrap gap-4">
+            <div>
+              <h2 className="display-font text-2xl font-semibold tracking-wide text-foreground">Marketing Banners</h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Configure promotional landing carousels, custom layouts, headers, and click statistics.
+              </p>
+            </div>
             <div className="flex items-center gap-2">
               <select
                 value={filterPlacement}
+                aria-label="Placement selector"
                 onChange={(e) => setFilterPlacement(e.target.value as any)}
-                className="border border-gray-300 rounded-md px-3 py-2 text-gray-700"
+                className="bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary transition-all duration-200"
               >
                 <option value="">All placements</option>
                 <option value="home_hero">Home — Hero</option>
@@ -198,154 +202,156 @@ export default function BannersAdminPage() {
               </select>
               <button
                 onClick={resetForm}
-                className="px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                className="btn px-3 py-2 text-xs font-semibold uppercase tracking-wider"
               >
-                New
+                New Form
               </button>
               <button
                 onClick={save}
                 disabled={saving}
-                className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-500 disabled:opacity-50"
+                className="btn-primary px-4 py-2 text-xs font-semibold uppercase tracking-wider disabled:opacity-50"
               >
                 {editingId
                   ? saving
                     ? "Updating..."
-                    : "Update"
+                    : "Update Banner"
                   : saving
                   ? "Creating..."
-                  : "Create"}
+                  : "Create Banner"}
               </button>
             </div>
           </div>
 
           {/* Form */}
-          <div className="grid md:grid-cols-2 gap-4 mt-4">
+          <div className="grid md:grid-cols-2 gap-5 text-xs">
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
-                Placement
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Placement Area
               </label>
               <select
                 value={form.placement}
+                aria-label="Placement selector form"
                 onChange={(e) =>
                   setForm((f) => ({ ...f, placement: e.target.value as any }))
                 }
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary transition-all duration-200"
               >
-                <option value="home_hero">Home — Hero</option>
-                <option value="category_header">Category — Header</option>
+                <option value="home_hero">Home — Hero Banner</option>
+                <option value="category_header">Category — Header Banner</option>
               </select>
             </div>
 
             {form.placement === "category_header" && (
               <div>
-                <label className="block text-sm text-gray-700 mb-1">
-                  Category Slug
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                  Category Slug URL
                 </label>
                 <input
                   value={form.categorySlug || ""}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, categorySlug: e.target.value }))
                   }
-                  placeholder="e.g., electronics"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900"
+                  placeholder="e.g., watches"
+                  className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-sm text-gray-700 mb-1">Layout</label>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Display Layout</label>
               <select
                 value={form.layout}
+                aria-label="Display layout selector"
                 onChange={(e) =>
                   setForm((f) => ({ ...f, layout: e.target.value as any }))
                 }
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary transition-all duration-200"
               >
-                <option value="image_full">Image only (legacy)</option>
-                <option value="split_asym">
-                  Split (asymmetric, brand-safe)
-                </option>
+                <option value="image_full">Image Only (Legacy Full Size)</option>
+                <option value="split_asym">Split Layout (Asymmetric Content + Image)</option>
               </select>
             </div>
 
             {form.layout === "split_asym" && (
               <>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
-                    Image Position
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                    Image Alignment Position
                   </label>
                   <select
                     value={form.imagePosition}
+                    aria-label="Image position selector"
                     onChange={(e) =>
                       setForm((f) => ({
                         ...f,
                         imagePosition: e.target.value as any,
                       }))
                     }
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900"
+                    className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                   >
-                    <option value="right">Right</option>
-                    <option value="left">Left</option>
+                    <option value="right">Right Side</option>
+                    <option value="left">Left Side</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
-                    Image Fit
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                    Image Box Fitting
                   </label>
                   <select
                     value={form.imageFit}
+                    aria-label="Image fit selector"
                     onChange={(e) =>
                       setForm((f) => ({
                         ...f,
                         imageFit: e.target.value as any,
                       }))
                     }
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900"
+                    className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                   >
-                    <option value="contain">Contain (show full image)</option>
-                    <option value="cover">Cover (crop edges)</option>
+                    <option value="contain">Contain (Full Aspect Ratio)</option>
+                    <option value="cover">Cover (Fill & Crop Boundaries)</option>
                   </select>
                 </div>
 
-                <div className="md:col-span-2 grid md:grid-cols-2 gap-4">
+                <div className="md:col-span-2 grid md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-700 mb-1">
-                      Headline
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Main Headline Text
                     </label>
                     <input
                       value={form.headline || ""}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, headline: e.target.value }))
                       }
-                      placeholder="Big bold headline"
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900"
+                      placeholder="e.g. Modern Elegance Redefined"
+                      className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-700 mb-1">
-                      Subheadline
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Subheadline Text
                     </label>
                     <input
                       value={form.subheadline || ""}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, subheadline: e.target.value }))
                       }
-                      placeholder="Supporting text"
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900"
+                      placeholder="e.g. Discover our luxury collection"
+                      className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-700 mb-1">
-                      CTA Label (optional)
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      CTA Button Label
                     </label>
                     <input
                       value={form.ctaLabel || ""}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, ctaLabel: e.target.value }))
                       }
-                      placeholder="Shop Now"
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900"
+                      placeholder="e.g. Shop Collection"
+                      className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                     />
                   </div>
                 </div>
@@ -353,36 +359,36 @@ export default function BannersAdminPage() {
             )}
 
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
-                Image URL
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Image Asset URL
               </label>
               <input
                 value={form.imageUrl}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, imageUrl: e.target.value }))
                 }
-                placeholder="/uploads/....png or https://..."
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900"
+                placeholder="e.g. /uploads/image.png or URL"
+                className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
-                Link URL
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Target Redirect URL
               </label>
               <input
                 value={form.linkUrl || ""}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, linkUrl: e.target.value }))
                 }
-                placeholder="/products or https://..."
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900"
+                placeholder="e.g. /products/watch-1"
+                className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
-                Start At
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Schedule Activation (Start Date)
               </label>
               <input
                 type="datetime-local"
@@ -390,25 +396,25 @@ export default function BannersAdminPage() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, startAt: e.target.value }))
                 }
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-700 mb-1">End At</label>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Schedule Termination (End Date)</label>
               <input
                 type="datetime-local"
                 value={form.endAt || ""}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, endAt: e.target.value }))
                 }
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
-                Priority
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Display Priority Sorting Rank
               </label>
               <input
                 type="number"
@@ -419,37 +425,40 @@ export default function BannersAdminPage() {
                     priority: Number(e.target.value || 0),
                   }))
                 }
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900"
+                className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 pt-5">
               <input
                 id="active"
                 type="checkbox"
                 checked={form.active}
+                className="w-4 h-4 text-primary border-border focus:ring-0 focus:ring-offset-0 rounded-md"
                 onChange={(e) =>
                   setForm((f) => ({ ...f, active: e.target.checked }))
                 }
               />
-              <label htmlFor="active" className="text-sm text-gray-700">
-                Active
+              <label htmlFor="active" className="text-xs font-bold uppercase tracking-wider text-foreground select-none cursor-pointer">
+                Active & Visible
               </label>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Live Preview (brand-safe split or legacy image) */}
-        <div className="card p-4 mt-4">
-          <div className="text-sm font-medium text-gray-700 mb-2">Preview</div>
+        <section className="bg-card/65 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft mb-8">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/30 pb-2 mb-4">Live Marketing Preview</h3>
           {form.layout === "split_asym" || form.headline ? (
-            <BannerHero
-              banner={previewBanner as any}
-              showAdBadge
-              disableTracking
-            />
+            <div className="overflow-hidden rounded-xl border border-border/20 shadow-inner">
+              <BannerHero
+                banner={previewBanner as any}
+                showAdBadge
+                disableTracking
+              />
+            </div>
           ) : (
-            <div className="relative overflow-hidden rounded-2xl border border-gray-200">
+            <div className="relative overflow-hidden rounded-xl border border-border/30 max-h-64 shadow-soft">
               <img
                 src={form.imageUrl || "/fallback.png"}
                 alt={form.altText || form.title || "banner"}
@@ -460,88 +469,107 @@ export default function BannersAdminPage() {
               />
             </div>
           )}
-        </div>
+        </section>
 
         {/* List */}
-        <div className="card p-4 mt-4 overflow-x-auto">
-          {loading ? (
-            <div className="text-gray-600">Loading...</div>
-          ) : list.length === 0 ? (
-            <div className="text-gray-600">No banners yet.</div>
-          ) : (
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="text-left text-gray-500">
-                  <th className="px-3 py-2">Preview</th>
-                  <th className="px-3 py-2">Title</th>
-                  <th className="px-3 py-2">Placement</th>
-                  <th className="px-3 py-2">Layout</th>
-                  <th className="px-3 py-2">Active</th>
-                  <th className="px-3 py-2">Schedule</th>
-                  <th className="px-3 py-2">Priority</th>
-                  <th className="px-3 py-2">Stats</th>
-                  <th className="px-3 py-2 text-right">Actions</th>
+        <section className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-xs">
+              <thead className="bg-secondary/25 border-b border-border/35">
+                <tr className="text-left font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+                  <th className="px-6 py-4 border-r border-border/20">Banner Preview</th>
+                  <th className="px-6 py-4 border-r border-border/20">Title & Destination</th>
+                  <th className="px-6 py-4 border-r border-border/20">Placement Location</th>
+                  <th className="px-6 py-4 border-r border-border/20">Layout Mode</th>
+                  <th className="px-6 py-4 border-r border-border/20 text-center">Active</th>
+                  <th className="px-6 py-4 border-r border-border/20">Scheduled Window</th>
+                  <th className="px-6 py-4 border-r border-border/20 text-center">Priority</th>
+                  <th className="px-6 py-4 border-r border-border/20">Analytics Stats</th>
+                  <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {list.map((b) => (
-                  <tr key={b._id} className="border-t border-gray-200">
-                    <td className="px-3 py-2">
-                      <img
-                        src={b.imageUrl}
-                        alt={b.altText || b.title || "banner"}
-                        className="w-28 h-12 object-cover rounded border border-gray-200"
-                        onError={(e) =>
-                          ((e.currentTarget as HTMLImageElement).src =
-                            "/fallback.png")
-                        }
-                      />
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="font-medium text-gray-900 truncate">
-                        {b.title || "-"}
-                      </div>
-                      <div className="text-xs text-gray-500 truncate">
-                        {b.linkUrl || ""}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2">{b.placement}</td>
-                    <td className="px-3 py-2">{b.layout || "image_full"}</td>
-                    <td className="px-3 py-2">{b.active ? "Yes" : "No"}</td>
-                    <td className="px-3 py-2">
-                      <div className="text-xs text-gray-700">
-                        {b.startAt ? new Date(b.startAt).toLocaleString() : "-"}{" "}
-                        → {b.endAt ? new Date(b.endAt).toLocaleString() : "-"}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2">{b.priority ?? 0}</td>
-                    <td className="px-3 py-2">
-                      <div className="text-xs text-gray-700">
-                        {b.impressions || 0} views · {b.clicks || 0} clicks
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      <div className="flex gap-2 justify-end">
-                        <button
-                          onClick={() => startEdit(b)}
-                          className="px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => remove(b._id!)}
-                          className="px-3 py-1 border border-rose-300 rounded-md bg-white text-rose-700 hover:bg-rose-50"
-                        >
-                          Delete
-                        </button>
-                      </div>
+              <tbody className="divide-y divide-border/20">
+                {loading ? (
+                  <tr>
+                    <td colSpan={9} className="px-6 py-10 text-center bg-secondary/5">
+                      <div className="h-5 w-5 animate-spin border-2 border-primary/20 border-t-primary rounded-full mx-auto" />
                     </td>
                   </tr>
-                ))}
+                ) : list.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="px-6 py-10 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground italic bg-secondary/5">
+                      No banners configured for display.
+                    </td>
+                  </tr>
+                ) : (
+                  list.map((b) => (
+                    <tr key={b._id} className="hover:bg-secondary/5 transition-colors font-medium text-foreground">
+                      <td className="px-6 py-4 border-r border-border/20">
+                        <img
+                          src={b.imageUrl}
+                          alt={b.altText || b.title || "banner"}
+                          className="w-28 h-12 object-cover rounded border border-border/20 shadow-sm"
+                          onError={(e) =>
+                            ((e.currentTarget as HTMLImageElement).src =
+                              "/fallback.png")
+                          }
+                        />
+                      </td>
+                      <td className="px-6 py-4 border-r border-border/20 max-w-[200px] truncate">
+                        <div className="font-semibold text-foreground truncate">
+                          {b.title || "-"}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                          {b.linkUrl || "No target URL"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 border-r border-border/20 text-muted-foreground uppercase text-[10px]">{b.placement}</td>
+                      <td className="px-6 py-4 border-r border-border/20 text-muted-foreground uppercase text-[10px]">{b.layout || "image_full"}</td>
+                      <td className="px-6 py-4 border-r border-border/20 text-center">
+                        <span className={`inline-flex items-center px-2 py-0.5 border rounded-sm text-[10px] font-semibold uppercase tracking-wider ${
+                          b.active
+                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                            : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                        }`}>
+                          {b.active ? "Yes" : "No"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 border-r border-border/20 text-muted-foreground">
+                        <div className="text-[10px] leading-relaxed">
+                          {b.startAt ? new Date(b.startAt).toLocaleString() : "-"}{" "}
+                          → {b.endAt ? new Date(b.endAt).toLocaleString() : "-"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 border-r border-border/20 text-center font-semibold">{b.priority ?? 0}</td>
+                      <td className="px-6 py-4 border-r border-border/20 text-muted-foreground">
+                        <div className="text-[10px] leading-relaxed">
+                          <span className="font-semibold text-foreground">{b.impressions || 0}</span> views<br />
+                          <span className="font-semibold text-foreground">{b.clicks || 0}</span> clicks
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => startEdit(b)}
+                            className="btn px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => remove(b._id!)}
+                            className="btn border-rose-500/30 text-rose-500 hover:bg-rose-500/10 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
-          )}
-        </div>
+          </div>
+        </section>
       </AdminLayout>
     </ProtectedRoute>
   );

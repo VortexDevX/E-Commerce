@@ -8,9 +8,10 @@ import ProtectedRoute from "../../components/layout/ProtectedRoute";
 import { getImageUrl } from "../../utils/images";
 import api from "../../utils/api";
 import { toast } from "react-hot-toast";
+
 function Pill({ text, color }: { text: string; color: string }) {
   return (
-    <span className={`px-2 py-0.5 rounded-full text-xs capitalize ${color}`}>
+    <span className={`px-2.5 py-0.5 rounded-sm text-[10px] uppercase tracking-wider font-semibold border ${color}`}>
       {text}
     </span>
   );
@@ -18,14 +19,14 @@ function Pill({ text, color }: { text: string; color: string }) {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    pending: "bg-yellow-50 text-yellow-700 border-yellow-200",
-    confirmed: "bg-indigo-50 text-indigo-700 border-indigo-200",
-    shipped: "bg-blue-50 text-blue-700 border-blue-200",
-    delivered: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    cancelled: "bg-rose-50 text-rose-700 border-rose-200",
+    pending: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+    confirmed: "bg-primary/15 text-primary border-primary/25",
+    shipped: "bg-primary/10 text-primary border-primary/20",
+    delivered: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+    cancelled: "bg-rose-500/10 text-rose-600 border-rose-500/20",
   };
-  const cls = map[status] || "bg-gray-50 text-gray-700 border-gray-200";
-  return <span className={`badge ${cls} border capitalize`}>{status}</span>;
+  const cls = map[status] || "bg-card text-foreground border-border/40";
+  return <span className={`inline-block rounded-sm border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${cls}`}>{status}</span>;
 }
 
 const STEPS = ["pending", "confirmed", "shipped", "delivered"] as const;
@@ -34,27 +35,27 @@ type Step = (typeof STEPS)[number];
 function StepTimeline({ displayStatus }: { displayStatus: Step }) {
   const idx = STEPS.indexOf(displayStatus);
   return (
-    <div className="card p-4">
-      <h3 className="text-lg font-semibold text-gray-900 mb-3">Order Status</h3>
+    <div className="bg-card/60 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/30 pb-2.5 mb-5">Order Status</h3>
 
       {/* Mobile: vertical timeline */}
-      <ol className="md:hidden relative border-l border-gray-200 pl-4 space-y-4">
+      <ol className="md:hidden relative border-l border-border/60 pl-4 space-y-4">
         {STEPS.map((s, i) => {
           const active = i <= idx;
           return (
             <li key={`m-${s}`} className="relative pl-4">
               <span
-                className={`absolute -left-2.5 top-0 w-5 h-5 rounded-full border flex items-center justify-center text-xs ${
+                className={`absolute -left-2.5 top-0 w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-semibold ${
                   active
-                    ? "bg-purple-600 text-white border-purple-600"
-                    : "bg-white text-gray-500 border-gray-300"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card text-muted-foreground border-border/60"
                 }`}
               >
                 {i + 1}
               </span>
               <div
-                className={`capitalize text-sm ${
-                  active ? "text-gray-900 font-medium" : "text-gray-500"
+                className={`uppercase tracking-wider text-xs font-bold ${
+                  active ? "text-primary font-semibold" : "text-muted-foreground"
                 }`}
               >
                 {s}
@@ -73,17 +74,17 @@ function StepTimeline({ displayStatus }: { displayStatus: Step }) {
               <li key={`d-${s}`} className="flex-1 flex items-center">
                 <div className="flex flex-col items-center text-center w-24">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center border ${
+                    className={`w-8 h-8 rounded-full flex items-center justify-center border text-xs font-bold ${
                       active
-                        ? "bg-purple-600 text-white border-purple-600"
-                        : "bg-white text-gray-500 border-gray-300"
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-card text-muted-foreground border-border/60"
                     }`}
                   >
                     {i + 1}
                   </div>
                   <div
-                    className={`mt-2 text-xs capitalize ${
-                      active ? "text-gray-900 font-medium" : "text-gray-500"
+                    className={`mt-2.5 text-[10px] font-semibold uppercase tracking-wider ${
+                      active ? "text-foreground font-semibold" : "text-muted-foreground"
                     }`}
                   >
                     {s}
@@ -91,8 +92,8 @@ function StepTimeline({ displayStatus }: { displayStatus: Step }) {
                 </div>
                 {i < STEPS.length - 1 && (
                   <div
-                    className={`h-0.5 flex-1 mx-2 rounded ${
-                      i < idx ? "bg-purple-500" : "bg-gray-200"
+                    className={`h-0.5 flex-1 mx-4 rounded-full ${
+                      i < idx ? "bg-primary" : "bg-border/40"
                     }`}
                   />
                 )}
@@ -116,7 +117,6 @@ function openInvoiceTab(html: string) {
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
-// Types for returns
 type RRStatus =
   | "requested"
   | "approved"
@@ -157,16 +157,13 @@ export default function OrderDetailsPage() {
   const { id } = router.query as { id: string };
   const { current: o } = useSelector((s: RootState) => s.orders);
 
-  // Returns state
   const [returns, setReturns] = useState<ReturnRequest[]>([]);
   const [loadingReturns, setLoadingReturns] = useState(false);
 
-  // Return modal state
   const [returnOpen, setReturnOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [userNote, setUserNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  // qtyByProduct: productId -> qty to return
   const [qtyByProduct, setQtyByProduct] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -179,7 +176,6 @@ export default function OrderDetailsPage() {
     return () => clearInterval(interval);
   }, [id, dispatch]);
 
-  // Fetch returns for this order
   const fetchReturns = async () => {
     if (!id) return;
     setLoadingReturns(true);
@@ -198,7 +194,6 @@ export default function OrderDetailsPage() {
     fetchReturns();
   }, [id]);
 
-  // Derived: compute available quantities per product = purchased - sum(active returns)
   const activeReturnStatuses: RRStatus[] = [
     "requested",
     "approved",
@@ -231,14 +226,12 @@ export default function OrderDetailsPage() {
     return available;
   }, [o, returns]);
 
-  // Initialize qty inputs on modal open
   const openReturn = () => {
     if (!o) return;
     const init: Record<string, number> = {};
     for (const it of o.items || []) {
       const pid = typeof it.product === "string" ? it.product : it.product?._id;
       if (!pid) continue;
-      // prefill 0; user chooses quantities explicitly
       init[pid] = 0;
     }
     setQtyByProduct(init);
@@ -251,7 +244,6 @@ export default function OrderDetailsPage() {
   const submitReturn = async () => {
     if (!o) return;
     try {
-      // Build items payload
       const items: { product: string; qty: number }[] = [];
       for (const it of o.items || []) {
         const pid =
@@ -289,7 +281,6 @@ export default function OrderDetailsPage() {
     }
   };
 
-  // Demo timeline (client-only visual progression)
   const [demoIdx, setDemoIdx] = useState<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startDemo = () => {
@@ -320,7 +311,9 @@ export default function OrderDetailsPage() {
     return (
       <ProtectedRoute roles={["user", "seller", "admin"]}>
         <div className="max-w-6xl mx-auto px-6 py-10">
-          <div className="card p-6 text-gray-600">Loading...</div>
+          <div className="bg-card/60 backdrop-blur-md border border-border/40 p-6 rounded-xl text-center text-muted-foreground">
+            Loading...
+          </div>
         </div>
       </ProtectedRoute>
     );
@@ -396,7 +389,7 @@ export default function OrderDetailsPage() {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Invoice #${o._id.slice(-6).toUpperCase()}</title>
   <style>
-    :root { --brand:#0369a1; --text:#111827; --muted:#6b7280; --border:#e5e7eb; }
+    :root { --brand:#d4af37; --text:#111827; --muted:#6b7280; --border:#e5e7eb; }
     @page { size: A4; margin: 14mm; }
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif; color: var(--text); background: #fff; }
@@ -411,7 +404,7 @@ export default function OrderDetailsPage() {
     th { padding:8px; border-bottom:1px solid #ccc; font-weight:600; font-size:13px; }
     td { font-size:13px; padding:8px; border-bottom:1px solid #eee; }
     .totals td { padding:6px 8px; }
-    .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid var(--border); }
+    .badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:12px; border:1px solid var(--border); }
     .address { white-space:pre-wrap; font-size:14px; color:#374151; }
     .footnote { font-size:12px; color:#6b7280; margin-top: 12px; }
     .right { text-align:right; }
@@ -500,37 +493,36 @@ export default function OrderDetailsPage() {
     <ProtectedRoute roles={["user", "seller", "admin"]}>
       <div className="max-w-6xl mx-auto px-6 py-10 space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/40 pb-5">
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-gray-900 truncate">
+            <h1 className="display-font text-3xl font-semibold text-foreground truncate">
               Order #{o._id.slice(-6).toUpperCase()}
             </h1>
-            <p className="text-gray-600 flex items-center gap-2">
+            <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1 font-semibold uppercase tracking-wider">
               {shortDate(o.createdAt)} · <StatusBadge status={o.status} />
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+          <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2.5 w-full sm:w-auto shrink-0">
             <button
               onClick={printInvoice}
-              className="btn w-full sm:w-auto"
+              className="btn py-2.5 text-xs font-semibold uppercase tracking-wider"
               title="Print / Save as PDF"
             >
-              Print / Save Invoice
+              Print Invoice
             </button>
             {STEPS.indexOf((o.status || "pending") as Step) <
             STEPS.length - 1 ? (
-              <button onClick={startDemo} className="btn w-full sm:w-auto">
-                Start Demo Timeline
+              <button onClick={startDemo} className="btn py-2.5 text-xs font-semibold uppercase tracking-wider">
+                Demo Status
               </button>
             ) : (
-              <button onClick={stopDemo} className="btn w-full sm:w-auto">
+              <button onClick={stopDemo} className="btn py-2.5 text-xs font-semibold uppercase tracking-wider">
                 Stop Demo
               </button>
             )}
-            {/* Request return/refund visible for delivered only (server still enforces window) */}
             {o.status === "delivered" && (
-              <button onClick={openReturn} className="btn w-full sm:w-auto">
-                Request return/refund
+              <button onClick={openReturn} className="btn-primary py-2.5 px-4 text-xs">
+                Request Return
               </button>
             )}
           </div>
@@ -550,35 +542,35 @@ export default function OrderDetailsPage() {
 
         <div className="grid lg:grid-cols-12 gap-6">
           {/* Items */}
-          <div className="lg:col-span-8 card p-4">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">Items</h2>
-            <div className="divide-y divide-gray-200">
+          <div className="lg:col-span-8 bg-card/60 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/30 pb-2 mb-4">Items Ordered</h2>
+            <div className="divide-y divide-border/20">
               {o.items.map((it: any, idx: number) => {
                 const p = it.product || {};
                 const img = getImageUrl(p.images?.[0]);
                 return (
-                  <div key={idx} className="py-3">
-                    <div className="grid grid-cols-[64px,1fr] sm:grid-cols-[64px,1fr,auto] gap-3 sm:gap-4 items-start">
+                  <div key={idx} className="py-4 first:pt-0 last:pb-0">
+                    <div className="grid grid-cols-[64px,1fr] sm:grid-cols-[64px,1fr,auto] gap-4 items-center">
                       <img
                         src={img}
                         alt={p.title || "Product"}
-                        className="w-16 h-16 rounded-lg border border-gray-200 object-cover"
+                        className="w-16 h-16 rounded-lg border border-border/40 object-cover bg-card"
                         onError={(e) =>
                           ((e.currentTarget as HTMLImageElement).src =
                             "/fallback.png")
                         }
                       />
                       <div className="min-w-0">
-                        <div className="font-medium text-gray-900 truncate">
+                        <div className="font-semibold text-foreground text-sm truncate">
                           {p.title || "Product"}
                         </div>
-                        <div className="text-xs text-gray-500">
-                          Qty: {it.qty}
-                          {p.brand ? ` · Brand: ${p.brand}` : ""}
-                          {p.sku ? ` · SKU: ${p.sku}` : ""}
+                        <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-1 space-x-2">
+                          <span>Qty: {it.qty}</span>
+                          {p.brand && <span>· Brand: {p.brand}</span>}
+                          {p.sku && <span>· SKU: {p.sku}</span>}
                         </div>
                       </div>
-                      <div className="text-sm font-medium text-gray-900 sm:text-right mt-1 sm:mt-0">
+                      <div className="text-sm font-semibold text-foreground sm:text-right shrink-0">
                         {currency(it.price * it.qty)}
                       </div>
                     </div>
@@ -590,62 +582,62 @@ export default function OrderDetailsPage() {
 
           {/* Summary + Address */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="card p-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+            <div className="bg-card/65 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/30 pb-2 mb-4">
                 Price Summary
               </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between text-gray-700">
+              <div className="space-y-3 text-xs font-semibold uppercase tracking-wider">
+                <div className="flex justify-between text-muted-foreground">
                   <span>Subtotal</span>
-                  <span>{currency(subtotal)}</span>
+                  <span className="normal-case text-foreground font-bold">{currency(subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-gray-700">
+                <div className="flex justify-between text-muted-foreground">
                   <span>Tax</span>
-                  <span>{currency(tax)}</span>
+                  <span className="normal-case text-foreground font-bold">{currency(tax)}</span>
                 </div>
-                <div className="flex justify-between text-gray-700">
+                <div className="flex justify-between text-muted-foreground">
                   <span>Shipping ({shippingMethod})</span>
-                  <span>
+                  <span className="normal-case text-foreground font-bold">
                     {shippingCost > 0 ? currency(shippingCost) : "Free"}
                   </span>
                 </div>
-                <hr className="border-gray-200" />
-                <div className="flex justify-between text-gray-900 font-semibold">
-                  <span>Total</span>
-                  <span>{currency(totalAmount)}</span>
+                <hr className="border-border/30" />
+                <div className="flex justify-between text-foreground">
+                  <span className="text-xs font-bold">Total</span>
+                  <span className="normal-case text-lg font-bold text-primary">{currency(totalAmount)}</span>
                 </div>
               </div>
             </div>
 
-            <div className="card p-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Delivery
+            <div className="bg-card/65 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/30 pb-2 mb-4">
+                Delivery Details
               </h3>
-              <div className="text-sm text-gray-700 whitespace-pre-line break-words">
+              <div className="text-sm text-foreground whitespace-pre-line break-words leading-relaxed">
                 {o.address}
               </div>
-              <div className="text-sm text-gray-600 mt-2">
+              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mt-4 pt-3 border-t border-border/20">
                 Payment:{" "}
-                <span className="font-medium">{o.paymentMethod || "COD"}</span>
+                <span className="text-foreground normal-case font-bold">{o.paymentMethod || "COD"}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Returns history */}
-        <div className="card p-4">
-          <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-            <h3 className="text-lg font-semibold text-gray-900">Returns</h3>
-            <div className="text-sm text-gray-600">
+        <div className="bg-card/60 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft">
+          <div className="flex items-center justify-between flex-wrap gap-2 border-b border-border/30 pb-2 mb-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Returns & Refunds</h3>
+            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               {loadingReturns ? "Loading..." : `${returns.length} request(s)`}
             </div>
           </div>
           {returns.length === 0 ? (
-            <div className="text-gray-600 text-sm">
+            <div className="text-muted-foreground italic text-sm">
               No return requests for this order.
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-border/20">
               {returns.map((rr) => {
                 const attachment = rr.attachments?.[0];
                 const total = rr.items.reduce(
@@ -653,87 +645,87 @@ export default function OrderDetailsPage() {
                   0
                 );
                 return (
-                  <div key={rr._id} className="py-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-sm">
-                          {rr._id.slice(-6).toUpperCase()}
+                  <div key={rr._id} className="py-4 first:pt-0 last:pb-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <span className="font-mono text-xs font-semibold text-foreground">
+                          #{rr._id.slice(-6).toUpperCase()}
                         </span>
                         <Pill
                           text={rr.status}
                           color={
                             rr.status === "requested"
-                              ? "bg-blue-100 text-blue-800"
+                              ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
                               : rr.status === "approved"
-                              ? "bg-indigo-100 text-indigo-800"
+                              ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/20"
                               : rr.status === "rejected"
-                              ? "bg-rose-100 text-rose-800"
+                              ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
                               : rr.status === "received"
-                              ? "bg-yellow-100 text-yellow-800"
+                              ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
                               : rr.status === "refunded"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-gray-100 text-gray-700"
+                              ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                              : "bg-card text-muted-foreground border-border/40"
                           }
                         />
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {shortDate(rr.requestedAt)}
                         </span>
                       </div>
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm font-semibold text-foreground shrink-0">
                         Total: {currency(total)}
                       </div>
                     </div>
 
-                    <div className="mt-2 grid sm:grid-cols-2 gap-3">
-                      <div className="space-y-1 text-sm">
+                    <div className="mt-3.5 grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5 text-xs font-semibold uppercase tracking-wider">
                         {rr.items.map((it, i) => (
                           <div
                             key={i}
                             className="flex items-center justify-between"
                           >
-                            <span className="text-gray-700">
+                            <span className="text-muted-foreground">
                               {(typeof it.product === "string"
                                 ? it.product
                                 : it.product?.title) || "Item"}{" "}
                               × {it.qty}
                             </span>
-                            <span className="text-gray-900">
+                            <span className="text-foreground normal-case font-bold">
                               ₹{(it.qty * it.price).toLocaleString("en-IN")}
                             </span>
                           </div>
                         ))}
                       </div>
-                      <div className="text-sm space-y-1">
+                      <div className="text-xs space-y-1">
                         {rr.reason && (
                           <div>
-                            <span className="text-gray-500">Reason: </span>
-                            <span className="text-gray-800">{rr.reason}</span>
+                            <span className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">Reason: </span>
+                            <span className="text-foreground">{rr.reason}</span>
                           </div>
                         )}
                         {rr.note && (
-                          <div>
-                            <span className="text-gray-500">Note: </span>
-                            <span className="text-gray-800">{rr.note}</span>
+                          <div className="mt-1">
+                            <span className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">Note: </span>
+                            <span className="text-foreground">{rr.note}</span>
                           </div>
                         )}
-                        {attachment ? (
-                          <div>
-                            <span className="text-gray-500">Attachment: </span>
+                        {attachment && (
+                          <div className="mt-1">
+                            <span className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">Attachment: </span>
                             <a
                               href={attachment.url}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-purple-700 hover:underline"
+                              className="text-primary hover:underline font-bold"
                             >
-                              {attachment.name || "View"}
+                              {attachment.name || "View Attachment"}
                             </a>
                           </div>
-                        ) : null}
+                        )}
                         {rr.status === "refunded" && rr.refund && (
-                          <div className="text-sm text-gray-700">
+                          <div className="text-xs mt-2 pt-2 border-t border-border/20">
                             <div>
-                              <span className="text-gray-500">Refund: </span>
-                              <span className="text-gray-800">
+                              <span className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">Refund: </span>
+                              <span className="text-primary font-bold">
                                 {rr.refund.amount != null
                                   ? `₹${rr.refund.amount.toLocaleString(
                                       "en-IN"
@@ -741,10 +733,10 @@ export default function OrderDetailsPage() {
                                   : "—"}
                               </span>
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
                               {rr.refund.method || "manual"}
                               {rr.refund.reference
-                                ? ` · ${rr.refund.reference}`
+                                ? ` · Ref: ${rr.refund.reference}`
                                 : ""}
                             </div>
                           </div>
@@ -760,26 +752,26 @@ export default function OrderDetailsPage() {
 
         {/* Return modal */}
         {returnOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-            <div className="w-full max-w-2xl rounded-xl bg-white shadow-xl">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Request return/refund
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="w-full max-w-2xl rounded-xl bg-card border border-border/40 shadow-xl overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-border/30">
+                <h3 className="display-font text-lg font-semibold text-foreground">
+                  Request Return / Refund
                 </h3>
                 <button
                   onClick={() => setReturnOpen(false)}
-                  className="px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
+                  className="btn py-1 px-3 text-xs"
                 >
                   Close
                 </button>
               </div>
 
-              <div className="p-4 space-y-4 text-sm">
+              <div className="p-6 space-y-4">
                 <div>
-                  <div className="text-gray-700 mb-2">
-                    Select items to return (max available shown)
+                  <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                    Select items to return
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {o.items.map((it: any, idx: number) => {
                       const pid =
                         typeof it.product === "string"
@@ -793,12 +785,12 @@ export default function OrderDetailsPage() {
                       return (
                         <div
                           key={idx}
-                          className="grid grid-cols-[1fr,120px] gap-3 items-center"
+                          className="grid grid-cols-[1fr,100px] gap-4 items-center bg-secondary/25 p-3 rounded-lg border border-border/20"
                         >
                           <div className="min-w-0">
-                            <div className="text-gray-900">{title}</div>
-                            <div className="text-xs text-gray-500">
-                              Purchased: {it.qty} · Max return: {maxAvail}
+                            <div className="text-sm font-semibold text-foreground truncate">{title}</div>
+                            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
+                              Purchased: {it.qty} · Available to Return: {maxAvail}
                             </div>
                           </div>
                           <input
@@ -813,7 +805,7 @@ export default function OrderDetailsPage() {
                               );
                               setQtyByProduct((q) => ({ ...q, [pid]: val }));
                             }}
-                            className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                            className="w-full bg-card/60 border border-border/80 rounded-md px-3 py-2 text-center text-xs font-semibold text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                           />
                         </div>
                       );
@@ -821,33 +813,33 @@ export default function OrderDetailsPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-gray-700 mb-1">Reason</label>
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">Reason for Return</label>
                   <textarea
                     rows={3}
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
-                    placeholder="Describe the issue (size, defect, wrong item, etc.)"
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    placeholder="Describe the issue (size, defect, wrong item, etc.)..."
+                    className="w-full bg-card/60 border border-border/80 rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/45"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-gray-700 mb-1">
-                    Additional note (optional)
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Additional details (optional)
                   </label>
                   <textarea
                     rows={2}
                     value={userNote}
                     onChange={(e) => setUserNote(e.target.value)}
-                    placeholder="Any extra information that helps"
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    placeholder="Any extra information that helps process your return..."
+                    className="w-full bg-card/60 border border-border/80 rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/45"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-gray-700 mb-1">
-                    Attachment (single)
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Proof attachment (optional)
                   </label>
                   <input
                     type="file"
@@ -858,34 +850,34 @@ export default function OrderDetailsPage() {
                   />
                   <label
                     htmlFor="media-upload"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-border/85 bg-card/50 text-xs font-semibold uppercase tracking-wider text-foreground hover:bg-card hover:border-primary/40 cursor-pointer transition-all duration-200"
                   >
                     <svg
-                      className="w-4 h-4 text-gray-500"
+                      className="w-4 h-4 text-primary"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
                       <path d="M4 3a2 2 0 00-2 2v2h2V5h12v10H4v-2H2v2a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4z" />
                       <path d="M9 7v3H6l4 4 4-4h-3V7H9z" />
                     </svg>
-                    Choose file
+                    {file ? file.name : "Choose File"}
                   </label>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Add a photo/video to support your request (optional).
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Add a photo or video to support your request (optional).
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-100">
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border/30 bg-secondary/10">
                 <button
                   onClick={() => setReturnOpen(false)}
-                  className="px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="btn py-2 px-4 text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={submitReturn}
-                  className="px-4 py-1.5 rounded-md bg-purple-600 text-white hover:bg-purple-500"
+                  className="btn-primary py-2 px-5 text-xs"
                 >
                   Submit Request
                 </button>
@@ -897,4 +889,3 @@ export default function OrderDetailsPage() {
     </ProtectedRoute>
   );
 }
-

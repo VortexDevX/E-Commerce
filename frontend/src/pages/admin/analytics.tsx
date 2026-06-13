@@ -36,7 +36,6 @@ import {
   Cell,
 } from "recharts";
 
-// Types
 type SalesPoint = { date: string; orders: number; revenue: number };
 type TopProduct = {
   product: string;
@@ -67,7 +66,6 @@ type FunnelDay = {
   purchase: number;
 };
 
-// Utils
 function useDebounced<T>(value: T, delay = 350) {
   const [v, setV] = useState(value);
   useEffect(() => {
@@ -76,28 +74,31 @@ function useDebounced<T>(value: T, delay = 350) {
   }, [value, delay]);
   return v;
 }
+
 const fmtDate = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
     d.getDate()
   ).padStart(2, "0")}`;
+
 function lastNDaysRange(n: number) {
   const to = new Date();
   const from = new Date();
   from.setDate(to.getDate() - (n - 1));
   return { from: fmtDate(from), to: fmtDate(to) };
 }
+
 const isCanceled = (e: any) =>
   e?.code === "ERR_CANCELED" ||
   e?.name === "CanceledError" ||
   e?.message === "canceled";
 
-// Deterministic unlimited color generator for categories
+// Deterministic champagne-tuned colors for categories
 const categoryColor = (name: string) => {
   const s = String(name || "Other");
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
   const hue = Math.abs(h) % 360;
-  return `hsl(${hue} 70% 55%)`;
+  return `hsl(${hue}, 45%, 60%)`;
 };
 
 function AdminAnalyticsPage() {
@@ -143,10 +144,9 @@ function AdminAnalyticsPage() {
   const [fetching, setFetching] = useState(false);
   const cRef = useRef<AbortController | null>(null);
 
-  // Category dictionary (id/slug -> name)
+  // Category dictionary
   const [catDict, setCatDict] = useState<Record<string, string>>({});
 
-  // Fetch categories once for display names
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -232,7 +232,6 @@ function AdminAnalyticsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(debounced), canAnalytics]);
 
-  // Continuous series
   const sales = useMemo(() => {
     if (
       "from" in debounced &&
@@ -245,7 +244,6 @@ function AdminAnalyticsPage() {
     return fillSalesSeries((debounced as any).days || days, salesRaw);
   }, [debounced, salesRaw, days]);
 
-  // KPIs + Derived
   const ordersSeries = sales.map((d) => d.orders);
   const revenueSeries = sales.map((d) => d.revenue);
   const totalRevenue = revenueSeries.reduce((s, n) => s + n, 0);
@@ -258,23 +256,20 @@ function AdminAnalyticsPage() {
     [sales]
   );
 
-  // Status counts
   const statusCounts = useMemo(() => {
-    const m: Record<string, number> = {};
-    for (const o of orders) m[o.status] = (m[o.status] || 0) + 1;
-    return m;
+    const mapObj: Record<string, number> = {};
+    for (const o of orders) mapObj[o.status] = (mapObj[o.status] || 0) + 1;
+    return mapObj;
   }, [orders]);
 
-  // Resolve raw category (ObjectId or slug or plain string) to a display name
   const resolveCategoryName = (raw: any): string => {
     if (!raw) return "Other";
     const str = String(raw);
-    if (catDict[str]) return catDict[str]; // id or slug mapped
+    if (catDict[str]) return catDict[str];
     const pretty = str.replace(/[-_]+/g, " ").trim();
     return pretty ? pretty.charAt(0).toUpperCase() + pretty.slice(1) : "Other";
   };
 
-  // Category bar data (qty)
   const categoryBars = useMemo(() => {
     const map = new Map<string, number>();
     for (const o of orders) {
@@ -289,7 +284,6 @@ function AdminAnalyticsPage() {
       .slice(0, 12);
   }, [orders, catDict]);
 
-  // Payment split
   const paymentSplit = useMemo(() => {
     const map = new Map<string, number>();
     for (const o of orders) {
@@ -297,14 +291,14 @@ function AdminAnalyticsPage() {
       map.set(pm, (map.get(pm) || 0) + 1);
     }
     const palette = [
-      "#0369a1",
-      "#10b981",
-      "#06b6d4",
-      "#f59e0b",
-      "#f43f5e",
-      "#0ea5b7",
-      "#22c55e",
+      "#c5a059",
       "#0ea5e9",
+      "#10b981",
+      "#f59e0b",
+      "#a855f7",
+      "#f43f5e",
+      "#22c55e",
+      "#06b6d4",
     ];
     return Array.from(map.entries()).map(([name, value], i) => ({
       name,
@@ -313,9 +307,8 @@ function AdminAnalyticsPage() {
     }));
   }, [orders]);
 
-  // Weekday performance (dual axes)
   const weekdayData = useMemo(() => {
-    const map: Record<string, { revenue: number; orders: number }> = {
+    const mapObj: Record<string, { revenue: number; orders: number }> = {
       Sun: { revenue: 0, orders: 0 },
       Mon: { revenue: 0, orders: 0 },
       Tue: { revenue: 0, orders: 0 },
@@ -327,17 +320,17 @@ function AdminAnalyticsPage() {
     for (const o of orders) {
       const d = new Date(o.createdAt);
       const day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()];
-      map[day].orders += 1;
-      map[day].revenue += o.totalAmount || 0;
+      mapObj[day].orders += 1;
+      mapObj[day].revenue += o.totalAmount || 0;
     }
-    return Object.entries(map).map(([name, v]) => ({ name, ...v }));
+    return Object.entries(mapObj).map(([name, v]) => ({ name, ...v }));
   }, [orders]);
 
   const statusPie = useMemo(() => {
     const colors: Record<string, string> = {
       delivered: "#10b981",
       shipped: "#3b82f6",
-      confirmed: "#0f766e",
+      confirmed: "#c5a059",
       pending: "#f59e0b",
       cancelled: "#f43f5e",
     };
@@ -348,7 +341,6 @@ function AdminAnalyticsPage() {
     }));
   }, [statusCounts]);
 
-  // Exports
   const exportSalesCSV = () =>
     downloadCSV(
       "admin-sales.csv",
@@ -432,8 +424,8 @@ function AdminAnalyticsPage() {
         <PermissionGate
           perm="analytics:read"
           fallback={
-            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">
-              You don&apos;t have access to Analytics.
+            <div className="bg-card/60 backdrop-blur-md border border-border/40 p-8 rounded-xl shadow-soft text-center text-xs text-muted-foreground font-semibold uppercase tracking-wider">
+              You don&apos;t have access to global site analytics metrics.
             </div>
           }
         >
@@ -451,91 +443,104 @@ function AdminAnalyticsPage() {
           </div>
 
           {/* Range controls */}
-          <div className="mt-8 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6">
-            <h2 className="text-2xl font-black uppercase tracking-widest text-foreground border-l-[6px] border-primary pl-4">Performance</h2>
+          <div className="mt-8 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card/65 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft">
+            <div>
+              <h2 className="display-font text-2xl font-semibold tracking-wide text-foreground">Operational Performance</h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Select visual parameters, date intervals, and compile CSV data reports.
+              </p>
+            </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
               <Tabs value={tab} onValueChange={setTab} className="w-full sm:w-auto">
-                <TabsList className="bg-muted border-[3px] border-border rounded-none p-1 flex">
-                  <TabsTrigger value="7d" className="rounded-none font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none">7d</TabsTrigger>
-                  <TabsTrigger value="14d" className="rounded-none font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none">14d</TabsTrigger>
-                  <TabsTrigger value="30d" className="rounded-none font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none">30d</TabsTrigger>
-                  <TabsTrigger value="90d" className="rounded-none font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none">90d</TabsTrigger>
-                  <TabsTrigger value="custom" className="rounded-none font-bold uppercase tracking-widest text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none">Custom</TabsTrigger>
+                <TabsList className="bg-card/50 border border-border/40 rounded-lg p-1 flex">
+                  <TabsTrigger value="7d" className="rounded-md font-bold uppercase tracking-wider text-[10px] px-3.5 py-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none transition-all duration-200">7d</TabsTrigger>
+                  <TabsTrigger value="14d" className="rounded-md font-bold uppercase tracking-wider text-[10px] px-3.5 py-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none transition-all duration-200">14d</TabsTrigger>
+                  <TabsTrigger value="30d" className="rounded-md font-bold uppercase tracking-wider text-[10px] px-3.5 py-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none transition-all duration-200">30d</TabsTrigger>
+                  <TabsTrigger value="90d" className="rounded-md font-bold uppercase tracking-wider text-[10px] px-3.5 py-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none transition-all duration-200">90d</TabsTrigger>
+                  <TabsTrigger value="custom" className="rounded-md font-bold uppercase tracking-wider text-[10px] px-3.5 py-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none transition-all duration-200">Custom</TabsTrigger>
                 </TabsList>
               </Tabs>
               {tab === "custom" && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <input
                     type="date"
                     value={from}
+                    aria-label="Custom range start date"
                     onChange={(e) =>
                       setRange((r) => ({ ...r, from: e.target.value }))
                     }
-                    className="w-full sm:w-auto bg-card border-[3px] border-border rounded-none px-4 py-2 text-foreground font-bold uppercase tracking-widest shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all text-xs"
+                    className="w-full sm:w-auto bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                   />
-                  <span className="font-black uppercase tracking-widest text-foreground">TO</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">TO</span>
                   <input
                     type="date"
                     value={to}
+                    aria-label="Custom range end date"
                     onChange={(e) =>
                       setRange((r) => ({ ...r, to: e.target.value }))
                     }
-                    className="w-full sm:w-auto bg-card border-[3px] border-border rounded-none px-4 py-2 text-foreground font-bold uppercase tracking-widest shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all text-xs"
+                    className="w-full sm:w-auto bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                   />
                 </div>
               )}
             </div>
           </div>
 
-          {/* Charts grid (top) */}
+          {/* Charts grid */}
           <div className="mt-8 grid grid-cols-1 xl:grid-cols-12 gap-8">
             {/* Left: dual line + AOV */}
             <div className="xl:col-span-7 space-y-8 min-w-0">
-              <Card className="min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none">
-                <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
-                  <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Revenue & Orders</CardTitle>
+              <Card className="min-w-0 bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft">
+                <CardHeader className="flex-row items-center justify-between border-b border-border/25 pb-4 mb-4">
+                  <CardTitle className="display-font text-lg font-semibold tracking-wide text-foreground">Revenue & Order Volume</CardTitle>
                   <Button 
                     variant="outline" 
                     onClick={exportSalesCSV}
-                    className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                    className="btn px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                   >
                     Export CSV
                   </Button>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="w-full h-[320px]">
+                  <div className="w-full h-[320px] text-xs font-semibold">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart
                         data={sales}
                         margin={{ top: 12, right: 16, left: 8, bottom: 8 }}
                       >
-                        <CartesianGrid stroke="#e5e7eb" vertical={false} />
+                        <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
                         <XAxis
                           dataKey="date"
-                          tick={{ fill: "#6b7280", fontSize: 11 }}
+                          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                         />
                         <YAxis
                           yAxisId="left"
-                          tick={{ fill: "#6b7280", fontSize: 11 }}
+                          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                         />
                         <YAxis
                           yAxisId="right"
                           orientation="right"
-                          tick={{ fill: "#6b7280", fontSize: 11 }}
+                          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                         />
                         <Tooltip
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--card))",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            borderRadius: "8px",
+                            fontSize: "11px",
+                          }}
                           formatter={(v: any, n: any) =>
                             n === "revenue"
                               ? `₹${Number(v).toLocaleString("en-IN")}`
                               : v
                           }
                         />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: "10px", textTransform: "uppercase" }} />
                         <Line
                           yAxisId="left"
                           type="monotone"
                           dataKey="orders"
-                          stroke="#0369a1"
+                          stroke="#c5a059"
                           strokeWidth={2}
                           dot={false}
                           name="Orders"
@@ -555,40 +560,46 @@ function AdminAnalyticsPage() {
                 </CardContent>
               </Card>
 
-              <Card className="min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none">
-                <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
-                  <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Average Order Value (AOV)</CardTitle>
+              <Card className="min-w-0 bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft">
+                <CardHeader className="flex-row items-center justify-between border-b border-border/25 pb-4 mb-4">
+                  <CardTitle className="display-font text-lg font-semibold tracking-wide text-foreground">Average Order Value (AOV)</CardTitle>
                   <Button 
                     variant="outline" 
                     onClick={exportAOVCSV}
-                    className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                    className="btn px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                   >
                     Export CSV
                   </Button>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="w-full h-[260px]">
+                  <div className="w-full h-[260px] text-xs font-semibold">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart
                         data={aovData}
                         margin={{ top: 12, right: 16, left: 8, bottom: 8 }}
                       >
-                        <CartesianGrid stroke="#e5e7eb" vertical={false} />
+                        <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
                         <XAxis
                           dataKey="date"
-                          tick={{ fill: "#6b7280", fontSize: 11 }}
+                          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                         />
-                        <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+                        <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
                         <Tooltip
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--card))",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            borderRadius: "8px",
+                            fontSize: "11px",
+                          }}
                           formatter={(v: any) =>
                             `₹${Number(v).toLocaleString("en-IN")}`
                           }
                         />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: "10px", textTransform: "uppercase" }} />
                         <Line
                           type="monotone"
                           dataKey="aov"
-                          stroke="#0f766e"
+                          stroke="#c5a059"
                           strokeWidth={2}
                           dot={false}
                           name="AOV"
@@ -600,23 +611,23 @@ function AdminAnalyticsPage() {
               </Card>
             </div>
 
-            {/* Right: two donuts with legends */}
+            {/* Right: two donuts */}
             <div className="xl:col-span-5 grid grid-cols-1 gap-8 min-w-0">
-              <Card className="min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none">
-                <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
-                  <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Payment Methods</CardTitle>
+              <Card className="min-w-0 bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft">
+                <CardHeader className="flex-row items-center justify-between border-b border-border/25 pb-4 mb-4">
+                  <CardTitle className="display-font text-lg font-semibold tracking-wide text-foreground">Payment Methods</CardTitle>
                   <Button 
                     variant="outline" 
                     onClick={exportPaymentCSV}
-                    className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                    className="btn px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                   >
                     Export CSV
                   </Button>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="w-full h-[260px]">
+                  <div className="w-full h-[260px] text-xs">
                     {paymentSplit.length === 0 ? (
-                      <div className="text-sm text-foreground font-bold uppercase tracking-widest p-3">No data.</div>
+                      <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider italic text-center py-20">No data compiled.</div>
                     ) : (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -632,22 +643,28 @@ function AdminAnalyticsPage() {
                               <Cell key={index} fill={entry.color} />
                             ))}
                           </Pie>
-                          <Tooltip />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "hsl(var(--card))",
+                              border: "1px solid rgba(255,255,255,0.1)",
+                              borderRadius: "8px",
+                              fontSize: "11px",
+                            }}
+                          />
                         </PieChart>
                       </ResponsiveContainer>
                     )}
                   </div>
 
-                  {/* Legend chips */}
                   {paymentSplit.length > 0 && (
-                    <div className="mt-6 flex flex-wrap justify-center gap-3">
+                    <div className="mt-6 flex flex-wrap justify-center gap-2">
                       {paymentSplit.map((p) => (
                         <span
                           key={p.name}
-                          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-foreground border-[3px] border-border bg-card px-3 py-1.5 shadow-[2px_2px_0px_#111]"
+                          className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-foreground border border-border/30 bg-card/40 px-2.5 py-1 rounded-md"
                         >
                           <span
-                            className="inline-block w-3 h-3 border-[2px] border-border"
+                            className="inline-block w-2.5 h-2.5 rounded-full"
                             style={{ background: p.color }}
                           />
                           {p.name}
@@ -658,21 +675,21 @@ function AdminAnalyticsPage() {
                 </CardContent>
               </Card>
 
-              <Card className="min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none">
-                <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
-                  <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Order Status</CardTitle>
+              <Card className="min-w-0 bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft">
+                <CardHeader className="flex-row items-center justify-between border-b border-border/25 pb-4 mb-4">
+                  <CardTitle className="display-font text-lg font-semibold tracking-wide text-foreground">Order Status</CardTitle>
                   <Button 
                     variant="outline" 
                     onClick={exportStatusCSV}
-                    className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                    className="btn px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                   >
                     Export CSV
                   </Button>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="w-full h-[260px]">
+                  <div className="w-full h-[260px] text-xs">
                     {statusPie.length === 0 ? (
-                      <div className="text-sm text-foreground font-bold uppercase tracking-widest p-3">No data.</div>
+                      <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider italic text-center py-20">No data compiled.</div>
                     ) : (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -688,22 +705,28 @@ function AdminAnalyticsPage() {
                               <Cell key={index} fill={entry.color} />
                             ))}
                           </Pie>
-                          <Tooltip />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "hsl(var(--card))",
+                              border: "1px solid rgba(255,255,255,0.1)",
+                              borderRadius: "8px",
+                              fontSize: "11px",
+                            }}
+                          />
                         </PieChart>
                       </ResponsiveContainer>
                     )}
                   </div>
 
-                  {/* Legend chips */}
                   {statusPie.length > 0 && (
-                    <div className="mt-6 flex flex-wrap justify-center gap-3">
+                    <div className="mt-6 flex flex-wrap justify-center gap-2">
                       {statusPie.map((s) => (
                         <span
                           key={s.name}
-                          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-foreground border-[3px] border-border bg-card px-3 py-1.5 shadow-[2px_2px_0px_#111]"
+                          className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-foreground border border-border/30 bg-card/40 px-2.5 py-1 rounded-md"
                         >
                           <span
-                            className="inline-block w-3 h-3 border-[2px] border-border"
+                            className="inline-block w-2.5 h-2.5 rounded-full"
                             style={{ background: s.color }}
                           />
                           {s.name}
@@ -718,24 +741,23 @@ function AdminAnalyticsPage() {
 
           {/* Conversion Funnel */}
           <div className="mt-8">
-            <Card className="min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none">
-              <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
-                <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Conversion Funnel</CardTitle>
+            <Card className="min-w-0 bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft">
+              <CardHeader className="flex-row items-center justify-between border-b border-border/25 pb-4 mb-4">
+                <CardTitle className="display-font text-lg font-semibold tracking-wide text-foreground">Conversion Funnel</CardTitle>
                 <Button 
                   variant="outline" 
                   onClick={exportFunnelCSV}
-                  className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                  className="btn px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                 >
                   Export CSV
                 </Button>
               </CardHeader>
               <CardContent className="pt-0">
-                {/* Summary steps */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
                     { key: "view", label: "Views", color: "#9ca3af" },
-                    { key: "cart", label: "Add to Cart", color: "#0369a1" },
-                    { key: "checkout", label: "Checkout", color: "#0f766e" },
+                    { key: "cart", label: "Add to Cart", color: "#0ea5e9" },
+                    { key: "checkout", label: "Checkout", color: "#c5a059" },
                     { key: "purchase", label: "Purchases", color: "#10b981" },
                   ].map((s, idx, arr) => {
                     const val = (funnelTotals as any)[s.key] || 0;
@@ -747,15 +769,15 @@ function AdminAnalyticsPage() {
                     return (
                       <div
                         key={s.key}
-                        className="border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] p-4 transition-transform hover:-translate-y-1"
+                        className="border border-border/30 bg-card/40 p-4 rounded-xl shadow-sm transition-all duration-200"
                       >
-                        <div className="text-xs font-black uppercase tracking-widest text-foreground">{s.label}</div>
-                        <div className="text-3xl font-black text-foreground mt-2">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{s.label}</div>
+                        <div className="text-3xl font-bold text-foreground mt-1">
                           {val}
                         </div>
-                        <div className="mt-4 h-4 bg-muted border-[3px] border-border rounded-none overflow-hidden p-0.5">
+                        <div className="mt-3.5 h-3 bg-secondary/15 rounded-full overflow-hidden p-0.5 border border-border/20">
                           <div
-                            className="h-full bg-primary"
+                            className="h-full rounded-full"
                             style={{
                               width: `${p}%`,
                               background: s.color,
@@ -764,8 +786,8 @@ function AdminAnalyticsPage() {
                           />
                         </div>
                         {idx > 0 && (
-                          <div className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right border-t-[3px] border-border pt-2 border-dashed">
-                            {p}% from {arr[idx - 1].label}
+                          <div className="mt-2.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground text-right border-t border-border/20 pt-2">
+                            {p}% conversion from {arr[idx - 1].label}
                           </div>
                         )}
                       </div>
@@ -773,21 +795,27 @@ function AdminAnalyticsPage() {
                   })}
                 </div>
 
-                {/* Funnel over time */}
-                <div className="w-full h-[320px] mt-6">
+                <div className="w-full h-[320px] mt-6 text-xs font-semibold">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={funnelDaily}
                       margin={{ top: 12, right: 16, left: 8, bottom: 8 }}
                     >
-                      <CartesianGrid stroke="#e5e7eb" vertical={false} />
+                      <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
                       <XAxis
                         dataKey="date"
-                        tick={{ fill: "#6b7280", fontSize: 11 }}
+                        tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                       />
-                      <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
-                      <Tooltip />
-                      <Legend />
+                      <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          borderRadius: "8px",
+                          fontSize: "11px",
+                        }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: "10px", textTransform: "uppercase" }} />
                       <Line
                         type="monotone"
                         dataKey="view"
@@ -800,7 +828,7 @@ function AdminAnalyticsPage() {
                         type="monotone"
                         dataKey="cart"
                         name="Add to Cart"
-                        stroke="#0369a1"
+                        stroke="#0ea5e9"
                         strokeWidth={2}
                         dot={false}
                       />
@@ -808,7 +836,7 @@ function AdminAnalyticsPage() {
                         type="monotone"
                         dataKey="checkout"
                         name="Checkout"
-                        stroke="#0f766e"
+                        stroke="#c5a059"
                         strokeWidth={2}
                         dot={false}
                       />
@@ -827,23 +855,23 @@ function AdminAnalyticsPage() {
             </Card>
           </div>
 
-          {/* More charts */}
+          {/* Category bars & Weekday performance */}
           <div className="mt-8 grid grid-cols-1 xl:grid-cols-12 gap-8">
-            <Card className="xl:col-span-7 min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none">
-              <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
-                <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Orders by Category</CardTitle>
+            <Card className="xl:col-span-7 min-w-0 bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft">
+              <CardHeader className="flex-row items-center justify-between border-b border-border/25 pb-4 mb-4">
+                <CardTitle className="display-font text-lg font-semibold tracking-wide text-foreground">Orders by Category</CardTitle>
                 <Button 
                   variant="outline" 
                   onClick={exportCategoriesCSV}
-                  className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                  className="btn px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                 >
                   Export CSV
                 </Button>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="w-full h-[300px]">
+                <div className="w-full h-[300px] text-xs font-semibold">
                   {categoryBars.length === 0 ? (
-                    <div className="text-sm font-bold uppercase tracking-widest text-foreground p-3">
+                    <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider italic text-center py-24">
                       No category data.
                     </div>
                   ) : (
@@ -855,20 +883,26 @@ function AdminAnalyticsPage() {
                       >
                         <XAxis
                           type="number"
-                          tick={{ fill: "#6b7280", fontSize: 12 }}
+                          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                         />
                         <YAxis
                           type="category"
                           dataKey="name"
-                          tick={{ fill: "#6b7280", fontSize: 12 }}
+                          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                           width={120}
                         />
                         <Tooltip
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--card))",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            borderRadius: "8px",
+                            fontSize: "11px",
+                          }}
                           formatter={(value: any) => [`${value}`, "Units"]}
                           labelFormatter={(label: any) => `Category: ${label}`}
-                          cursor={{ fill: "rgba(124, 58, 237, 0.06)" }}
+                          cursor={{ fill: "rgba(255, 255, 255, 0.02)" }}
                         />
-                        <Bar dataKey="qty" radius={[4, 4, 4, 4]}>
+                        <Bar dataKey="qty" radius={[0, 4, 4, 0]}>
                           {categoryBars.map((entry) => (
                             <Cell
                               key={entry.name}
@@ -880,16 +914,15 @@ function AdminAnalyticsPage() {
                     </ResponsiveContainer>
                   )}
                 </div>
-                {/* Legend chips */}
                 {categoryBars.length > 0 && (
-                  <div className="mt-6 flex flex-wrap justify-center gap-3">
+                  <div className="mt-6 flex flex-wrap justify-center gap-2">
                     {categoryBars.map((c) => (
                       <span
                         key={c.name}
-                        className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-foreground border-[3px] border-border bg-card px-3 py-1.5 shadow-[2px_2px_0px_#111]"
+                        className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-foreground border border-border/30 bg-card/40 px-2.5 py-1 rounded-md"
                       >
                         <span
-                          className="inline-block w-3 h-3 border-[2px] border-border"
+                          className="inline-block w-2.5 h-2.5 rounded-full"
                           style={{ background: categoryColor(c.name) }}
                         />
                         {c.name}
@@ -900,56 +933,64 @@ function AdminAnalyticsPage() {
               </CardContent>
             </Card>
 
-            <Card className="xl:col-span-5 min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none">
-              <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-4">
-                <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Weekday Performance</CardTitle>
+            <Card className="xl:col-span-5 min-w-0 bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft">
+              <CardHeader className="flex-row items-center justify-between border-b border-border/25 pb-4 mb-4">
+                <CardTitle className="display-font text-lg font-semibold tracking-wide text-foreground">Weekday Performance</CardTitle>
                 <Button 
                   variant="outline" 
                   onClick={exportWeekdayCSV}
-                  className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                  className="btn px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                 >
                   Export CSV
                 </Button>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="w-full h-[300px]">
+                <div className="w-full h-[300px] text-xs font-semibold">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={weekdayData} margin={{ left: 8, right: 8 }}>
-                      <CartesianGrid stroke="#e5e7eb" vertical={false} />
+                      <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
                       <XAxis
                         dataKey="name"
-                        tick={{ fill: "#6b7280", fontSize: 12 }}
+                        tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                       />
                       <YAxis
                         yAxisId="left"
-                        tick={{ fill: "#6b7280", fontSize: 12 }}
+                        tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                       />
                       <YAxis
                         yAxisId="right"
                         orientation="right"
-                        tick={{ fill: "#6b7280", fontSize: 12 }}
+                        tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                       />
                       <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          borderRadius: "8px",
+                          fontSize: "11px",
+                        }}
                         formatter={(v: any, n: any) =>
                           n === "revenue"
                             ? `₹${Number(v).toLocaleString("en-IN")}`
                             : v
                         }
                       />
-                      <Legend />
+                      <Legend wrapperStyle={{ fontSize: "10px", textTransform: "uppercase" }} />
                       <Bar
                         yAxisId="left"
                         dataKey="orders"
                         name="Orders"
-                        fill="#0369a1"
-                        barSize={16}
+                        fill="#c5a059"
+                        barSize={12}
+                        radius={[2, 2, 0, 0]}
                       />
                       <Bar
                         yAxisId="right"
                         dataKey="revenue"
                         name="Revenue"
                         fill="#10b981"
-                        barSize={16}
+                        barSize={12}
+                        radius={[2, 2, 0, 0]}
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -960,9 +1001,9 @@ function AdminAnalyticsPage() {
 
           {/* Tables */}
           <div className="mt-8 grid grid-cols-1 xl:grid-cols-12 gap-8">
-            <Card className="xl:col-span-7 min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none flex flex-col">
-              <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-0">
-                <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Recent Orders</CardTitle>
+            <Card className="xl:col-span-7 min-w-0 bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+              <CardHeader className="flex-row items-center justify-between border-b border-border/25 pb-4 mb-0">
+                <CardTitle className="display-font text-lg font-semibold tracking-wide text-foreground">Recent Orders</CardTitle>
                 <Button
                   variant="outline"
                   onClick={() =>
@@ -984,49 +1025,49 @@ function AdminAnalyticsPage() {
                       }
                     )
                   }
-                  className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                  className="btn px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                 >
                   Export CSV
                 </Button>
               </CardHeader>
               <CardContent className="pt-0 p-0 flex-1 overflow-auto">
                 {orders.length === 0 ? (
-                  <div className="text-sm font-bold uppercase tracking-widest text-muted-foreground p-6">No orders found.</div>
+                  <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider italic p-6 text-center">No orders found.</div>
                 ) : (
                   <div className="overflow-x-auto w-full">
-                    <table className="w-full text-sm">
-                      <thead className="bg-muted sticky top-0 z-10 border-b-[3px] border-border">
-                        <tr className="text-left font-black uppercase tracking-widest text-foreground text-xs">
-                          <th className="py-3 px-4 border-r-[3px] border-border whitespace-nowrap">Customer</th>
-                          <th className="py-3 px-4 border-r-[3px] border-border whitespace-nowrap">Date</th>
-                          <th className="py-3 px-4 border-r-[3px] border-border whitespace-nowrap text-center">Status</th>
-                          <th className="py-3 px-4 text-right whitespace-nowrap">Total</th>
+                    <table className="w-full text-xs">
+                      <thead className="bg-secondary/25 border-b border-border/35">
+                        <tr className="text-left font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+                          <th className="px-6 py-4 border-r border-border/20 whitespace-nowrap">Customer</th>
+                          <th className="px-6 py-4 border-r border-border/20 whitespace-nowrap">Date</th>
+                          <th className="px-6 py-4 border-r border-border/20 text-center whitespace-nowrap">Status</th>
+                          <th className="px-6 py-4 text-right whitespace-nowrap">Total</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y-[3px] divide-border font-bold uppercase tracking-widest text-[11px] text-foreground">
+                      <tbody className="divide-y divide-border/20 font-medium text-foreground">
                         {orders.slice(0, 10).map((o) => (
                           <tr
                             key={o._id}
-                            className="hover:bg-muted/50 transition-colors"
+                            className="hover:bg-secondary/5 transition-colors"
                           >
-                            <td className="py-3 px-4 border-r-[3px] border-border max-w-[150px] truncate" title={o.user?.name || o.user?.email || "—"}>
+                            <td className="px-6 py-4 border-r border-border/20 max-w-[150px] truncate" title={o.user?.name || o.user?.email || "—"}>
                               {o.user?.name || o.user?.email || "—"}
                             </td>
-                            <td className="py-3 px-4 border-r-[3px] border-border whitespace-nowrap">{csvDate(o.createdAt)}</td>
-                            <td className="py-3 px-4 border-r-[3px] border-border text-center">
-                              <span className={`px-2 py-0.5 border-[2px] inline-block w-full max-w-[100px] truncate
+                            <td className="px-6 py-4 border-r border-border/20 whitespace-nowrap">{csvDate(o.createdAt)}</td>
+                            <td className="px-6 py-4 border-r border-border/20 text-center">
+                              <span className={`inline-flex items-center px-2 py-0.5 border rounded-sm text-[10px] font-semibold uppercase tracking-wider
                                 ${
-                                  o.status === "delivered" ? "bg-emerald-100 text-emerald-800 border-emerald-300" :
-                                  o.status === "shipped" ? "bg-blue-100 text-blue-800 border-blue-300" :
-                                  o.status === "confirmed" ? "bg-indigo-100 text-indigo-800 border-indigo-300" :
-                                  o.status === "cancelled" ? "bg-rose-100 text-rose-800 border-rose-300" :
-                                  "bg-amber-100 text-amber-800 border-amber-300"
+                                  o.status === "delivered" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
+                                  o.status === "shipped" ? "bg-blue-500/10 text-blue-500 border-blue-500/20" :
+                                  o.status === "confirmed" ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/20" :
+                                  o.status === "cancelled" ? "bg-rose-500/10 text-rose-500 border-rose-500/20" :
+                                  "bg-amber-500/10 text-amber-500 border-amber-500/20"
                                 }
                               `}>
                                 {o.status}
                               </span>
                             </td>
-                            <td className="py-3 px-4 text-right whitespace-nowrap text-emerald-600 font-black">{currency(o.totalAmount)}</td>
+                            <td className="px-6 py-4 text-right whitespace-nowrap text-primary font-bold">{currency(o.totalAmount)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1036,9 +1077,9 @@ function AdminAnalyticsPage() {
               </CardContent>
             </Card>
 
-            <Card className="xl:col-span-5 min-w-0 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] rounded-none flex flex-col">
-              <CardHeader className="flex-row items-center justify-between border-b-[3px] border-border pb-4 mb-0">
-                <CardTitle className="font-black uppercase tracking-widest text-foreground text-lg">Top Products</CardTitle>
+            <Card className="xl:col-span-5 min-w-0 bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+              <CardHeader className="flex-row items-center justify-between border-b border-border/25 pb-4 mb-0">
+                <CardTitle className="display-font text-lg font-semibold tracking-wide text-foreground">Top Products</CardTitle>
                 <Button
                   variant="outline"
                   onClick={() =>
@@ -1060,39 +1101,39 @@ function AdminAnalyticsPage() {
                       }
                     )
                   }
-                  className="border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all rounded-none text-xs"
+                  className="btn px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                 >
                   Export CSV
                 </Button>
               </CardHeader>
               <CardContent className="pt-0 p-0 flex-1 overflow-auto">
                 {top.length === 0 ? (
-                  <div className="text-sm font-bold uppercase tracking-widest text-muted-foreground p-6">No data</div>
+                  <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider italic p-6 text-center">No top products compiled.</div>
                 ) : (
                   <div className="overflow-x-auto w-full">
-                    <table className="w-full text-sm">
-                      <thead className="bg-muted sticky top-0 z-10 border-b-[3px] border-border">
-                        <tr className="text-left font-black uppercase tracking-widest text-foreground text-xs">
-                          <th className="py-3 px-4 border-r-[3px] border-border whitespace-nowrap">Product</th>
-                          <th className="py-3 px-4 border-r-[3px] border-border whitespace-nowrap text-center">Sold</th>
-                          <th className="py-3 px-4 border-r-[3px] border-border whitespace-nowrap text-right">Revenue</th>
-                          <th className="py-3 px-4 whitespace-nowrap">Owner</th>
+                    <table className="w-full text-xs">
+                      <thead className="bg-secondary/25 border-b border-border/35">
+                        <tr className="text-left font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+                          <th className="px-6 py-4 border-r border-border/20 whitespace-nowrap">Product</th>
+                          <th className="px-6 py-4 border-r border-border/20 text-center whitespace-nowrap">Sold</th>
+                          <th className="px-6 py-4 border-r border-border/20 text-right whitespace-nowrap">Revenue</th>
+                          <th className="px-6 py-4 whitespace-nowrap">Owner</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y-[3px] divide-border font-bold uppercase tracking-widest text-[11px] text-foreground">
+                      <tbody className="divide-y divide-border/20 font-medium text-foreground">
                         {top.map((t, idx) => (
                           <tr
                             key={idx}
-                            className="hover:bg-muted/50 transition-colors"
+                            className="hover:bg-secondary/5 transition-colors"
                           >
-                            <td className="py-3 px-4 border-r-[3px] border-border max-w-[150px] truncate" title={t.product}>{t.product}</td>
-                            <td className="py-3 px-4 border-r-[3px] border-border text-center">
-                              <span className="bg-primary/10 text-primary border-[2px] border-primary px-2 py-0.5">{t.sold}</span>
+                            <td className="px-6 py-4 border-r border-border/20 max-w-[150px] truncate" title={t.product}>{t.product}</td>
+                            <td className="px-6 py-4 border-r border-border/20 text-center">
+                              <span className="bg-primary/10 text-primary border border-primary/20 rounded-md px-2 py-0.5 font-bold uppercase tracking-wider text-[10px]">{t.sold}</span>
                             </td>
-                            <td className="py-3 px-4 border-r-[3px] border-border text-right text-emerald-600 font-black whitespace-nowrap">
+                            <td className="px-6 py-4 border-r border-border/20 text-right text-emerald-500 font-bold whitespace-nowrap">
                               {currency(t.revenue)}
                             </td>
-                            <td className="py-3 px-4 max-w-[120px] truncate" title={t.ownerName || "—"}>{t.ownerName || "—"}</td>
+                            <td className="px-6 py-4 max-w-[120px] truncate text-muted-foreground" title={t.ownerName || "—"}>{t.ownerName || "—"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1111,4 +1152,3 @@ function AdminAnalyticsPage() {
 export default dynamic(() => Promise.resolve(AdminAnalyticsPage), {
   ssr: false,
 });
-

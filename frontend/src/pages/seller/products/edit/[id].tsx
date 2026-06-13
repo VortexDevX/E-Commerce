@@ -22,7 +22,6 @@ function EditProductPage() {
     if (!id || !canWrite) return;
     (async () => {
       try {
-        // Using public product detail to feed ProductForm's initial shape
         const { data } = await api.get(`/products/${id}`);
         setInitial(data);
       } finally {
@@ -38,30 +37,31 @@ function EditProductPage() {
           scope="seller"
           perm="seller:products:write"
           fallback={
-            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">
-              You don&apos;t have permission to edit products.
+            <div className="bg-card/60 backdrop-blur-md border border-border/40 p-12 text-center rounded-xl shadow-soft">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">You do not have permission to edit products.</p>
             </div>
           }
         >
-          <div className="space-y-2 mb-8 border-b-[3px] border-border pb-4">
-            <h1 className="text-3xl font-black uppercase tracking-widest text-foreground">
+          <div className="border-b border-border/40 pb-5 mb-8">
+            <h1 className="display-font text-3xl font-semibold tracking-wide text-foreground">
               Edit Product
             </h1>
-            <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-              Update product information and media.
+            <p className="text-xs text-muted-foreground mt-1">
+              Update product specs, price, inventory levels, and images.
             </p>
           </div>
 
           {loading ? (
-            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">
-              Loading...
+            <div className="bg-card/60 backdrop-blur-md border border-border/40 p-12 text-center rounded-xl shadow-soft">
+              <div className="h-6 w-6 animate-spin border-2 border-primary/20 border-t-primary rounded-full mx-auto" />
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-3">Loading product settings...</p>
             </div>
           ) : !initial ? (
-            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-rose-600 font-black uppercase tracking-widest text-sm text-center">
-              Product not found
+            <div className="bg-card/60 backdrop-blur-md border border-border/40 p-12 text-center rounded-xl shadow-soft">
+              <p className="text-xs font-semibold uppercase tracking-wider text-rose-400">Product listing not found or unavailable.</p>
             </div>
           ) : (
-            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6">
+            <div className="bg-card/60 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft">
               <ProductForm
                 initial={initial}
                 onSuccess={() => router.push("/seller/products")}

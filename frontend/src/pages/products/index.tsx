@@ -72,11 +72,9 @@ export default function ProductsPage() {
   const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
-  // NEW: Ratings + Availability
   const [minRating, setMinRating] = useState<number>(0);
   const [inStock, setInStock] = useState<boolean>(false);
 
-  // NEW: Category banner state
   const [categoryBanner, setCategoryBanner] = useState<Banner | null>(null);
   const catBannerImpressionRef = useRef<string | null>(null);
 
@@ -108,7 +106,6 @@ export default function ProductsPage() {
     return params;
   };
 
-  // Hydrate filter state from URL query so storefront CTAs and shared links apply correctly.
   useEffect(() => {
     if (!router.isReady) return;
     const nextCategory = getQueryValue(router.query.category) || "";
@@ -120,7 +117,6 @@ export default function ProductsPage() {
     setMinRating(Number.isFinite(nextRating) ? Math.min(Math.max(nextRating, 0), 4) : 0);
     setInStock(getQueryValue(router.query.inStock) === "true");
     setPriceRange(parsePriceRange(router.query.priceRange));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     router.isReady,
     router.query.category,
@@ -130,19 +126,16 @@ export default function ProductsPage() {
     router.query.priceRange,
   ]);
 
-  // Selecting a category updates URL and clears search
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
     const query: Record<string, string> = { category: newCategory };
     router.push({ pathname: "/products", query }, undefined, { shallow: true });
   };
 
-  // Fetch products when filters change
   useEffect(() => {
     const params = buildParams();
     lastParamsRef.current = params;
     dispatch(fetchProducts(params));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParam, sort, category, priceRange, minRating, inStock]);
 
   useEffect(() => {
@@ -151,10 +144,8 @@ export default function ProductsPage() {
       lastParamsRef.current = params;
       dispatch(fetchProducts(params));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // NEW: Fetch category_header banner whenever category changes
   useEffect(() => {
     const run = async () => {
       if (!category) {
@@ -176,7 +167,6 @@ export default function ProductsPage() {
     run();
   }, [category]);
 
-  // NEW: Send impression for category banner once per banner id
   useEffect(() => {
     if (!categoryBanner) return;
     if (catBannerImpressionRef.current === categoryBanner._id) return;
@@ -192,7 +182,6 @@ export default function ProductsPage() {
     setInStock(false);
     setCategoryBanner(null);
     catBannerImpressionRef.current = null;
-    // Clear category/search from URL
     router.push("/products", undefined, { shallow: true });
   };
 
@@ -225,13 +214,13 @@ export default function ProductsPage() {
   };
 
   const searchInfo = searchParam ? (
-    <div className="mb-4 flex items-center justify-between rounded-xl border border-primary/40 bg-primary/10 p-4 text-foreground">
-      <span className="text-sm text-muted-foreground">
-        Showing results for <strong className="ml-1 font-semibold text-foreground">{searchParam}</strong>
+    <div className="mb-4 flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 p-4 text-foreground">
+      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        Showing results for <strong className="ml-1 text-foreground normal-case font-bold">{searchParam}</strong>
       </span>
       <button
         onClick={() => router.push("/products", undefined, { shallow: true })}
-        className="text-sm font-semibold text-primary hover:text-primary/80"
+        className="text-xs font-bold uppercase tracking-wider text-primary hover:text-primary-hover transition-colors"
       >
         Clear search
       </button>
@@ -241,83 +230,81 @@ export default function ProductsPage() {
   return (
     <div className="page-shell grid gap-8 md:grid-cols-4">
       {/* Sidebar */}
-      <aside className="hidden h-fit space-y-6 border border-border bg-card p-6 shadow-card md:block">
+      <aside className="hidden h-fit space-y-6 bg-card/60 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft md:block">
         <button
           onClick={onClearFilters}
-          className="btn-secondary mb-4 w-full px-3 py-2 text-sm"
+          className="btn w-full py-2.5 text-xs font-semibold uppercase tracking-wider"
         >
           Clear filters
         </button>
 
-        <div>
-          <h3 className="mb-2 font-semibold text-foreground">Categories</h3>
-          {CATEGORIES.map((c) => (
-            <button
-              key={c}
-              onClick={() => handleCategoryChange(c)}
-              className={`mb-2 block w-full rounded-lg border px-3 py-2 text-left text-sm font-medium transition-all ${
-                category === c
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-surface text-muted-foreground hover:bg-card hover:text-foreground"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
+        <div className="space-y-3">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/30 pb-1.5">Categories</h3>
+          <div className="space-y-1">
+            {CATEGORIES.map((c) => (
+              <button
+                key={c}
+                onClick={() => handleCategoryChange(c)}
+                className={`block w-full rounded-md border px-3.5 py-2 text-left text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+                  category === c
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border/40 bg-card/40 hover:bg-secondary/40 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div>
-          <h3 className="mb-2 font-semibold text-foreground">Price</h3>
-          {PRICE_OPTIONS.map((r) => (
-            <button
-              key={r.label}
-              onClick={() => setPriceRange(r.range as [number, number])}
-              className={`mb-2 block w-full rounded-lg border px-3 py-2 text-left text-sm font-medium transition-all ${
-                priceRange &&
-                priceRange[0] === r.range[0] &&
-                priceRange[1] === r.range[1]
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-surface text-muted-foreground hover:bg-card hover:text-foreground"
-              }`}
-            >
-              {r.label}
-            </button>
-          ))}
+        <div className="space-y-3">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/30 pb-1.5">Price</h3>
+          <div className="space-y-1">
+            {PRICE_OPTIONS.map((r) => (
+              <button
+                key={r.label}
+                onClick={() => setPriceRange(r.range as [number, number])}
+                className={`block w-full rounded-md border px-3.5 py-2 text-left text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+                  priceRange &&
+                  priceRange[0] === r.range[0] &&
+                  priceRange[1] === r.range[1]
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border/40 bg-card/40 hover:bg-secondary/40 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Ratings */}
-        <div>
-          <h3 className="mb-2 font-semibold text-foreground">Ratings</h3>
-          {[
-            { value: 0, label: "Any rating" },
-            { value: 1, label: "1★ & up" },
-            { value: 2, label: "2★ & up" },
-            { value: 3, label: "3★ & up" },
-            { value: 4, label: "4★ & up" },
-          ].map((o) => (
-            <button
-              key={o.value}
-              onClick={() => setMinRating(o.value)}
-              className={`mb-2 block w-full rounded-lg border px-3 py-2 text-left text-sm font-medium transition-all ${
-                minRating === o.value
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-surface text-muted-foreground hover:bg-card hover:text-foreground"
-              }`}
-            >
-              {o.label}
-            </button>
-          ))}
+        <div className="space-y-3">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/30 pb-1.5">Ratings</h3>
+          <div className="space-y-1">
+            {ratingOptions.map((o) => (
+              <button
+                key={o.value}
+                onClick={() => setMinRating(o.value)}
+                className={`block w-full rounded-md border px-3.5 py-2 text-left text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+                  minRating === o.value
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border/40 bg-card/40 hover:bg-secondary/40 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Availability */}
-        <div>
-          <h3 className="mb-2 font-semibold text-foreground">Availability</h3>
-          <label className="flex select-none items-center gap-2 text-sm font-medium text-muted-foreground">
+        <div className="space-y-3">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/30 pb-1.5">Availability</h3>
+          <label className="flex select-none items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer">
             <input
               type="checkbox"
               checked={inStock}
               onChange={(e) => setInStock(e.target.checked)}
-              className="h-5 w-5 rounded border-border text-primary focus:ring-2 focus:ring-primary focus:ring-offset-0"
+              className="w-4 h-4 border border-border text-primary rounded focus:ring-primary focus:ring-offset-0 shrink-0"
             />
             In stock only
           </label>
@@ -326,25 +313,25 @@ export default function ProductsPage() {
 
       {/* Main Content */}
       <div className="space-y-6 md:col-span-3">
-        <div className="flex flex-col gap-3 border border-border bg-card p-5 shadow-card md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-col gap-4 border border-border/40 bg-card/65 backdrop-blur-md p-6 rounded-xl shadow-soft md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs font-semibold text-primary">Luxora catalog</p>
-            <h1 className="display-font text-4xl font-semibold text-foreground md:text-5xl">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary">Luxora Catalog</p>
+            <h1 className="display-font text-4xl font-semibold text-foreground md:text-5xl mt-1">
               Browse the edit
             </h1>
           </div>
-          <p className="max-w-md text-sm leading-6 text-muted-foreground">
-            Filter by department, price, rating, and availability. Good shopping starts with fewer surprises.
+          <p className="max-w-md text-xs leading-5 text-muted-foreground">
+            Curated and tailored to meet our exacting standards. Filter through our select collections by category, pricing, or ratings.
           </p>
         </div>
         {searchInfo}
 
-        <div className="md:hidden -mx-1 overflow-x-auto no-scrollbar sticky top-[68px] z-30 bg-[hsl(var(--background))] py-2">
+        <div className="md:hidden -mx-1 overflow-x-auto no-scrollbar sticky top-[68px] z-30 bg-background/90 backdrop-blur-md py-2">
           <div className="flex gap-2 px-1 min-w-max">
             <button
               onClick={() => setCategory("")}
-              className={`px-3 py-1.5 text-xs rounded-full border ${
-                !category ? "bg-primary text-primary-foreground border-primary" : "bg-surface border-border text-muted-foreground"
+              className={`px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-full border ${
+                !category ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border/60 text-muted-foreground"
               }`}
             >
               All
@@ -353,10 +340,10 @@ export default function ProductsPage() {
               <button
                 key={c}
                 onClick={() => handleCategoryChange(c)}
-                className={`px-3 py-1.5 text-xs rounded-full border whitespace-nowrap ${
+                className={`px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-full border whitespace-nowrap ${
                   category === c
                     ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-surface border-border text-muted-foreground"
+                    : "bg-card border-border/60 text-muted-foreground"
                 }`}
               >
                 {c}
@@ -366,21 +353,21 @@ export default function ProductsPage() {
         </div>
 
         {activeFilters.length > 0 && (
-          <div className="rounded-xl border border-border bg-surface p-3">
+          <div className="rounded-xl border border-border/40 bg-card/30 p-3">
             <div className="flex flex-wrap items-center gap-2">
               {activeFilters.map((chip) => (
                 <button
                   key={chip.key}
                   onClick={() => clearOneFilter(chip.key)}
-                  className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary"
+                  className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
                 >
                   {chip.label}
-                  <span aria-hidden>×</span>
+                  <span aria-hidden className="ml-1 text-xs">×</span>
                 </button>
               ))}
               <button
                 onClick={onClearFilters}
-                className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+                className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors ml-1"
               >
                 Clear all
               </button>
@@ -390,12 +377,12 @@ export default function ProductsPage() {
 
         {/* Sort dropdown */}
         <div className="flex items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {list.length} result{list.length === 1 ? "" : "s"}
           </p>
           <Listbox value={sort} onChange={setSort}>
             <div className="relative w-48">
-              <Listbox.Button className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-left text-sm font-medium text-foreground transition-transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary/40">
+              <Listbox.Button className="w-full rounded-md border border-border/80 bg-card/65 px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary transition-all duration-200">
                 {["", "priceAsc", "priceDesc", "newest"].includes(sort)
                   ? {
                       "": "Sort by",
@@ -405,7 +392,7 @@ export default function ProductsPage() {
                     }[sort as "" | "priceAsc" | "priceDesc" | "newest"]
                   : "Sort by"}
               </Listbox.Button>
-              <Listbox.Options className="absolute z-50 mt-2 w-full space-y-1 rounded-xl border border-border bg-card p-2 shadow-card">
+              <Listbox.Options className="absolute z-50 mt-2 w-full space-y-1 rounded-md border border-border/40 bg-card/90 backdrop-blur-md p-2 shadow-lg">
                 {[
                   { value: "", label: "Sort by" },
                   { value: "priceAsc", label: "Price: Low → High" },
@@ -415,7 +402,7 @@ export default function ProductsPage() {
                   <Listbox.Option
                     key={o.value}
                     value={o.value}
-                    className="cursor-pointer rounded-lg px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+                    className="cursor-pointer rounded-md px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
                   >
                     {o.label}
                   </Listbox.Option>
@@ -433,7 +420,6 @@ export default function ProductsPage() {
           Show filters
         </button>
 
-        {/* NEW: Category Header Banner */}
         {categoryBanner ? <BannerHero banner={categoryBanner} /> : null}
 
         {/* Mobile Filters Modal */}
@@ -451,7 +437,7 @@ export default function ProductsPage() {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <div className="fixed inset-0 bg-black/50" />
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
             </Transition.Child>
 
             <div className="fixed inset-0 flex items-end justify-center">
@@ -464,104 +450,109 @@ export default function ProductsPage() {
                 leaveFrom="translate-y-0"
                 leaveTo="translate-y-full"
               >
-                <Dialog.Panel className="max-h-[80vh] w-full max-w-md space-y-6 overflow-y-auto rounded-t-2xl border border-border bg-surface p-6 pb-20">
-                  <div className="flex justify-between items-center">
-                    <Dialog.Title className="text-lg font-semibold text-foreground">
+                <Dialog.Panel className="max-h-[85vh] w-full max-w-md space-y-6 overflow-y-auto rounded-t-2xl border border-border/40 bg-card p-6 pb-20">
+                  <div className="flex justify-between items-center border-b border-border/30 pb-3">
+                    <Dialog.Title className="display-font text-lg font-semibold text-foreground">
                       Filters
                     </Dialog.Title>
                     <button
                       onClick={onClearFilters}
-                      className="text-sm font-medium text-error"
+                      className="text-xs font-semibold uppercase tracking-wider text-rose-500 hover:text-rose-600 transition-colors"
                     >
                       Reset all
                     </button>
                   </div>
 
-                  <div>
-                    <h3 className="mb-2 font-semibold text-foreground">
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                       Categories
                     </h3>
-                    {CATEGORIES.map((c) => (
-                      <button
-                        key={c}
-                        onClick={() => handleCategoryChange(c)}
-                        className={`mb-2 block w-full rounded-lg border px-3 py-2 text-left text-sm ${
-                          category === c
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-card text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {c}
-                      </button>
-                    ))}
+                    <div className="grid grid-cols-2 gap-2">
+                      {CATEGORIES.map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => handleCategoryChange(c)}
+                          className={`rounded-md border px-3 py-2 text-center text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+                            category === c
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border/40 bg-card/45 text-muted-foreground"
+                          }`}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
-                  <div>
-                    <h3 className="mb-2 font-semibold text-foreground">Price</h3>
-                    {PRICE_OPTIONS.map((r) => (
-                      <button
-                        key={r.label}
-                        onClick={() =>
-                          setPriceRange(r.range as [number, number])
-                        }
-                        className={`mb-2 block w-full rounded-lg border px-3 py-2 text-left text-sm ${
-                          priceRange &&
-                          priceRange[0] === r.range[0] &&
-                          priceRange[1] === r.range[1]
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-card text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {r.label}
-                      </button>
-                    ))}
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Price</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {PRICE_OPTIONS.map((r) => (
+                        <button
+                          key={r.label}
+                          onClick={() =>
+                            setPriceRange(r.range as [number, number])
+                          }
+                          className={`rounded-md border px-3 py-2 text-center text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+                            priceRange &&
+                            priceRange[0] === r.range[0] &&
+                            priceRange[1] === r.range[1]
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border/40 bg-card/45 text-muted-foreground"
+                          }`}
+                        >
+                          {r.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
-                  {/* Ratings */}
-                  <div>
-                    <h3 className="mb-2 font-semibold text-foreground">
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                       Ratings
                     </h3>
-                    {ratingOptions.map((o) => (
-                      <button
-                        key={o.value}
-                        onClick={() => setMinRating(o.value)}
-                        className={`mb-2 block w-full rounded-lg border px-3 py-2 text-left text-sm ${
-                          minRating === o.value
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-card text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {o.label}
-                      </button>
-                    ))}
+                    <div className="grid grid-cols-2 gap-2">
+                      {ratingOptions.map((o) => (
+                        <button
+                          key={o.value}
+                          onClick={() => setMinRating(o.value)}
+                          className={`rounded-md border px-3 py-2 text-center text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+                            minRating === o.value
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border/40 bg-card/45 text-muted-foreground"
+                          }`}
+                        >
+                          {o.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
-                  {/* Availability */}
-                  <div>
-                    <h3 className="mb-2 font-semibold text-foreground">
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                       Availability
                     </h3>
-                    <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <label className="flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer">
                       <input
                         type="checkbox"
                         checked={inStock}
                         onChange={(e) => setInStock(e.target.checked)}
+                        className="w-4 h-4 border border-border text-primary rounded focus:ring-primary focus:ring-offset-0 shrink-0"
                       />
                       In stock only
                     </label>
                   </div>
 
-                  <div className="sticky bottom-0 flex justify-between gap-4 border-t border-border bg-surface pt-4">
+                  <div className="sticky bottom-0 flex justify-between gap-4 border-t border-border/30 bg-card pt-4">
                     <button
                       onClick={onClearFilters}
-                      className="btn-secondary flex-1 py-2"
+                      className="btn flex-1 py-3 text-xs"
                     >
                       Clear all
                     </button>
                     <button
                       onClick={() => setShowFilters(false)}
-                      className="btn-primary flex-1 py-2"
+                      className="btn-primary flex-1 py-3 text-xs"
                     >
                       Apply
                     </button>
@@ -580,14 +571,14 @@ export default function ProductsPage() {
             ))}
           </div>
         ) : list.length === 0 ? (
-          <div className="card p-12 text-center flex flex-col items-center justify-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground">
+          <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl p-12 text-center flex flex-col items-center justify-center">
+            <h2 className="display-font mb-4 text-3xl font-semibold text-foreground">
               No products found
             </h2>
-            <p className="mb-8 max-w-sm text-muted-foreground">
+            <p className="mb-8 max-w-sm text-sm text-muted-foreground">
               {searchParam
-                ? "Try adjusting your search or clear it to see all products."
-                : "Try adjusting your filters or browse all products."}
+                ? "Try adjusting your search query or clear it to view our complete collection."
+                : "Try adjusting your filter settings or clear all filters to start fresh."}
             </p>
             <button
               onClick={onClearFilters}
@@ -598,7 +589,7 @@ export default function ProductsPage() {
           </div>
         ) : (
           <div
-            className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ${
+            className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 transition-opacity duration-200 ${
               loading ? "opacity-50" : ""
             }`}
           >

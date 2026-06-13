@@ -45,7 +45,6 @@ function CheckoutInner() {
     [user?.addresses]
   );
 
-  // Track checkout view once when page has items
   const trackedRef = useRef(false);
   useEffect(() => {
     if (!trackedRef.current && items.length > 0) {
@@ -54,12 +53,10 @@ function CheckoutInner() {
     }
   }, [items.length]);
 
-  // Address mode: pick existing or create new
   const [mode, setMode] = useState<"existing" | "new">(
     addresses.length > 0 ? "existing" : "new"
   );
 
-  // Existing address selection
   const defaultAddrId =
     addresses.find((a) => a.isDefault)?._id || addresses[0]?._id;
   const [selectedAddressId, setSelectedAddressId] = useState<
@@ -67,7 +64,6 @@ function CheckoutInner() {
   >(defaultAddrId);
 
   useEffect(() => {
-    // Keep selection in sync if addresses change
     if (!addresses.length) {
       setMode("new");
       setSelectedAddressId(undefined);
@@ -79,7 +75,6 @@ function CheckoutInner() {
     }
   }, [addresses, selectedAddressId]);
 
-  // New address fields
   const [newAddr, setNewAddr] = useState<Address>({
     label: "Home",
     line1: "",
@@ -93,7 +88,6 @@ function CheckoutInner() {
   });
   const [saveToProfile, setSaveToProfile] = useState(true);
 
-  // Shipping method
   const [shipping, setShipping] = useState<"standard" | "express">("standard");
 
   const {
@@ -109,7 +103,6 @@ function CheckoutInner() {
       ),
     [items]
   );
-  // prefer store's discountedSubtotal if present
   const effectiveSubtotal = cartDiscountedSubtotal || rawSubtotal;
   const shippingCost = shipping === "express" ? 99 : 0;
   const tax = Math.round(effectiveSubtotal * 0.05);
@@ -160,7 +153,7 @@ function CheckoutInner() {
 
       await api.post("/orders", {
         address: addressToSend,
-        shippingMethod: shipping, // <-- send the chosen method
+        shippingMethod: shipping,
       });
 
       dispatch(clearCart());
@@ -188,10 +181,10 @@ function CheckoutInner() {
           {["Address", "Delivery", "Review", "Pay"].map((step, idx) => (
             <li
               key={step}
-              className={`px-3 py-2 rounded-md border text-center font-semibold ${
+              className={`px-3 py-2 rounded-md border text-center font-semibold transition-colors duration-200 ${
                 idx <= 1
-                  ? "border-primary/40 bg-primary/10 text-primary"
-                  : "border-border bg-surface text-muted-foreground"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border/60 bg-secondary/20 text-muted-foreground"
               }`}
             >
               {idx + 1}. {step}
@@ -199,21 +192,21 @@ function CheckoutInner() {
           ))}
         </ol>
       </div>
+
       {/* Left: Address + Shipping */}
       <div className="md:col-span-2 space-y-8">
-        {/* Address selection */}
-        <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 space-y-6">
-          <h2 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4">
+        <section className="bg-card/60 backdrop-blur-md border border-border/40 shadow-soft p-6 rounded-xl space-y-6">
+          <h2 className="display-font text-2xl font-semibold uppercase tracking-wide text-foreground border-b border-border/30 pb-3">
             Shipping Address
           </h2>
 
           {/* Mode toggle */}
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="flex flex-wrap gap-3 mb-6">
             <button
               onClick={() => setMode("existing")}
-              className={`px-6 py-3 border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all text-xs flex-1 ${
+              className={`btn text-xs flex-1 py-3 ${
                 mode === "existing"
-                  ? "bg-foreground text-background"
+                  ? "btn-primary"
                   : "bg-card text-foreground"
               }`}
               disabled={addresses.length === 0}
@@ -227,9 +220,9 @@ function CheckoutInner() {
             </button>
             <button
               onClick={() => setMode("new")}
-              className={`px-6 py-3 border-[3px] border-border font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all text-xs flex-1 ${
+              className={`btn text-xs flex-1 py-3 ${
                 mode === "new"
-                  ? "bg-foreground text-background"
+                  ? "btn-primary"
                   : "bg-card text-foreground"
               }`}
             >
@@ -243,37 +236,37 @@ function CheckoutInner() {
               {addresses.map((a) => (
                 <label
                   key={a._id}
-                  className={`flex flex-col sm:flex-row items-start gap-3 p-4 border-[3px] border-border cursor-pointer transition-all hover:-translate-y-1 shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] ${
+                  className={`flex flex-col sm:flex-row items-start gap-3 p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
                     selectedAddressId === a._id
-                      ? "bg-primary/10 shadow-[4px_4px_0px_#111]"
-                      : "bg-card"
+                      ? "bg-primary/5 border-primary shadow-sm"
+                      : "bg-card/40 border-border/40 hover:border-primary/20"
                   }`}
                 >
                   <input
                     type="radio"
                     name="addr"
-                    className="mt-1 w-5 h-5 border-[3px] border-border text-primary focus:ring-primary focus:ring-offset-0 shrink-0"
+                    className="mt-1.5 w-4 h-4 border border-border text-primary focus:ring-primary focus:ring-offset-0 shrink-0"
                     checked={selectedAddressId === a._id}
                     onChange={() => setSelectedAddressId(a._id)}
                   />
                   <div className="flex-1 space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-black uppercase tracking-widest text-foreground text-lg">
+                      <p className="font-semibold text-foreground text-base">
                         {a.label || "Saved address"}
                       </p>
                       {a.isDefault && (
-                        <span className="text-[10px] bg-emerald-300 border-[3px] border-emerald-950 font-black uppercase tracking-widest text-emerald-950 px-2 py-0.5 shadow-[2px_2px_0px_#111]">
+                        <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 font-semibold uppercase tracking-wider text-emerald-600 px-2 py-0.5 rounded-sm">
                           Default
                         </span>
                       )}
                     </div>
-                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">
+                    <p className="text-muted-foreground text-sm">
                       {[a.line1, a.line2, a.city, a.state, a.zip, a.country]
                         .filter(Boolean)
                         .join(", ")}
                     </p>
                     {a.phone && (
-                      <p className="text-foreground font-bold uppercase tracking-widest text-xs mt-1">📞 {a.phone}</p>
+                      <p className="text-muted-foreground text-xs mt-1">📞 {a.phone}</p>
                     )}
                   </div>
                 </label>
@@ -285,8 +278,8 @@ function CheckoutInner() {
           {mode === "new" && (
             <div className="grid md:grid-cols-2 gap-4 mt-2">
               <input
-                placeholder="Address label"
-                className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+                placeholder="Address label (e.g. Home)"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/45 text-sm"
                 value={newAddr.label || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, label: e.target.value })
@@ -294,7 +287,7 @@ function CheckoutInner() {
               />
               <input
                 placeholder="Phone number"
-                className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/45 text-sm"
                 value={newAddr.phone || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, phone: e.target.value })
@@ -302,7 +295,7 @@ function CheckoutInner() {
               />
               <input
                 placeholder="Street address"
-                className="md:col-span-2 w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+                className="md:col-span-2 w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/45 text-sm"
                 value={newAddr.line1 || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, line1: e.target.value })
@@ -310,7 +303,7 @@ function CheckoutInner() {
               />
               <input
                 placeholder="Apartment, suite, or landmark"
-                className="md:col-span-2 w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+                className="md:col-span-2 w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/45 text-sm"
                 value={newAddr.line2 || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, line2: e.target.value })
@@ -318,7 +311,7 @@ function CheckoutInner() {
               />
               <input
                 placeholder="City"
-                className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/45 text-sm"
                 value={newAddr.city || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, city: e.target.value })
@@ -326,7 +319,7 @@ function CheckoutInner() {
               />
               <input
                 placeholder="State"
-                className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/45 text-sm"
                 value={newAddr.state || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, state: e.target.value })
@@ -334,7 +327,7 @@ function CheckoutInner() {
               />
               <input
                 placeholder="Postal code"
-                className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/45 text-sm"
                 value={newAddr.zip || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, zip: e.target.value })
@@ -342,71 +335,71 @@ function CheckoutInner() {
               />
               <input
                 placeholder="Country"
-                className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/45 text-sm"
                 value={newAddr.country || ""}
                 onChange={(e) =>
                   setNewAddr({ ...newAddr, country: e.target.value })
                 }
               />
-              <label className="inline-flex items-center gap-2 text-sm md:col-span-2 font-bold uppercase tracking-widest text-foreground mt-2">
+              <label className="inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground md:col-span-2 mt-2">
                 <input
                   type="checkbox"
-                  className="w-5 h-5 border-[3px] border-border text-primary rounded-none focus:ring-primary focus:ring-offset-0 shrink-0"
+                  className="w-4 h-4 border border-border text-primary rounded focus:ring-primary focus:ring-offset-0 shrink-0"
                   checked={saveToProfile}
                   onChange={(e) => setSaveToProfile(e.target.checked)}
                 />
-                Save this address as{" "}
-                <span className="font-black text-primary bg-primary/10 px-2 py-0.5 border-[3px] border-primary">
+                Save address as{" "}
+                <span className="font-semibold text-primary bg-primary/10 px-2 py-0.5 border border-primary/20 rounded-md">
                   {newAddr.label || "Home"}
                 </span>
               </label>
             </div>
           )}
           {addressError && (
-            <p className="text-sm text-rose-600 font-semibold">{addressError}</p>
+            <p className="text-xs text-rose-500 font-semibold">{addressError}</p>
           )}
         </section>
 
         {/* Shipping method */}
-        <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 space-y-6">
-          <h2 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4">
+        <section className="bg-card/60 backdrop-blur-md border border-border/40 shadow-soft p-6 rounded-xl space-y-6">
+          <h2 className="display-font text-2xl font-semibold uppercase tracking-wide text-foreground border-b border-border/30 pb-3">
             Shipping Method
           </h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <button
               onClick={() => setShipping("standard")}
-              className={`p-4 border-[3px] border-border text-left transition-all hover:-translate-y-1 shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] ${
+              className={`p-4 border rounded-lg text-left transition-all duration-200 ${
                 shipping === "standard"
-                  ? "bg-primary/10 shadow-[4px_4px_0px_#111]"
-                  : "bg-card"
+                  ? "bg-primary/5 border-primary shadow-sm"
+                  : "bg-card/40 border-border/40 hover:border-primary/20"
               }`}
             >
-              <p className="font-black uppercase tracking-widest text-foreground text-lg mb-1">Standard delivery</p>
-              <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">Arrives in 4 to 7 days · Free</p>
+              <p className="font-semibold text-foreground text-base mb-1">Standard delivery</p>
+              <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Arrives in 4 to 7 days · Free</p>
             </button>
             <button
               onClick={() => setShipping("express")}
-              className={`p-4 border-[3px] border-border text-left transition-all hover:-translate-y-1 shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] ${
+              className={`p-4 border rounded-lg text-left transition-all duration-200 ${
                 shipping === "express"
-                  ? "bg-primary/10 shadow-[4px_4px_0px_#111]"
-                  : "bg-card"
+                  ? "bg-primary/5 border-primary shadow-sm"
+                  : "bg-card/40 border-border/40 hover:border-primary/20"
               }`}
             >
-              <p className="font-black uppercase tracking-widest text-foreground text-lg mb-1">Express delivery</p>
-              <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">Arrives in 1 to 2 days · ₹99</p>
+              <p className="font-semibold text-foreground text-base mb-1">Express delivery</p>
+              <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Arrives in 1 to 2 days · ₹99</p>
             </button>
           </div>
         </section>
       </div>
 
       {/* Right: Order Summary */}
-      <aside className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 h-fit md:sticky md:top-24 space-y-6">
-        <h2 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4">Order Summary</h2>
+      <aside className="bg-card/65 backdrop-blur-md border border-border/40 shadow-soft p-6 h-fit md:sticky md:top-24 rounded-xl space-y-6">
+        <h2 className="display-font text-2xl font-semibold uppercase tracking-wide text-foreground border-b border-border/30 pb-3">Order Summary</h2>
 
         {items.length === 0 ? (
-          <div className="text-muted-foreground font-bold uppercase tracking-widest text-sm">
+          <div className="text-muted-foreground text-sm">
             Your cart is empty.{" "}
-            <Link href="/products" className="text-primary hover:underline decoration-2 underline-offset-4">
+            <Link href="/products" className="text-primary hover:underline">
               Shop products
             </Link>
           </div>
@@ -415,79 +408,79 @@ function CheckoutInner() {
             <div className="max-h-60 overflow-auto pr-2 space-y-4">
               {items.map((i) => (
                 <div key={i._id} className="flex items-center gap-4">
-                  <div className="relative w-16 h-16 shrink-0 border-[3px] border-border shadow-[2px_2px_0px_#111] overflow-hidden">
+                  <div className="relative w-16 h-16 shrink-0 border border-border/40 rounded-lg overflow-hidden">
                     <Image
                       src={getImageUrl(i.product.images?.[0])}
                       alt={i.product.title}
                       fill
                       sizes="64px"
-                      className="object-cover"
+                      className="object-cover animate-fade-in"
                       unoptimized
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black uppercase text-foreground truncate">{i.product.title}</p>
-                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mt-1">Qty: {i.qty}</p>
+                    <p className="text-sm font-semibold text-foreground truncate">{i.product.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Qty: {i.qty}</p>
                   </div>
-                  <div className="text-sm font-black text-foreground">
+                  <div className="text-sm font-semibold text-foreground">
                     {currency((i.priceAtAdd ?? i.product.price) * i.qty)}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="space-y-3 pt-6 border-t-[3px] border-border font-bold uppercase tracking-widest text-sm">
-               <p className="flex justify-between text-muted-foreground">
+            <div className="space-y-3 pt-6 border-t border-border/30 text-xs font-semibold uppercase tracking-wider">
+               <div className="flex justify-between text-muted-foreground">
                  <span>Subtotal</span>
-                 <span>{currency(rawSubtotal)}</span>
-               </p>
-               <p className="flex justify-between text-muted-foreground">
+                 <span className="text-foreground">{currency(rawSubtotal)}</span>
+               </div>
+               <div className="flex justify-between text-muted-foreground">
                  <span>Delivery</span>
-                 <span>
+                 <span className="text-foreground">
                    {shippingCost === 0 ? "Free" : currency(shippingCost)}
                  </span>
-               </p>
+               </div>
                {appliedCoupon && cartDiscount > 0 && (
-                 <p className="flex justify-between text-emerald-600">
+                 <div className="flex justify-between text-emerald-500">
                    <span>Discount ({appliedCoupon.code})</span>
                    <span>-{currency(cartDiscount)}</span>
-                 </p>
+                 </div>
                )}
-               <p className="flex justify-between text-muted-foreground">
+               <div className="flex justify-between text-muted-foreground">
                  <span>Tax (5%)</span>
-                 <span>{currency(tax)}</span>
-               </p>
+                 <span className="text-foreground">{currency(tax)}</span>
+               </div>
              </div>
              
-             <p className="flex justify-between font-black uppercase tracking-widest text-2xl text-foreground pt-4 border-t-[3px] border-border">
+             <div className="flex justify-between display-font font-semibold uppercase tracking-wide text-2xl text-foreground pt-4 border-t border-border/30">
                <span>Total</span>
                <span>{currency(grandTotal)}</span>
-             </p>
+             </div>
 
             {/* Explicit legal acceptance */}
-            <div className="flex items-start gap-3 bg-muted p-4 border-[3px] border-border mt-6">
+            <div className="flex items-start gap-3 bg-secondary/40 p-4 border border-border/40 rounded-lg mt-6">
               <input
                 id="accept-policies"
                 type="checkbox"
-                className="mt-0.5 w-5 h-5 border-[3px] border-border text-primary focus:ring-primary focus:ring-offset-0 shrink-0"
+                className="mt-0.5 w-4 h-4 border border-border text-primary rounded focus:ring-primary focus:ring-offset-0 shrink-0"
                 checked={acceptedPolicies}
                 onChange={(e) => setAcceptedPolicies(e.target.checked)}
               />
               <label
                 htmlFor="accept-policies"
-                className="text-xs font-bold uppercase tracking-widest text-foreground leading-relaxed"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground leading-relaxed"
               >
                 I agree to the{" "}
                 <Link
                   href="/policies/terms"
-                  className="underline decoration-2 underline-offset-4 hover:text-primary transition-colors"
+                  className="text-primary hover:text-primary-hover hover:underline transition-colors"
                 >
                   Terms of Service
                 </Link>{" "}
                 and{" "}
                 <Link
                   href="/policies/privacy"
-                  className="underline decoration-2 underline-offset-4 hover:text-primary transition-colors"
+                  className="text-primary hover:text-primary-hover hover:underline transition-colors"
                 >
                   Privacy Policy
                 </Link>
@@ -496,27 +489,27 @@ function CheckoutInner() {
             </div>
 
             <div className="pt-2">
-              <div className="mb-3 grid grid-cols-1 gap-2 text-xs text-gray-600">
-                <p className="rounded-md border border-gray-200 px-3 py-2 bg-gray-50">
-                  Buyer protection included
-                </p>
-                <p className="rounded-md border border-gray-200 px-3 py-2 bg-gray-50">
-                  Easy returns on eligible items
-                </p>
-                <p className="rounded-md border border-gray-200 px-3 py-2 bg-gray-50">
-                  Secure checkout and protected payment data
-                </p>
+              <div className="mb-4 grid grid-cols-1 gap-1.5 text-[10px] text-muted-foreground">
+                <div className="rounded-md border border-border/40 px-3 py-2 bg-secondary/35 uppercase tracking-wider font-semibold">
+                  ✓ Buyer protection included
+                </div>
+                <div className="rounded-md border border-border/40 px-3 py-2 bg-secondary/35 uppercase tracking-wider font-semibold">
+                  ✓ Easy returns on eligible items
+                </div>
+                <div className="rounded-md border border-border/40 px-3 py-2 bg-secondary/35 uppercase tracking-wider font-semibold">
+                  ✓ Secure checkout and protected payment data
+                </div>
               </div>
               <button
                 onClick={placeOrder}
                 disabled={placing || !canPlaceOrder || !acceptedPolicies}
-                className="w-full text-center px-6 py-4 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50 text-base"
+                className="w-full btn-primary py-4 disabled:opacity-50 text-base"
               >
                 {placing ? "Sending order..." : "Place order"}
               </button>
             </div>
             {!canPlaceOrder && (
-              <p className="text-xs font-bold uppercase tracking-widest text-rose-600 text-center mt-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-500 text-center mt-2">
                 Select a saved address or add a complete shipping address.
               </p>
             )}
@@ -530,5 +523,4 @@ function CheckoutInner() {
   );
 }
 
-// Disable SSR for this page to avoid hydration issues around auth gating
 export default dynamic(() => Promise.resolve(CheckoutPage), { ssr: false });

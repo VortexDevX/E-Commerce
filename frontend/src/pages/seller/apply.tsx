@@ -5,7 +5,6 @@ import SellerLayout from "../../components/layout/SellerLayout";
 import api from "../../utils/api";
 import { toast } from "react-hot-toast";
 
-// Extract Field so it doesn't remount on each parent re-render (prevents input losing focus)
 type TextFieldProps = {
   value: string;
   onChange: (v: string) => void;
@@ -24,7 +23,7 @@ const TextField = memo(function TextField({
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+      className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/45"
       autoComplete="off"
     />
   );
@@ -49,7 +48,7 @@ function SellerApplyPage() {
     if (!docFile) return;
     setUploading(true);
     const fd = new FormData();
-    fd.append("file", docFile); // matches /users/apply/upload
+    fd.append("file", docFile);
     try {
       const { data } = await api.post("/users/apply/upload", fd, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -71,9 +70,9 @@ function SellerApplyPage() {
     setSubmitting(true);
     try {
       await api.post("/users/seller-request", form);
-      toast.success("Application submitted");
+      toast.success("Application submitted successfully");
     } catch (e: any) {
-      toast.error(e?.response?.data?.message || "Failed");
+      toast.error(e?.response?.data?.message || "Failed to submit application");
     } finally {
       setSubmitting(false);
     }
@@ -82,117 +81,116 @@ function SellerApplyPage() {
   return (
     <ProtectedRoute roles={["user", "seller", "admin"]}>
       <SellerLayout>
-        <div className="space-y-2 mb-8 border-b-[3px] border-border pb-4">
-          <h1 className="text-3xl font-black uppercase tracking-widest text-foreground">
-            Apply for Seller
+        <div className="border-b border-border/40 pb-5 mb-8">
+          <h1 className="display-font text-3xl font-semibold tracking-wide text-foreground">
+            Apply to Sell on Luxora
           </h1>
-          <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground mt-2">
-            Share your business details. Our team will review and reach out.
+          <p className="text-xs text-muted-foreground mt-1">
+            Provide your business registration details and documents. Our merchant team will review.
           </p>
         </div>
 
-        <div className="rounded-none border-[3px] border-border bg-card shadow-[8px_8px_0px_hsl(var(--foreground))] p-6 space-y-6">
-          <div className="grid md:grid-cols-2 gap-3">
+        <div className="bg-card/60 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft space-y-6">
+          <div className="grid md:grid-cols-2 gap-4">
             <TextField
               placeholder="Business Name"
               value={form.businessName}
               onChange={(v) => setForm((f) => ({ ...f, businessName: v }))}
             />
             <TextField
-              placeholder="Legal Name"
+              placeholder="Legal Entity Name"
               value={form.legalName}
               onChange={(v) => setForm((f) => ({ ...f, legalName: v }))}
             />
             <TextField
-              placeholder="Phone"
+              placeholder="Contact Phone Number"
               type="tel"
               value={form.phone}
               onChange={(v) => setForm((f) => ({ ...f, phone: v }))}
             />
             <TextField
-              placeholder="Website"
+              placeholder="Business Website (optional)"
               value={form.website}
               onChange={(v) => setForm((f) => ({ ...f, website: v }))}
             />
             <TextField
-              placeholder="GST Number"
+              placeholder="GSTIN / Business Registration ID"
               value={form.gst}
               onChange={(v) => setForm((f) => ({ ...f, gst: v }))}
             />
             <TextField
-              placeholder="Registered Address"
+              placeholder="Registered Business Address"
               value={form.address}
               onChange={(v) => setForm((f) => ({ ...f, address: v }))}
             />
           </div>
 
           <textarea
-            placeholder="Describe your store and the products you plan to sell..."
+            placeholder="Tell us about the catalog, brand range, or premium products you plan to list on Luxora..."
             value={form.message}
             onChange={(e) =>
               setForm((f) => ({ ...f, message: e.target.value }))
             }
-            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+            className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/45"
             rows={4}
           />
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <input
               type="file"
               id="media-upload"
               accept="image/jpeg,image/png,image/webp"
-              multiple
               onChange={(e) => setDocFile(e.target.files?.[0] || null)}
               className="sr-only"
             />
             <label
               htmlFor="media-upload"
-              className="inline-flex items-center gap-2 px-4 py-3 uppercase tracking-widest text-xs font-black border-[3px] border-border bg-card text-foreground cursor-pointer shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md border border-border/85 bg-card/50 text-xs font-semibold uppercase tracking-wider text-foreground hover:bg-card hover:border-primary/40 cursor-pointer transition-all duration-200"
             >
               <svg
-                className="w-4 h-4 text-gray-500"
+                className="w-4 h-4 text-primary"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
                 <path d="M4 3a2 2 0 00-2 2v2h2V5h12v10H4v-2H2v2a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4z" />
                 <path d="M9 7v3H6l4 4 4-4h-3V7H9z" />
               </svg>
-              Choose file
+              {docFile ? docFile.name : "Choose business document"}
             </label>
             <button
               onClick={uploadDoc}
               disabled={!docFile || uploading}
-              className="px-6 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50"
+              className="btn-primary py-2 px-5 text-xs"
             >
-              {uploading ? "Uploading..." : "Upload document"}
+              {uploading ? "Uploading..." : "Upload Document"}
             </button>
           </div>
 
           {form.documents.length > 0 && (
-            <ul className="text-sm text-gray-700 list-disc ml-5">
+            <ul className="text-xs space-y-1.5 list-disc pl-5 text-muted-foreground">
               {form.documents.map((d, i) => (
                 <li key={i}>
-                  {d.name || "doc"} —{" "}
+                  <span className="font-semibold text-foreground">{d.name || "Document"}</span> —{" "}
                   <a
-                    className="text-purple-600 underline"
+                    className="text-primary hover:underline font-semibold"
                     href={d.url}
                     target="_blank"
                     rel="noreferrer"
                   >
-                    preview
+                    Preview Document
                   </a>
                 </li>
               ))}
             </ul>
           )}
 
-          <div className="flex gap-2 pt-4 border-t-[3px] border-border">
+          <div className="flex gap-2 pt-4 border-t border-border/20 justify-end">
             <button
               onClick={submit}
               disabled={submitting}
-              className="px-8 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50 mt-4 w-full md:w-auto"
+              className="btn-primary py-3 px-8 text-xs w-full sm:w-auto"
             >
-              {submitting ? "Submitting..." : "Submit Application"}
+              {submitting ? "Submitting Application..." : "Submit Application"}
             </button>
           </div>
         </div>

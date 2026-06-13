@@ -132,7 +132,7 @@ function AppInitializer() {
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <Provider store={store}>
-      <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light">
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true}>
         <div className={`${manrope.variable} ${cormorant.variable} ${manrope.className} flex min-h-screen flex-col bg-background text-foreground`}>
           <ClientOnly>
             <RouteProgress />

@@ -40,6 +40,7 @@ type ReturnRequest = {
   receivedAt?: string;
   refundedAt?: string;
   cancelledAt?: string;
+  createdAt?: string;
 };
 
 type Paged<T> = {
@@ -62,32 +63,34 @@ const RETURN_WINDOW_DAYS = Number(
   process.env.NEXT_PUBLIC_RETURN_WINDOW_DAYS || 7
 );
 
-function Pill({ text, color }: { text: string; color: string }) {
+function StatusBadge({ status }: { status: RRStatus }) {
+  const badgeStyle = () => {
+    switch (status) {
+      case "requested":
+        return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+      case "approved":
+        return "bg-indigo-500/10 text-indigo-500 border-indigo-500/20";
+      case "rejected":
+        return "bg-rose-500/10 text-rose-500 border-rose-500/20";
+      case "received":
+        return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+      case "refunded":
+        return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+      case "cancelled":
+        return "bg-muted text-muted-foreground border-border/40";
+      default:
+        return "bg-muted text-muted-foreground border-border/40";
+    }
+  };
+
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${color}`}
+      className={`inline-flex items-center px-2 py-0.5 border rounded-sm text-[10px] font-semibold uppercase tracking-wider ${badgeStyle()}`}
     >
-      {text}
+      {status}
     </span>
   );
 }
-
-const statusColor = (s: RRStatus) => {
-  switch (s) {
-    case "requested":
-      return "bg-blue-100 text-blue-800";
-    case "approved":
-      return "bg-indigo-100 text-indigo-800";
-    case "rejected":
-      return "bg-rose-100 text-rose-800";
-    case "received":
-      return "bg-yellow-100 text-yellow-800";
-    case "refunded":
-      return "bg-green-100 text-green-800";
-    case "cancelled":
-      return "bg-gray-100 text-gray-700";
-  }
-};
 
 const shortId = (id: string) =>
   id?.length > 10 ? `${id.slice(0, 6)}…${id.slice(-4)}` : id;
@@ -124,7 +127,6 @@ function AdminReturnsPage() {
     hasNext: false,
   });
 
-  // deliveredAt cache per orderId (ISO)
   const [deliveredAtCache, setDeliveredAtCache] = useState<
     Record<string, string | null>
   >({});
@@ -173,7 +175,6 @@ function AdminReturnsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch deliveredAt for visible rows and cache it
   useEffect(() => {
     const fetchDeliveredForOrders = async () => {
       const orderIds = Array.from(
@@ -248,7 +249,7 @@ function AdminReturnsPage() {
         };
       }
       await api.patch(`/admin/returns/${target._id}/status`, payload);
-      toast.success(`Marked ${nextStatus}`);
+      toast.success(`Marked return request as ${nextStatus}`);
       setOpen(false);
       setTarget(null);
       await fetchList(page);
@@ -271,29 +272,34 @@ function AdminReturnsPage() {
   return (
     <ProtectedRoute roles={["admin"]}>
       <AdminLayout>
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <h1 className="text-2xl font-semibold text-gray-900">Returns</h1>
+        <div className="flex items-center justify-between flex-wrap gap-4 border-b border-border/40 pb-5 mb-8">
+          <div>
+            <h1 className="display-font text-3xl font-semibold tracking-wide text-foreground">Return & Refund Requests</h1>
+            <p className="text-xs text-muted-foreground mt-1">
+              Audit customer claims, inspect attachments, configure refund amounts, and approve ticket lifecycles.
+            </p>
+          </div>
           <Link
             href="/admin/logs?tab=actions"
-            className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            className="btn px-4 py-2 text-xs font-semibold uppercase tracking-wider"
           >
-            View Logs
+            Audit Log Entries
           </Link>
         </div>
 
         {/* Filters */}
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <section className="bg-card/65 backdrop-blur-md border border-border/40 p-5 rounded-xl shadow-soft mb-8">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 text-xs">
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Status</label>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Status</label>
               <select
                 value={filters.status}
                 onChange={(e) =>
                   setFilters((f) => ({ ...f, status: e.target.value }))
                 }
-                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
               >
-                <option value="">All</option>
+                <option value="">All statuses</option>
                 {statuses.map((s) => (
                   <option key={s} value={s}>
                     {s}
@@ -302,7 +308,7 @@ function AdminReturnsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-600 mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
                 Order ID
               </label>
               <input
@@ -311,11 +317,11 @@ function AdminReturnsPage() {
                   setFilters((f) => ({ ...f, orderId: e.target.value }))
                 }
                 placeholder="e.g., 65f..d2a"
-                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-600 mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
                 User ID
               </label>
               <input
@@ -324,37 +330,39 @@ function AdminReturnsPage() {
                   setFilters((f) => ({ ...f, userId: e.target.value }))
                 }
                 placeholder="User ObjectId"
-                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-600 mb-1">From</label>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">From Date</label>
               <input
                 type="date"
                 value={filters.from}
+                aria-label="Filter start date selector"
                 onChange={(e) =>
                   setFilters((f) => ({ ...f, from: e.target.value }))
                 }
-                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-600 mb-1">To</label>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">To Date</label>
               <input
                 type="date"
                 value={filters.to}
+                aria-label="Filter end date selector"
                 onChange={(e) =>
                   setFilters((f) => ({ ...f, to: e.target.value }))
                 }
-                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
               />
             </div>
-            <div className="flex items-end gap-2 sm:col-span-2">
+            <div className="flex items-end gap-2 sm:col-span-2 pt-2">
               <button
                 onClick={() => fetchList(1)}
-                className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-500"
+                className="btn-primary px-5 py-2.5 text-xs font-semibold uppercase tracking-wider"
               >
-                Apply
+                Apply Filters
               </button>
               <button
                 onClick={() => {
@@ -367,57 +375,49 @@ function AdminReturnsPage() {
                   });
                   fetchList(1);
                 }}
-                className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="btn px-4 py-2.5 text-xs font-semibold uppercase tracking-wider"
               >
-                Reset
+                Reset Filters
               </button>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Table */}
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <section className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead className="bg-gray-50 text-gray-600">
-                <tr>
-                  <th className="text-left px-4 py-3">Requested</th>
-                  <th className="text-left px-4 py-3">Order</th>
-                  <th className="text-left px-4 py-3">User</th>
-                  <th className="text-left px-4 py-3">Items</th>
-                  <th className="text-left px-4 py-3">Status</th>
-                  <th className="text-left px-4 py-3">Attachment</th>
-                  <th className="text-left px-4 py-3">Return window</th>
-                  <th className="text-right px-4 py-3">Actions</th>
+            <table className="min-w-full text-xs">
+              <thead className="bg-secondary/25 border-b border-border/35">
+                <tr className="text-left font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+                  <th className="px-6 py-4 border-r border-border/20">Requested Date</th>
+                  <th className="px-6 py-4 border-r border-border/20">Order Details</th>
+                  <th className="px-6 py-4 border-r border-border/20">Customer User</th>
+                  <th className="px-6 py-4 border-r border-border/20">Target Items</th>
+                  <th className="px-6 py-4 border-r border-border/20 text-center">Status</th>
+                  <th className="px-6 py-4 border-r border-border/20">Proof Attachment</th>
+                  <th className="px-6 py-4 border-r border-border/20">Eligibility Window</th>
+                  <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {loading && (
+              <tbody className="divide-y divide-border/20 font-medium text-foreground">
+                {loading ? (
                   <tr>
-                    <td
-                      colSpan={8}
-                      className="px-4 py-6 text-center text-gray-500"
-                    >
-                      Loading...
+                    <td colSpan={8} className="px-6 py-10 text-center bg-secondary/5">
+                      <div className="h-5 w-5 animate-spin border-2 border-primary/20 border-t-primary rounded-full mx-auto" />
                     </td>
                   </tr>
-                )}
-                {!loading && resp.data.length === 0 && (
+                ) : resp.data.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={8}
-                      className="px-4 py-6 text-center text-gray-500"
-                    >
-                      No return requests
+                    <td colSpan={8} className="px-6 py-10 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground italic bg-secondary/5">
+                      No return requests currently compiled.
                     </td>
                   </tr>
-                )}
-                {!loading &&
+                ) : (
                   resp.data.map((rr) => {
                     const attachment = rr.attachments?.[0];
                     const orderId =
                       typeof rr.order === "string" ? rr.order : rr.order._id;
-                    const dAt = deliveredAtCache[orderId]; // may be undefined until fetched
+                    const dAt = deliveredAtCache[orderId];
                     const left = dAt ? daysLeft(dAt) : null;
                     const leftText =
                       left == null
@@ -426,16 +426,16 @@ function AdminReturnsPage() {
                         ? `${left} day${left === 1 ? "" : "s"} left`
                         : "Expired";
                     return (
-                      <tr key={rr._id} className="border-t border-gray-100">
-                        <td className="px-4 py-3 text-gray-900">
+                      <tr key={rr._id} className="hover:bg-secondary/5 transition-colors">
+                        <td className="px-6 py-4 border-r border-border/20 text-muted-foreground">
                           {new Date(rr.requestedAt).toLocaleString()}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-6 py-4 border-r border-border/20">
                           <div className="flex flex-col">
-                            <span className="font-mono">
+                            <span className="font-semibold text-foreground">
                               {shortId(orderId)}
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-[10px] text-muted-foreground mt-0.5">
                               {typeof rr.order !== "string" &&
                               rr.order.totalAmount != null
                                 ? `₹${rr.order.totalAmount}`
@@ -443,80 +443,77 @@ function AdminReturnsPage() {
                             </span>
                           </div>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-6 py-4 border-r border-border/20">
                           <div className="flex flex-col">
-                            <span className="text-gray-900">
+                            <span className="text-foreground font-semibold">
                               {typeof rr.user === "string"
                                 ? shortId(rr.user)
                                 : rr.user.name || rr.user.email}
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-[10px] text-muted-foreground mt-0.5 truncate max-w-[140px]" title={typeof rr.user !== "string" ? rr.user.email : ""}>
                               {typeof rr.user !== "string" ? rr.user.email : ""}
                             </span>
                           </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="space-y-1">
+                        <td className="px-6 py-4 border-r border-border/20">
+                          <div className="space-y-1.5 leading-relaxed">
                             {rr.items.map((it, i) => (
                               <div
                                 key={i}
-                                className="flex items-center justify-between gap-2"
+                                className="flex items-center justify-between gap-4 text-[10px]"
                               >
-                                <span className="text-gray-700">
+                                <span className="text-muted-foreground font-semibold">
                                   {(typeof it.product === "string"
                                     ? it.product
                                     : it.product?.title) || "Item"}{" "}
                                   × {it.qty}
                                 </span>
-                                <span className="text-gray-900">
+                                <span className="text-foreground font-bold">
                                   ₹{(it.qty * it.price).toLocaleString("en-IN")}
                                 </span>
                               </div>
                             ))}
                           </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <Pill
-                            text={rr.status}
-                            color={statusColor(rr.status)}
-                          />
+                        <td className="px-6 py-4 border-r border-border/20 text-center">
+                          <StatusBadge status={rr.status} />
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-6 py-4 border-r border-border/20">
                           {attachment ? (
                             <a
                               href={attachment.url}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-purple-700 hover:underline"
+                              className="text-primary hover:underline font-semibold"
                             >
                               {attachment.name || "attachment"}
                             </a>
                           ) : (
-                            <span className="text-gray-500">—</span>
+                            <span className="text-muted-foreground italic">—</span>
                           )}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-6 py-4 border-r border-border/20">
                           <span
-                            className={`text-sm ${
-                              left === 0 ? "text-rose-600" : "text-gray-800"
+                            className={`text-xs font-semibold ${
+                              left === 0 ? "text-rose-500" : "text-muted-foreground"
                             }`}
                             title={dAt || ""}
                           >
                             {leftText}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex flex-wrap gap-2 justify-end">
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex flex-wrap gap-2 justify-center">
                             <button
                               onClick={() => openDetails(rr)}
-                              className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                              className="btn px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider"
                             >
                               Details
                             </button>
                             {canTransition(rr, "approved") && (
                               <button
                                 onClick={() => openAction(rr, "approved")}
-                                className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                                className="btn px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider"
                               >
                                 Approve
                               </button>
@@ -524,7 +521,7 @@ function AdminReturnsPage() {
                             {canTransition(rr, "rejected") && (
                               <button
                                 onClick={() => openAction(rr, "rejected")}
-                                className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                                className="btn px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider"
                               >
                                 Reject
                               </button>
@@ -532,7 +529,7 @@ function AdminReturnsPage() {
                             {canTransition(rr, "received") && (
                               <button
                                 onClick={() => openAction(rr, "received")}
-                                className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                                className="btn px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider"
                               >
                                 Mark received
                               </button>
@@ -540,7 +537,7 @@ function AdminReturnsPage() {
                             {canTransition(rr, "refunded") && (
                               <button
                                 onClick={() => openAction(rr, "refunded")}
-                                className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                                className="btn px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider"
                               >
                                 Refund
                               </button>
@@ -548,7 +545,7 @@ function AdminReturnsPage() {
                             {canTransition(rr, "cancelled") && (
                               <button
                                 onClick={() => openAction(rr, "cancelled")}
-                                className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                                className="btn px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider"
                               >
                                 Cancel
                               </button>
@@ -557,14 +554,15 @@ function AdminReturnsPage() {
                         </td>
                       </tr>
                     );
-                  })}
+                  })
+                )}
               </tbody>
             </table>
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-            <div className="text-sm text-gray-600">
+          <div className="flex items-center justify-between px-6 py-4 border-t border-border/25 bg-secondary/10">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               Page {resp.page} of{" "}
               {Math.max(1, Math.ceil(resp.total / resp.limit))}
             </div>
@@ -572,27 +570,27 @@ function AdminReturnsPage() {
               <button
                 onClick={prevPage}
                 disabled={loading || page <= 1}
-                className="px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 disabled:opacity-50"
+                className="btn px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider disabled:opacity-50"
               >
                 Previous
               </button>
               <button
                 onClick={nextPage}
                 disabled={loading || !resp.hasNext}
-                className="px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 disabled:opacity-50"
+                className="btn px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider disabled:opacity-50"
               >
                 Next
               </button>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Action Modal */}
         {open && target && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-            <div className="w-full max-w-lg rounded-xl bg-white shadow-xl">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="w-full max-w-lg rounded-xl bg-card border border-border/40 shadow-xl overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border/20">
+                <h3 className="display-font text-lg font-semibold tracking-wide text-foreground">
                   Update Return Status
                 </h3>
                 <button
@@ -602,21 +600,21 @@ function AdminReturnsPage() {
                     setNote("");
                     setRefund({ method: "manual" });
                   }}
-                  className="px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
+                  className="btn px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider"
                 >
                   Close
                 </button>
               </div>
 
-              <div className="p-4 space-y-3 text-sm">
-                <div className="grid grid-cols-2 gap-3">
+              <div className="p-5 space-y-4 text-xs font-semibold text-foreground">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-gray-500">Request</div>
-                    <div className="font-mono">{shortId(target._id)}</div>
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Request ID</div>
+                    <div className="font-mono text-xs">{shortId(target._id)}</div>
                   </div>
                   <div>
-                    <div className="text-gray-500">Order</div>
-                    <div className="font-mono">
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Order ID</div>
+                    <div className="font-mono text-xs">
                       {typeof target.order === "string"
                         ? target.order
                         : target.order._id}
@@ -625,13 +623,14 @@ function AdminReturnsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
                     Next status
                   </label>
                   <select
                     value={nextStatus}
+                    aria-label="Next status selection"
                     onChange={(e) => setNextStatus(e.target.value as RRStatus)}
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                   >
                     {statuses.map((s) => (
                       <option
@@ -654,18 +653,19 @@ function AdminReturnsPage() {
                 </div>
 
                 {nextStatus === "refunded" && (
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-gray-700 mb-1">Method</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Method</label>
                       <select
                         value={refund.method}
+                        aria-label="Refund method selection"
                         onChange={(e) =>
                           setRefund((r) => ({
                             ...r,
                             method: e.target.value as any,
                           }))
                         }
-                        className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                        className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                       >
                         <option value="manual">manual</option>
                         <option value="bank">bank</option>
@@ -673,7 +673,7 @@ function AdminReturnsPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-gray-700 mb-1">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
                         Reference
                       </label>
                       <input
@@ -685,11 +685,11 @@ function AdminReturnsPage() {
                           }))
                         }
                         placeholder="txn/ref id"
-                        className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                        className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-700 mb-1">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
                         Amount (₹)
                       </label>
                       <input
@@ -704,14 +704,14 @@ function AdminReturnsPage() {
                               : undefined,
                           }))
                         }
-                        className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                        className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                       />
                     </div>
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-gray-700 mb-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
                     Note (optional)
                   </label>
                   <textarea
@@ -719,12 +719,12 @@ function AdminReturnsPage() {
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                     placeholder="Add a note/reason…"
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-100">
+              <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-border/20 bg-secondary/10">
                 <button
                   onClick={() => {
                     setOpen(false);
@@ -732,16 +732,16 @@ function AdminReturnsPage() {
                     setNote("");
                     setRefund({ method: "manual" });
                   }}
-                  className="px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="btn px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={submitAction}
                   disabled={submitting}
-                  className="px-4 py-1.5 rounded-md bg-purple-600 text-white hover:bg-purple-500 disabled:opacity-60"
+                  className="btn-primary px-5 py-2 text-xs font-semibold uppercase tracking-wider disabled:opacity-60"
                 >
-                  {submitting ? "Saving..." : "Update"}
+                  {submitting ? "Saving..." : "Update Ticket"}
                 </button>
               </div>
             </div>
@@ -750,47 +750,46 @@ function AdminReturnsPage() {
 
         {/* Details Modal */}
         {detailsOpen && detailsTarget && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-            <div className="w-full max-w-3xl max-h-[90vh] overflow-auto rounded-xl bg-white shadow-xl">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 sticky top-0 bg-white">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Return details
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="w-full max-w-3xl max-h-[90vh] overflow-auto rounded-xl bg-card border border-border/40 shadow-xl">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border/20 sticky top-0 bg-card z-10">
+                <h3 className="display-font text-lg font-semibold tracking-wide text-foreground">
+                  Return Ticket Details
                 </h3>
                 <button
                   onClick={() => {
                     setDetailsOpen(false);
                     setDetailsTarget(null);
                   }}
-                  className="px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
+                  className="btn px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider"
                 >
                   Close
                 </button>
               </div>
 
-              <div className="p-4 space-y-4 text-sm">
-                {/* Top meta */}
+              <div className="p-5 space-y-6 text-xs font-semibold text-foreground">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <div className="text-gray-500">Request ID</div>
-                    <div className="font-mono">{detailsTarget._id}</div>
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Request ID</div>
+                    <div className="font-mono text-xs">{detailsTarget._id}</div>
                   </div>
                   <div>
-                    <div className="text-gray-500">Requested</div>
-                    <div className="text-gray-900">
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Requested Time</div>
+                    <div className="text-foreground">
                       {new Date(detailsTarget.requestedAt).toLocaleString()}
                     </div>
                   </div>
                   <div>
-                    <div className="text-gray-500">Order</div>
-                    <div className="text-gray-900">
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Order Reference</div>
+                    <div className="text-foreground font-mono">
                       {typeof detailsTarget.order === "string"
                         ? detailsTarget.order
                         : detailsTarget.order._id}
                     </div>
                   </div>
                   <div>
-                    <div className="text-gray-500">User</div>
-                    <div className="text-gray-900">
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Customer User</div>
+                    <div className="text-foreground">
                       {typeof detailsTarget.user === "string"
                         ? detailsTarget.user
                         : `${
@@ -800,18 +799,14 @@ function AdminReturnsPage() {
                   </div>
                 </div>
 
-                {/* Status & return window */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <div className="text-gray-500">Status</div>
-                    <Pill
-                      text={detailsTarget.status}
-                      color={statusColor(detailsTarget.status)}
-                    />
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Ticket Status</div>
+                    <StatusBadge status={detailsTarget.status} />
                   </div>
                   <div>
-                    <div className="text-gray-500">Return window</div>
-                    <div className="text-gray-900">
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Eligibility Window</div>
+                    <div className="text-foreground">
                       {(() => {
                         const orderId =
                           typeof detailsTarget.order === "string"
@@ -830,49 +825,47 @@ function AdminReturnsPage() {
                   </div>
                 </div>
 
-                {/* Reason & note */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <div className="text-gray-500">Reason</div>
-                    <div className="text-gray-900 whitespace-pre-wrap">
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Return Reason</div>
+                    <div className="text-foreground whitespace-pre-wrap leading-relaxed">
                       {detailsTarget.reason || "—"}
                     </div>
                   </div>
                   <div>
-                    <div className="text-gray-500">Note</div>
-                    <div className="text-gray-900 whitespace-pre-wrap">
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Operator Notes</div>
+                    <div className="text-foreground whitespace-pre-wrap leading-relaxed">
                       {detailsTarget.note || "—"}
                     </div>
                   </div>
                 </div>
 
-                {/* Items */}
                 <div>
-                  <div className="text-gray-500 mb-1">Items</div>
-                  <div className="border border-gray-200 rounded-md overflow-hidden">
+                  <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Claim Items</div>
+                  <div className="border border-border/40 rounded-xl overflow-hidden">
                     <div className="overflow-x-auto">
-                      <table className="min-w-full text-sm">
-                        <thead className="bg-gray-50 text-gray-600">
-                          <tr>
-                            <th className="text-left px-3 py-2">Product</th>
-                            <th className="text-left px-3 py-2">Qty</th>
-                            <th className="text-left px-3 py-2">Price</th>
-                            <th className="text-left px-3 py-2">Amount</th>
+                      <table className="min-w-full text-xs">
+                        <thead className="bg-secondary/25 border-b border-border/35">
+                          <tr className="text-left font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+                            <th className="px-4 py-3 border-r border-border/20">Product Title</th>
+                            <th className="px-4 py-3 border-r border-border/20 text-center">Qty</th>
+                            <th className="px-4 py-3 border-r border-border/20 text-right">Price</th>
+                            <th className="px-4 py-3 text-right">Subtotal</th>
                           </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-border/20 font-medium text-foreground">
                           {detailsTarget.items.map((it, i) => (
-                            <tr key={i} className="border-t border-gray-100">
-                              <td className="px-3 py-2">
+                            <tr key={i} className="hover:bg-secondary/5 transition-colors">
+                              <td className="px-4 py-3 border-r border-border/20">
                                 {(typeof it.product === "string"
                                   ? it.product
                                   : it.product?.title) || "Item"}
                               </td>
-                              <td className="px-3 py-2">{it.qty}</td>
-                              <td className="px-3 py-2">
+                              <td className="px-4 py-3 border-r border-border/20 text-center">{it.qty}</td>
+                              <td className="px-4 py-3 border-r border-border/20 text-right">
                                 ₹{it.price.toLocaleString("en-IN")}
                               </td>
-                              <td className="px-3 py-2">
+                              <td className="px-4 py-3 text-right font-bold">
                                 ₹{(it.qty * it.price).toLocaleString("en-IN")}
                               </td>
                             </tr>
@@ -883,9 +876,8 @@ function AdminReturnsPage() {
                   </div>
                 </div>
 
-                {/* Attachment preview */}
                 <div>
-                  <div className="text-gray-500 mb-1">Attachment</div>
+                  <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Claim Attachment</div>
                   {detailsTarget.attachments?.[0] ? (
                     <div className="space-y-2">
                       {isImageUrl(detailsTarget.attachments[0].url) ? (
@@ -894,7 +886,7 @@ function AdminReturnsPage() {
                           alt={
                             detailsTarget.attachments[0].name || "attachment"
                           }
-                          className="max-h-64 rounded border border-gray-200 object-contain"
+                          className="max-h-64 rounded-xl border border-border/40 object-contain shadow-soft bg-white"
                           onError={(e) =>
                             ((e.currentTarget as HTMLImageElement).src =
                               "/fallback.png")
@@ -904,81 +896,80 @@ function AdminReturnsPage() {
                         <video
                           src={detailsTarget.attachments[0].url}
                           controls
-                          className="w-full rounded border border-gray-200"
+                          className="w-full rounded-xl border border-border/40 shadow-soft"
                         />
                       ) : (
                         <a
                           href={detailsTarget.attachments[0].url}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-purple-700 hover:underline"
+                          className="text-primary hover:underline font-bold"
                         >
-                          {detailsTarget.attachments[0].name || "Download"}
+                          {detailsTarget.attachments[0].name || "Download Asset File"}
                         </a>
                       )}
-                      <div className="text-xs text-gray-500">
+                      <div className="text-[10px]">
                         <a
                           href={detailsTarget.attachments[0].url}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-purple-700 hover:underline"
+                          className="text-primary hover:underline font-bold uppercase tracking-wider"
                         >
-                          Open in new tab
+                          Open in new browser tab
                         </a>
                       </div>
                     </div>
                   ) : (
-                    <div className="text-gray-700">—</div>
+                    <div className="text-muted-foreground italic">—</div>
                   )}
                 </div>
 
-                {/* Timeline */}
                 <div>
-                  <div className="text-gray-500 mb-1">Timeline</div>
-                  <div className="grid md:grid-cols-2 gap-3 text-sm">
+                  <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-2.5">Timeline Lifecycle</div>
+                  <div className="grid md:grid-cols-2 gap-3 text-[11px] text-muted-foreground">
                     <div>
-                      <span className="text-gray-500">Requested: </span>
-                      <span className="text-gray-900">
+                      <span className="font-bold text-foreground">Requested: </span>
+                      <span>
                         {detailsTarget.requestedAt
                           ? new Date(detailsTarget.requestedAt).toLocaleString()
                           : "—"}
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Approved: </span>
-                      <span className="text-gray-900">
+                      <span className="font-bold text-foreground">Approved: </span>
+                      <span>
                         {detailsTarget.approvedAt
                           ? new Date(detailsTarget.approvedAt).toLocaleString()
                           : "—"}
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Rejected: </span>
-                      <span className="text-gray-900">
+                      <span className="font-bold text-foreground">Rejected: </span>
+                      <span>
                         {detailsTarget.rejectedAt
                           ? new Date(detailsTarget.rejectedAt).toLocaleString()
                           : "—"}
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Received: </span>
-                      <span className="text-gray-900">
+                      <span className="font-bold text-foreground">Received: </span>
+                      <span>
                         {detailsTarget.receivedAt
                           ? new Date(detailsTarget.receivedAt).toLocaleString()
                           : "—"}
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Refunded: </span>
-                      <span className="text-gray-900">
+                      <span className="font-bold text-foreground">Refunded: </span>
+                      <span>
                         {detailsTarget.refundedAt
                           ? new Date(detailsTarget.refundedAt).toLocaleString()
                           : "—"}
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Cancelled: </span>
-                      <span className="text-gray-900">
+                      <span className="font-bold text-foreground">Cancelled: </span>
+                      <span>
                         {detailsTarget.cancelledAt
                           ? new Date(detailsTarget.cancelledAt).toLocaleString()
                           : "—"}
@@ -987,27 +978,26 @@ function AdminReturnsPage() {
                   </div>
                 </div>
 
-                {/* Refund info */}
                 {detailsTarget.status === "refunded" &&
                   detailsTarget.refund && (
-                    <div>
-                      <div className="text-gray-500 mb-1">Refund</div>
-                      <div className="grid md:grid-cols-3 gap-3">
+                    <div className="border-t border-border/25 pt-4">
+                      <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Refund Meta</div>
+                      <div className="grid md:grid-cols-3 gap-4">
                         <div>
-                          <div className="text-gray-500">Method</div>
-                          <div className="text-gray-900">
+                          <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Method</div>
+                          <div className="text-foreground font-semibold mt-0.5">
                             {detailsTarget.refund.method || "manual"}
                           </div>
                         </div>
                         <div>
-                          <div className="text-gray-500">Reference</div>
-                          <div className="text-gray-900">
+                          <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Reference</div>
+                          <div className="text-foreground font-semibold mt-0.5">
                             {detailsTarget.refund.reference || "—"}
                           </div>
                         </div>
                         <div>
-                          <div className="text-gray-500">Amount</div>
-                          <div className="text-gray-900">
+                          <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Amount</div>
+                          <div className="text-foreground font-semibold mt-0.5">
                             {detailsTarget.refund.amount != null
                               ? `₹${detailsTarget.refund.amount.toLocaleString(
                                   "en-IN"

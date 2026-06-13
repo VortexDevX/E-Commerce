@@ -78,25 +78,29 @@ function AdminProductsPage() {
   return (
     <ProtectedRoute roles={["admin"]}>
       <AdminLayout>
-        <div className="flex items-center justify-between font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
-          <h1 className="text-3xl text-foreground">Products</h1>
+        <div className="border-b border-border/40 pb-5 mb-8">
+          <h1 className="display-font text-3xl font-semibold tracking-wide text-foreground">Catalog Inventory</h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Global product inventory management, seller item moderations, and catalog pricing listings.
+          </p>
         </div>
 
         {/* Filters */}
-        <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-4 flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-8">
+        <div className="bg-card/65 backdrop-blur-md border border-border/40 p-5 rounded-xl shadow-soft flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-8">
           <input
             placeholder="Search by title or owner email…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all w-full md:w-96"
+            className="bg-card/60 border border-border/80 rounded-md px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/45 w-full md:w-96"
           />
           <div className="flex gap-3">
             <select
               value={status}
+              aria-label="Filter status"
               onChange={(e) => setStatus(e.target.value as any)}
-              className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
+              className="bg-card/60 border border-border/80 rounded-md px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary transition-all duration-200"
             >
-              <option value="all">All statuses</option>
+              <option value="all">All Statuses</option>
               <option value="active">Active</option>
               <option value="blocked">Blocked</option>
             </select>
@@ -104,90 +108,92 @@ function AdminProductsPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] overflow-x-auto mt-8">
-          <table className="min-w-full text-sm">
-            <thead className="bg-muted border-b-[3px] border-border">
-              <tr className="text-left font-black uppercase tracking-widest text-foreground">
-                <th className="px-5 py-4 border-r-[3px] border-border">Title</th>
-                <th className="px-5 py-4 border-r-[3px] border-border">Owner</th>
-                <th className="px-5 py-4 border-r-[3px] border-border text-center">Price</th>
-                <th className="px-5 py-4 border-r-[3px] border-border text-center">Stock</th>
-                <th className="px-5 py-4 border-r-[3px] border-border text-center">Status</th>
-                <th className="px-5 py-4 border-r-[3px] border-border text-center">Created</th>
-                <th className="px-5 py-4 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y-[3px] divide-border bg-card">
-              {loading ? (
-                <tr>
-                  <td className="px-4 py-6 text-gray-600" colSpan={7}>
-                    Loading...
-                  </td>
+        <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-xs">
+              <thead className="bg-secondary/25 border-b border-border/35">
+                <tr className="text-left font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+                  <th className="px-6 py-4 border-r border-border/20">Title</th>
+                  <th className="px-6 py-4 border-r border-border/20">Owner</th>
+                  <th className="px-6 py-4 border-r border-border/20 text-center">Price</th>
+                  <th className="px-6 py-4 border-r border-border/20 text-center">Stock</th>
+                  <th className="px-6 py-4 border-r border-border/20 text-center">Status</th>
+                  <th className="px-6 py-4 border-r border-border/20 text-center">Created</th>
+                  <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td className="px-4 py-6 text-gray-600" colSpan={7}>
-                    No products found.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((p) => (
-                  <tr
-                    key={p._id}
-                    className="hover:bg-muted/50 transition-colors"
-                  >
-                    <td className="px-5 py-4 border-r-[3px] border-border font-bold">
-                      <Link
-                        href={`/products/${p._id}`}
-                        className="text-primary hover:underline hover:text-foreground transition-colors max-w-[200px] truncate block"
-                        title={p.title}
-                      >
-                        {p.title}
-                      </Link>
-                    </td>
-                    <td className="px-5 py-4 border-r-[3px] border-border max-w-[200px] truncate" title={p.owner?.email || "—"}>
-                      <div className="font-bold uppercase tracking-widest text-[11px] text-foreground">{p.owner?.name || "—"}</div>
-                      <div className="text-[10px] text-muted-foreground font-bold tracking-widest mt-1">
-                        {p.owner?.email || "—"}
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 border-r-[3px] border-border text-center text-emerald-600 font-black tracking-widest text-[11px] whitespace-nowrap">{currency(p.price)}</td>
-                    <td className="px-5 py-4 border-r-[3px] border-border text-center">
-                      <span className="bg-primary/10 text-primary border-[2px] border-primary px-2 py-0.5 font-bold uppercase text-[11px] tracking-widest">{p.stock}</span>
-                    </td>
-                    <td className="px-5 py-4 border-r-[3px] border-border text-center">
-                      <span
-                        className={`inline-block w-full max-w-[100px] px-2 py-0.5 border-[3px] border-border shadow-[2px_2px_0px_#111] text-[10px] font-black uppercase tracking-widest truncate ${
-                          p.status === "active"
-                            ? "bg-emerald-400 text-emerald-950"
-                            : "bg-rose-400 text-rose-950"
-                        }`}
-                      >
-                        {p.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 border-r-[3px] border-border text-center text-foreground font-bold uppercase tracking-widest text-[11px] whitespace-nowrap">{shortDate(p.createdAt)}</td>
-                    <td className="px-5 py-4 text-center">
-                      <div className="flex gap-3 justify-center items-center flex-wrap">
-                        <button
-                          onClick={() => toggleStatus(p._id, p.status)}
-                          className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-[10px] tracking-widest text-foreground min-w-[80px]"
-                        >
-                          {p.status === "active" ? "Block" : "Unblock"}
-                        </button>
-                        <button
-                          onClick={() => deleteProduct(p._id)}
-                          className="px-3 py-1.5 border-[3px] border-rose-600 bg-rose-600 shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-white font-bold uppercase text-[10px] tracking-widest"
-                        >
-                          Delete
-                        </button>
-                      </div>
+              </thead>
+              <tbody className="divide-y divide-border/20">
+                {loading ? (
+                  <tr>
+                    <td className="px-6 py-10 text-center bg-secondary/5" colSpan={7}>
+                      <div className="h-5 w-5 animate-spin border-2 border-primary/20 border-t-primary rounded-full mx-auto" />
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td className="px-6 py-10 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground italic bg-secondary/5" colSpan={7}>
+                      No products found.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((p) => (
+                    <tr
+                      key={p._id}
+                      className="hover:bg-secondary/5 transition-colors"
+                    >
+                      <td className="px-6 py-4 border-r border-border/20 font-semibold">
+                        <Link
+                          href={`/products/${p._id}`}
+                          className="text-primary hover:underline hover:text-foreground transition-colors max-w-[200px] truncate block"
+                          title={p.title}
+                        >
+                          {p.title}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 border-r border-border/20 max-w-[200px] truncate" title={p.owner?.email || "—"}>
+                        <div className="font-semibold text-foreground">{p.owner?.name || "—"}</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">
+                          {p.owner?.email || "—"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 border-r border-border/20 text-center text-foreground font-semibold text-sm whitespace-nowrap">{currency(p.price)}</td>
+                      <td className="px-6 py-4 border-r border-border/20 text-center">
+                        <span className="font-bold text-foreground">{p.stock}</span>
+                      </td>
+                      <td className="px-6 py-4 border-r border-border/20 text-center">
+                        <span
+                          className={`px-2 py-0.5 rounded-sm border font-semibold uppercase tracking-wider text-[10px] ${
+                            p.status === "active"
+                              ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                              : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                          }`}
+                        >
+                          {p.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 border-r border-border/20 text-center text-muted-foreground font-semibold whitespace-nowrap">{shortDate(p.createdAt)}</td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex gap-2 justify-center items-center flex-wrap">
+                          <button
+                            onClick={() => toggleStatus(p._id, p.status)}
+                            className="btn px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider min-w-[80px]"
+                          >
+                            {p.status === "active" ? "Block" : "Unblock"}
+                          </button>
+                          <button
+                            onClick={() => deleteProduct(p._id)}
+                            className="btn px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-rose-400 border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/25"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </AdminLayout>
     </ProtectedRoute>

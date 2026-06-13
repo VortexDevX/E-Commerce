@@ -55,7 +55,6 @@ function ProfileInner() {
     [sellerStatus]
   );
 
-  // Sync form fields when user changes
   useEffect(() => {
     if (user) {
       setName(user.name);
@@ -86,7 +85,6 @@ function ProfileInner() {
       await api.post("/auth/forgot-password", { email: user.email });
       toast.success("Password reset link sent to your email");
     } catch (err: any) {
-      // Backend currently returns 404 if not found — we’ll still show success-like UX to avoid enumeration
       if (err?.response?.status === 404) {
         toast.success("If an account exists, a reset link has been sent");
       } else {
@@ -148,42 +146,42 @@ function ProfileInner() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-10">
-      <div className="border-b-[3px] border-border pb-4 mb-4">
-        <h1 className="text-4xl font-black uppercase tracking-widest text-foreground">Profile</h1>
-        <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground mt-2">
-          Manage your personal info, security, and addresses.
+      <div className="border-b border-border/40 pb-6 mb-4">
+        <h1 className="display-font text-4xl font-semibold tracking-wide text-foreground">Profile</h1>
+        <p className="text-sm text-muted-foreground mt-2">
+          Manage your personal info, security preferences, and delivery locations.
         </p>
       </div>
 
       {/* Basic Info */}
-      <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 space-y-6">
-        <h2 className="text-2xl font-black uppercase tracking-widest text-foreground">
+      <section className="bg-card/60 backdrop-blur-md border border-border/40 shadow-soft p-8 rounded-xl space-y-6">
+        <h2 className="display-font text-2xl font-semibold uppercase tracking-wide text-foreground border-b border-border/30 pb-3">
           Basic Information
         </h2>
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-5">
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Name</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Name</label>
             <input
-              className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+              className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">Email</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Email</label>
             <input
               type="email"
-              className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+              className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
         </div>
-        <div className="pt-2 border-t-[3px] border-border">
+        <div className="pt-4 border-t border-border/30">
           <button
             onClick={saveProfile}
             disabled={saving}
-            className="px-8 py-3 mt-4 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50"
+            className="btn-primary px-8 py-3 disabled:opacity-50"
           >
             {saving ? "Saving..." : "Save Changes"}
           </button>
@@ -191,66 +189,65 @@ function ProfileInner() {
       </section>
 
       {/* Security */}
-      <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 space-y-6">
-        <h2 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4">Security</h2>
-        <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-          For security, password changes happen via a reset link we email to
-          you.
+      <section className="bg-card/60 backdrop-blur-md border border-border/40 shadow-soft p-8 rounded-xl space-y-6">
+        <h2 className="display-font text-2xl font-semibold uppercase tracking-wide text-foreground border-b border-border/30 pb-3">Security</h2>
+        <p className="text-sm text-muted-foreground">
+          Password updates are handled securely by sending a verified link to your registered email address.
         </p>
         <button
           onClick={sendResetLink}
           disabled={sendingReset}
-          className="px-6 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50"
+          className="btn-primary px-6 py-3 disabled:opacity-50"
         >
           {sendingReset ? "Sending..." : "Send password reset link"}
         </button>
       </section>
 
       {/* Addresses */}
-      <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 space-y-6">
-        <h2 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4">Addresses</h2>
+      <section className="bg-card/60 backdrop-blur-md border border-border/40 shadow-soft p-8 rounded-xl space-y-6">
+        <h2 className="display-font text-2xl font-semibold uppercase tracking-wide text-foreground border-b border-border/30 pb-3">Addresses</h2>
 
         {/* Add new */}
-        <div className="grid md:grid-cols-3 gap-3">
+        <div className="grid md:grid-cols-3 gap-4">
           <input
             placeholder="Label (e.g., Home)"
-            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+            className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
             value={newAddr.label || ""}
             onChange={(e) => setNewAddr({ ...newAddr, label: e.target.value })}
           />
           <input
             placeholder="Line 1"
-            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+            className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
             value={newAddr.line1 || ""}
             onChange={(e) => setNewAddr({ ...newAddr, line1: e.target.value })}
           />
           <input
             placeholder="Line 2"
-            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+            className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
             value={newAddr.line2 || ""}
             onChange={(e) => setNewAddr({ ...newAddr, line2: e.target.value })}
           />
           <input
             placeholder="City"
-            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+            className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
             value={newAddr.city || ""}
             onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
           />
           <input
             placeholder="State"
-            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+            className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
             value={newAddr.state || ""}
             onChange={(e) => setNewAddr({ ...newAddr, state: e.target.value })}
           />
           <input
             placeholder="ZIP"
-            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+            className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
             value={newAddr.zip || ""}
             onChange={(e) => setNewAddr({ ...newAddr, zip: e.target.value })}
           />
           <input
             placeholder="Country"
-            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+            className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
             value={newAddr.country || ""}
             onChange={(e) =>
               setNewAddr({ ...newAddr, country: e.target.value })
@@ -258,64 +255,66 @@ function ProfileInner() {
           />
           <input
             placeholder="Phone"
-            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+            className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
             value={newAddr.phone || ""}
             onChange={(e) => setNewAddr({ ...newAddr, phone: e.target.value })}
           />
-          <label className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-foreground">
+          <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <input
               type="checkbox"
-              className="w-5 h-5 border-[3px] border-border text-primary rounded-none focus:ring-primary focus:ring-offset-0"
+              className="w-4 h-4 border border-border/80 text-primary rounded focus:ring-primary focus:ring-offset-0"
               checked={!!newAddr.isDefault}
               onChange={(e) =>
                 setNewAddr({ ...newAddr, isDefault: e.target.checked })
               }
             />
-            Make default
+            Make default address
           </label>
         </div>
         <div className="pt-2">
           <button
             onClick={addAddress}
-            className="px-6 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1"
+            className="btn-primary px-6 py-3"
           >
             Add Address
           </button>
         </div>
 
         {/* List */}
-        <div className="space-y-4 mt-8 pt-6 border-t-[3px] border-border">
+        <div className="space-y-4 mt-8 pt-6 border-t border-border/30">
           {addresses.length === 0 && (
-            <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">No addresses yet.</p>
+            <p className="text-muted-foreground text-sm">No addresses found.</p>
           )}
           {addresses.map((a: Address) => (
             <div
               key={a._id}
-              className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card border-[3px] border-border p-4 shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+              className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card/60 border border-border/40 p-5 rounded-lg shadow-sm hover:border-primary/30 transition-all duration-200"
             >
               <div className="space-y-1">
-                <p className="font-black uppercase tracking-widest text-foreground text-lg flex items-center gap-3">
-                  {a.label || "Address"}
+                <div className="flex items-center gap-3">
+                  <p className="font-semibold text-foreground text-base">
+                    {a.label || "Address"}
+                  </p>
                   {a.isDefault && (
-                    <span className="text-[10px] bg-emerald-300 border-[3px] border-emerald-950 font-black uppercase tracking-widest text-emerald-950 px-2 py-0.5 shadow-[2px_2px_0px_#111]">
+                    <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 font-semibold uppercase tracking-wider text-emerald-600 px-2 py-0.5 rounded-sm">
                       Default
                     </span>
                   )}
-                </p>
-                <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">
+                </div>
+                <p className="text-muted-foreground text-sm">
                   {[a.line1, a.line2, a.city, a.state, a.zip, a.country]
                     .filter(Boolean)
                     .join(", ")}
                 </p>
                 {a.phone && (
-                  <p className="text-foreground font-bold uppercase tracking-widest text-xs mt-1">📞 {a.phone}</p>
+                  <p className="text-muted-foreground text-xs">📞 {a.phone}</p>
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-3 mt-2 md:mt-0">
                 {!a.isDefault && (
                   <button
                     onClick={() => makeDefault(a._id!)}
-                    className="px-4 py-2 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-xs"
+                    className="btn px-4 py-2 text-xs"
                   >
                     Make Default
                   </button>
@@ -326,13 +325,13 @@ function ProfileInner() {
                       label: (a.label || "") + "",
                     })
                   }
-                  className="px-4 py-2 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-xs"
+                  className="btn px-4 py-2 text-xs"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => deleteAddress(a._id!)}
-                  className="px-4 py-2 border-[3px] border-rose-600 bg-rose-600 text-white shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none font-bold uppercase tracking-widest transition-colors flex items-center justify-center text-xs"
+                  className="px-4 py-2 border border-rose-500/30 bg-rose-500/10 text-rose-500 rounded-md hover:bg-rose-500 hover:text-white font-semibold uppercase tracking-wider transition-colors text-xs"
                 >
                   Delete
                 </button>
@@ -343,19 +342,19 @@ function ProfileInner() {
       </section>
 
       {/* Seller */}
-      <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 space-y-6">
-        <h2 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4">Seller Account</h2>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+      <section className="bg-card/60 backdrop-blur-md border border-border/40 shadow-soft p-8 rounded-xl space-y-6">
+        <h2 className="display-font text-2xl font-semibold uppercase tracking-wide text-foreground border-b border-border/30 pb-3">Seller Account</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+          <p className="text-sm text-muted-foreground">
             Status:{" "}
-            <span className="inline-flex items-center px-3 py-1 border-[3px] border-border shadow-[2px_2px_0px_#111] text-xs font-black bg-foreground text-background">
+            <span className="inline-flex items-center px-3 py-1 border border-border/50 rounded-sm text-xs font-semibold uppercase tracking-wider bg-secondary text-foreground ml-2">
               {sellerStatus}
             </span>
           </p>
           <button
             onClick={requestSeller}
             disabled={!canRequestSeller}
-            className="px-6 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50 text-sm w-fit"
+            className="btn-primary px-6 py-2.5 disabled:opacity-50 text-sm"
           >
             {canRequestSeller
               ? "Request Seller Access"
@@ -367,5 +366,4 @@ function ProfileInner() {
   );
 }
 
-// Disable SSR for this page
 export default dynamic(() => Promise.resolve(ProfilePage), { ssr: false });

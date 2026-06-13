@@ -101,11 +101,11 @@ export default function SearchBar() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setShowDropdown(true)}
           onBlur={() => setTimeout(() => setShowDropdown(false), 180)}
-          className="w-full border border-border bg-white py-3 pl-4 pr-12 text-sm text-foreground shadow-[0_10px_30px_rgba(26,31,44,0.06)]"
+          className="w-full border border-border/80 bg-card py-3 pl-4 pr-12 text-sm text-foreground transition-all duration-300 focus:border-primary focus:ring-1 focus:ring-primary rounded-md"
         />
         <button
           type="submit"
-          className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground"
+          className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-muted-foreground hover:bg-secondary/60 hover:text-foreground rounded-md"
           aria-label="Search"
         >
           <MagnifyingGlassIcon className="h-5 w-5" />

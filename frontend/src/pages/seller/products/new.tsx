@@ -15,20 +15,20 @@ function NewProductPage() {
           scope="seller"
           perm="seller:products:write"
           fallback={
-            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">
-              You don&apos;t have permission to add products.
+            <div className="bg-card/60 backdrop-blur-md border border-border/40 p-12 text-center rounded-xl shadow-soft">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">You do not have permission to add products.</p>
             </div>
           }
         >
-          <div className="space-y-2 mb-8 border-b-[3px] border-border pb-4">
-            <h1 className="text-3xl font-black uppercase tracking-widest text-foreground">
+          <div className="border-b border-border/40 pb-5 mb-8">
+            <h1 className="display-font text-3xl font-semibold tracking-wide text-foreground">
               Add Product
             </h1>
-            <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-              Create a new product listing for your store.
+            <p className="text-xs text-muted-foreground mt-1">
+              Create a new product listing with rich descriptions, specs, and gallery media.
             </p>
           </div>
-          <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6">
+          <div className="bg-card/60 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft">
             <ProductForm onSuccess={() => router.push("/seller/products")} />
           </div>
         </PermissionGate>

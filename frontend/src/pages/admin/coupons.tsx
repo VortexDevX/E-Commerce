@@ -29,6 +29,20 @@ type Coupon = {
 
 type Category = { _id: string; name: string; slug: string; active: boolean };
 
+function StatusBadge({ active }: { active: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 border rounded-sm text-[10px] font-semibold uppercase tracking-wider ${
+        active
+          ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+          : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+      }`}
+    >
+      {active ? "Active" : "Inactive"}
+    </span>
+  );
+}
+
 export default function AdminCouponsPage() {
   const { user } = useAuth();
   const canRead = hasPerm(user as any, "coupons:read");
@@ -36,8 +50,6 @@ export default function AdminCouponsPage() {
 
   const [list, setList] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // categories for scope
   const [categories, setCategories] = useState<Category[]>([]);
 
   // editor state
@@ -65,7 +77,7 @@ export default function AdminCouponsPage() {
       if (couponsRes) setList(couponsRes.data || []);
       setCategories((catsRes.data || []).filter((c: Category) => c.active));
     } catch {
-      if (canRead) toast.error("Failed to load");
+      if (canRead) toast.error("Failed to load coupons");
     } finally {
       setLoading(false);
     }
@@ -78,7 +90,7 @@ export default function AdminCouponsPage() {
 
   const startCreate = () => {
     if (!canWrite) {
-      toast.error("You don’t have permission to create coupons");
+      toast.error("You don't have permission to create coupons");
       return;
     }
     setEditing(null);
@@ -102,7 +114,7 @@ export default function AdminCouponsPage() {
 
   const startEdit = (c: Coupon) => {
     if (!canWrite) {
-      toast.error("You don’t have permission to edit coupons");
+      toast.error("You don't have permission to edit coupons");
       return;
     }
     setEditing(c);
@@ -126,7 +138,7 @@ export default function AdminCouponsPage() {
 
   const save = async () => {
     if (!canWrite) {
-      toast.error("You don’t have permission to modify coupons");
+      toast.error("You don't have permission to modify coupons");
       return;
     }
     const payload: any = { ...form };
@@ -147,10 +159,10 @@ export default function AdminCouponsPage() {
     try {
       if (editing) {
         await api.patch(`/admin/coupons/${editing._id}`, payload);
-        toast.success("Coupon updated");
+        toast.success("Coupon updated successfully");
       } else {
         await api.post("/admin/coupons", payload);
-        toast.success("Coupon created");
+        toast.success("Coupon created successfully");
       }
       setEditing(null);
       setEditorOpen(false);
@@ -182,91 +194,98 @@ export default function AdminCouponsPage() {
 
   const toggleActive = async (c: Coupon) => {
     if (!canWrite) {
-      toast.error("You don’t have permission to update coupons");
+      toast.error("You don't have permission to update coupons");
       return;
     }
     try {
       await api.patch(`/admin/coupons/${c._id}`, { active: !c.active });
       load();
     } catch {
-      toast.error("Failed to update");
+      toast.error("Failed to update status");
     }
   };
 
   const del = async (c: Coupon) => {
     if (!canWrite) {
-      toast.error("You don’t have permission to delete coupons");
+      toast.error("You don't have permission to delete coupons");
       return;
     }
     if (!confirm(`Delete coupon ${c.code}?`)) return;
     try {
       await api.delete(`/admin/coupons/${c._id}`);
-      toast.success("Deleted");
+      toast.success("Deleted successfully");
       load();
     } catch {
       toast.error("Delete failed");
     }
   };
 
-  // Columns count depends on write perms (actions column)
   const colCount = useMemo(() => (canWrite ? 11 : 10), [canWrite]);
 
   return (
     <ProtectedRoute roles={["admin", "subadmin"]}>
       <AdminLayout>
-        <div className="flex items-center justify-between font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
-          <h1 className="text-3xl text-foreground">Coupons</h1>
+        <div className="flex items-center justify-between border-b border-border/40 pb-5 mb-8 flex-wrap gap-4">
+          <div>
+            <h1 className="display-font text-3xl font-semibold tracking-wide text-foreground">Discount Coupons</h1>
+            <p className="text-xs text-muted-foreground mt-1">
+              Configure seasonal discounts, fixed rates, usage parameters, and merchant codes.
+            </p>
+          </div>
           <PermissionGate perm="coupons:write">
             <button
               onClick={startCreate}
-              className="px-6 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1"
+              className="btn-primary px-5 py-2.5 text-xs font-semibold uppercase tracking-wider"
             >
-              + New Coupon
+              + Create Coupon
             </button>
           </PermissionGate>
         </div>
 
         {!canRead ? (
-          <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">
-            You don&apos;t have access to Coupons.
+          <div className="bg-card/60 backdrop-blur-md border border-border/40 p-8 rounded-xl shadow-soft text-center text-xs text-muted-foreground font-semibold uppercase tracking-wider">
+            You don&apos;t have access to Coupons logs or editor.
           </div>
         ) : (
           <>
             {/* Editor (write only) */}
             {editorOpen && canWrite && (
-              <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 mb-8">
-                <div className="grid md:grid-cols-3 gap-6">
+              <div className="bg-card/65 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft mb-8">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/30 pb-2 mb-4">
+                  {editing ? "Update Coupon Metadata" : "Create New Coupon Schema"}
+                </h3>
+                <div className="grid md:grid-cols-3 gap-6 text-xs font-semibold">
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
-                      Code
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Coupon Code
                     </label>
                     <input
                       value={form.code || ""}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, code: e.target.value }))
                       }
-                      className="w-full bg-white border border-gray-300 rounded px-3 py-2"
-                      placeholder="SAVE10"
+                      className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
+                      placeholder="e.g. SAVE10"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
-                      Type
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Rate Type
                     </label>
                     <select
                       value={form.type || "percent"}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, type: e.target.value as any }))
                       }
-                      className="w-full bg-white border border-gray-300 rounded px-3 py-2"
+                      className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                     >
-                      <option value="percent">Percent</option>
-                      <option value="fixed">Fixed</option>
+                      <option value="percent">Percentage Discount</option>
+                      <option value="fixed">Fixed Currency Discount</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
-                      Value
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Discount Value
                     </label>
                     <input
                       type="number"
@@ -278,14 +297,14 @@ export default function AdminCouponsPage() {
                           value: Number(e.target.value),
                         }))
                       }
-                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
+                      className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                       placeholder="10"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
-                      Active
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Initial Status
                     </label>
                     <select
                       value={String(form.active ?? true)}
@@ -295,16 +314,16 @@ export default function AdminCouponsPage() {
                           active: e.target.value === "true",
                         }))
                       }
-                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
+                      className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                     >
-                      <option value="true">Active</option>
-                      <option value="false">Inactive</option>
+                      <option value="true">Active and Redeemable</option>
+                      <option value="false">Inactive / Disabled</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
-                      Min Order Value
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Min Order Value Requirement
                     </label>
                     <input
                       type="number"
@@ -316,15 +335,15 @@ export default function AdminCouponsPage() {
                           minOrderValue: Number(e.target.value),
                         }))
                       }
-                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
+                      className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                       placeholder="0"
                     />
                   </div>
 
                   {form.type === "percent" && (
                     <div>
-                      <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
-                        Max Discount (cap)
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                        Max Discount Cap Value
                       </label>
                       <input
                         type="number"
@@ -336,15 +355,15 @@ export default function AdminCouponsPage() {
                             maxDiscount: Number(e.target.value),
                           }))
                         }
-                        className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
+                        className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                         placeholder="Optional"
                       />
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
-                      Global Usage Limit
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Global Total Usage Limit
                     </label>
                     <input
                       type="number"
@@ -356,14 +375,14 @@ export default function AdminCouponsPage() {
                           usageLimit: Number(e.target.value) || undefined,
                         }))
                       }
-                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
-                      placeholder="Optional"
+                      className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
+                      placeholder="Optional limit"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
-                      Per User Limit
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Per User Usage Limit
                     </label>
                     <input
                       type="number"
@@ -375,14 +394,14 @@ export default function AdminCouponsPage() {
                           perUserLimit: Number(e.target.value) || undefined,
                         }))
                       }
-                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
-                      placeholder="Optional"
+                      className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
+                      placeholder="Optional limit"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
-                      Starts At
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Activation Date (Starts At)
                     </label>
                     <input
                       type="datetime-local"
@@ -393,13 +412,13 @@ export default function AdminCouponsPage() {
                           startsAt: e.target.value || undefined,
                         }))
                       }
-                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
+                      className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
-                      Expires At
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Expiration Date (Expires At)
                     </label>
                     <input
                       type="datetime-local"
@@ -410,28 +429,28 @@ export default function AdminCouponsPage() {
                           expiresAt: e.target.value || undefined,
                         }))
                       }
-                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
+                      className="w-full bg-card/60 border border-border/80 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
                     />
                   </div>
 
-                  <div className="md:col-span-3">
-                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
-                      Description
+                  <div className="md:col-span-2">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Description Note
                     </label>
                     <input
                       value={form.description || ""}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, description: e.target.value }))
                       }
-                      className="w-full bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
-                      placeholder="Optional, shown in admin only"
+                      className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
+                      placeholder="e.g. VIP Member Discount, Black Friday Season"
                     />
                   </div>
 
                   {/* Scope: categories */}
                   <div className="md:col-span-3">
-                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-4">
-                      Allowed Categories (apply to matching items)
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                      Allowed Scoped Categories
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {categories.map((c) => {
@@ -441,13 +460,16 @@ export default function AdminCouponsPage() {
                         return (
                           <label
                             key={c._id}
-                            className={`inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest border-[3px] border-border px-3 py-1.5 cursor-pointer transition-all ${
-                              checked ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111]" : "bg-card text-foreground hover:shadow-[2px_2px_0px_#111]"
+                            className={`inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider border rounded-md px-3 py-1.5 cursor-pointer transition-all duration-200 ${
+                              checked
+                                ? "bg-primary/10 border-primary text-primary"
+                                : "bg-card/40 border-border/30 text-muted-foreground hover:text-foreground"
                             }`}
                           >
                             <input
                               type="checkbox"
                               checked={checked}
+                              className="w-3.5 h-3.5 text-primary border-border focus:ring-0 focus:ring-offset-0"
                               onChange={(e) => {
                                 setForm((f) => {
                                   const arr = new Set(
@@ -467,15 +489,15 @@ export default function AdminCouponsPage() {
                         );
                       })}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Leave all unchecked to apply to all categories.
+                    <p className="text-[10px] text-muted-foreground mt-1.5 italic">
+                      Leave all unselected to apply discount universally across all product categories.
                     </p>
                   </div>
 
                   {/* Scope: brands */}
                   <div className="md:col-span-3">
-                    <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
-                      Allowed Brands (comma-separated)
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Allowed Scoped Brands (Comma-separated)
                     </label>
                     <input
                       value={
@@ -492,153 +514,141 @@ export default function AdminCouponsPage() {
                             .filter(Boolean),
                         }))
                       }
-                      className="w-full bg-white border border-gray-300 rounded px-3 py-2"
-                      placeholder="ASUS, Samsung"
+                      className="w-full bg-card/60 border border-border/88 rounded-md px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-primary transition-all duration-200"
+                      placeholder="e.g. Prada, Rolex, Gucci"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Leave empty to apply to all brands.
+                    <p className="text-[10px] text-muted-foreground mt-1.5 italic">
+                      Leave empty to apply discount to all manufacturer brands.
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-8 flex gap-3">
-                  <button
-                    onClick={save}
-                    className="px-6 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1"
-                  >
-                    {editing ? "Update" : "Create"}
-                  </button>
+                <div className="mt-8 flex gap-3 pt-4 border-t border-border/20 justify-end">
                   <button
                     onClick={cancelEdit}
-                    className="px-6 py-2 border-[3px] border-border bg-card text-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1"
+                    className="btn px-5 py-2.5 text-xs font-semibold uppercase tracking-wider"
                   >
                     Cancel
+                  </button>
+                  <button
+                    onClick={save}
+                    className="btn-primary px-5 py-2.5 text-xs font-semibold uppercase tracking-wider"
+                  >
+                    {editing ? "Update Coupon" : "Create Coupon"}
                   </button>
                 </div>
               </div>
             )}
 
             {/* Table */}
-            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="text-left text-gray-600">
-                    <th className="px-4 py-3">Code</th>
-                    <th className="px-4 py-3">Type</th>
-                    <th className="px-4 py-3">Value</th>
-                    <th className="px-4 py-3">Active</th>
-                    <th className="px-4 py-3">Scope</th>
-                    <th className="px-4 py-3">Window</th>
-                    <th className="px-4 py-3">Min</th>
-                    <th className="px-4 py-3">MaxCap</th>
-                    <th className="px-4 py-3">Usage</th>
-                    <th className="px-4 py-3">PerUser</th>
-                    {canWrite && (
-                      <th className="px-4 py-3 text-right">Actions</th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td
-                        className="px-4 py-6 text-gray-600"
-                        colSpan={colCount}
-                      >
-                        Loading…
-                      </td>
+            <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs">
+                  <thead className="bg-secondary/25 border-b border-border/35">
+                    <tr className="text-left font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+                      <th className="px-6 py-4 border-r border-border/20">Code</th>
+                      <th className="px-6 py-4 border-r border-border/20">Type</th>
+                      <th className="px-6 py-4 border-r border-border/20 text-right">Value</th>
+                      <th className="px-6 py-4 border-r border-border/20 text-center">Active</th>
+                      <th className="px-6 py-4 border-r border-border/20">Categories & Brands Scope</th>
+                      <th className="px-6 py-4 border-r border-border/20">Date Window</th>
+                      <th className="px-6 py-4 border-r border-border/20 text-right">Min Order</th>
+                      <th className="px-6 py-4 border-r border-border/20 text-right">Max Cap</th>
+                      <th className="px-6 py-4 border-r border-border/20 text-center">Usage Count</th>
+                      <th className="px-6 py-4 border-r border-border/20 text-center">Per User</th>
+                      {canWrite && (
+                        <th className="px-6 py-4 text-center">Actions</th>
+                      )}
                     </tr>
-                  ) : !list.length ? (
-                    <tr>
-                      <td
-                        className="px-4 py-6 text-gray-600"
-                        colSpan={colCount}
-                      >
-                        No coupons
-                      </td>
-                    </tr>
-                  ) : (
-                    list.map((c) => (
-                      <tr
-                        key={c._id}
-                        className="border-t border-gray-200 text-gray-900"
-                      >
-                        <td className="px-4 py-3 font-medium">{c.code}</td>
-                        <td className="px-4 py-3">{c.type}</td>
-                        <td className="px-4 py-3">
-                          {c.type === "percent"
-                            ? `${c.value}%`
-                            : currency(c.value)}
+                  </thead>
+                  <tbody className="divide-y divide-border/20">
+                    {loading ? (
+                      <tr>
+                        <td className="px-6 py-10 text-center bg-secondary/5" colSpan={colCount}>
+                          <div className="h-5 w-5 animate-spin border-2 border-primary/20 border-t-primary rounded-full mx-auto" />
                         </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`px-2 py-0.5 border-[3px] border-border shadow-[2px_2px_0px_#111] text-xs font-black uppercase tracking-widest ${
-                              c.active
-                                ? "bg-emerald-400 text-emerald-950"
-                                : "bg-gray-200 text-gray-700"
-                            }`}
-                          >
-                            {c.active ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          {c.allowedCategories && c.allowedCategories.length
-                            ? `Cat: ${c.allowedCategories.join(", ")} `
-                            : "Cat: All "}
-                          {c.allowedBrands && c.allowedBrands.length
-                            ? `| Brand: ${c.allowedBrands.join(", ")}`
-                            : "| Brand: All"}
-                        </td>
-                        <td className="px-4 py-3">
-                          {c.startsAt
-                            ? new Date(c.startsAt).toLocaleString()
-                            : "—"}{" "}
-                          →{" "}
-                          {c.expiresAt
-                            ? new Date(c.expiresAt).toLocaleString()
-                            : "—"}
-                        </td>
-                        <td className="px-4 py-3">
-                          {c.minOrderValue ? currency(c.minOrderValue) : "—"}
-                        </td>
-                        <td className="px-4 py-3">
-                          {c.maxDiscount ? currency(c.maxDiscount) : "—"}
-                        </td>
-                        <td className="px-4 py-3">
-                          {c.usedCount ?? 0}
-                          {c.usageLimit ? ` / ${c.usageLimit}` : ""}
-                        </td>
-                        <td className="px-4 py-3">{c.perUserLimit ?? "—"}</td>
-
-                        {canWrite && (
-                          <td className="px-4 py-3 text-right">
-                            <div className="inline-flex gap-2 flex-wrap justify-end">
-                              <button
-                                onClick={() => startEdit(c)}
-                                className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-xs"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => toggleActive(c)}
-                                className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-xs"
-                              >
-                                {c.active ? "Disable" : "Enable"}
-                              </button>
-                              <button
-                                onClick={() => del(c)}
-                                className="px-3 py-1.5 border-[3px] border-rose-600 bg-rose-600 shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-white font-bold uppercase text-xs"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        )}
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : !list.length ? (
+                      <tr>
+                        <td className="px-6 py-10 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground italic bg-secondary/5" colSpan={colCount}>
+                          No active or inactive coupons configured.
+                        </td>
+                      </tr>
+                    ) : (
+                      list.map((c) => (
+                        <tr
+                          key={c._id}
+                          className="hover:bg-secondary/5 transition-colors font-medium text-foreground"
+                        >
+                          <td className="px-6 py-4 border-r border-border/20 font-bold text-primary">{c.code}</td>
+                          <td className="px-6 py-4 border-r border-border/20 text-muted-foreground uppercase">{c.type}</td>
+                          <td className="px-6 py-4 border-r border-border/20 text-right font-semibold">
+                            {c.type === "percent"
+                              ? `${c.value}%`
+                              : currency(c.value)}
+                          </td>
+                          <td className="px-6 py-4 border-r border-border/20 text-center">
+                            <StatusBadge active={c.active} />
+                          </td>
+                          <td className="px-6 py-4 border-r border-border/20 text-xs text-muted-foreground">
+                            {c.allowedCategories && c.allowedCategories.length
+                              ? `Cat: ${c.allowedCategories.join(", ")} `
+                              : "Cat: All "}
+                            {c.allowedBrands && c.allowedBrands.length
+                              ? `| Brand: ${c.allowedBrands.join(", ")}`
+                              : "| Brand: All"}
+                          </td>
+                          <td className="px-6 py-4 border-r border-border/20 text-muted-foreground whitespace-nowrap">
+                            {c.startsAt
+                              ? new Date(c.startsAt).toLocaleDateString()
+                              : "—"}{" "}
+                            →{" "}
+                            {c.expiresAt
+                              ? new Date(c.expiresAt).toLocaleDateString()
+                              : "—"}
+                          </td>
+                          <td className="px-6 py-4 border-r border-border/20 text-right text-muted-foreground font-semibold">
+                            {c.minOrderValue ? currency(c.minOrderValue) : "—"}
+                          </td>
+                          <td className="px-6 py-4 border-r border-border/20 text-right text-muted-foreground font-semibold">
+                            {c.maxDiscount ? currency(c.maxDiscount) : "—"}
+                          </td>
+                          <td className="px-6 py-4 border-r border-border/20 text-center font-semibold">
+                            {c.usedCount ?? 0}
+                            {c.usageLimit ? ` / ${c.usageLimit}` : ""}
+                          </td>
+                          <td className="px-6 py-4 border-r border-border/20 text-center text-muted-foreground">{c.perUserLimit ?? "—"}</td>
+
+                          {canWrite && (
+                            <td className="px-6 py-4 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                <button
+                                  onClick={() => startEdit(c)}
+                                  className="btn px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => toggleActive(c)}
+                                  className="btn px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider"
+                                >
+                                  {c.active ? "Disable" : "Enable"}
+                                </button>
+                                <button
+                                  onClick={() => del(c)}
+                                  className="btn border-rose-500/30 text-rose-500 hover:bg-rose-500/10 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </>
         )}

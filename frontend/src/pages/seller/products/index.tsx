@@ -26,10 +26,10 @@ type MyProduct = {
 
 function StatusBadge({ status }: { status: "active" | "blocked" }) {
   const map: Record<string, string> = {
-    active: "bg-emerald-400 text-emerald-950",
-    blocked: "bg-rose-400 text-rose-950",
+    active: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+    blocked: "bg-rose-500/10 text-rose-500 border-rose-500/20",
   };
-  return <span className={`px-2 py-0.5 border-[3px] border-border shadow-[2px_2px_0px_#111] text-xs font-black uppercase tracking-widest ${map[status]}`}>{status}</span>;
+  return <span className={`px-2 py-0.5 border rounded-sm text-[10px] font-semibold uppercase tracking-wider ${map[status]}`}>{status}</span>;
 }
 
 function SellerProductsPage() {
@@ -44,7 +44,6 @@ function SellerProductsPage() {
   );
   const [loading, setLoading] = useState(true);
 
-  // Bulk upload state
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [zipFile, setZipFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
@@ -53,7 +52,6 @@ function SellerProductsPage() {
     errors: Array<{ row: number; sku?: string; title?: string; error: string }>;
   } | null>(null);
 
-  // Help/guide
   const [showGuide, setShowGuide] = useState(false);
 
   const fetchMine = async () => {
@@ -69,7 +67,6 @@ function SellerProductsPage() {
 
   useEffect(() => {
     fetchMine();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canRead]);
 
   const filtered = useMemo(() => {
@@ -94,9 +91,10 @@ function SellerProductsPage() {
       toast.error("You don't have permission to delete products");
       return;
     }
-    if (!confirm("Delete this product? This cannot be undone.")) return;
+    if (!confirm("Are you sure you want to delete this product? This action is permanent.")) return;
     try {
       await api.delete(`/products/${id}`);
+      toast.success("Product deleted successfully");
       await fetchMine();
     } catch (e: any) {
       toast.error(e?.response?.data?.message || "Failed to delete product");
@@ -129,7 +127,6 @@ function SellerProductsPage() {
     );
   };
 
-  // Bulk upload helpers
   const downloadTemplate = async () => {
     try {
       const res = await api.get("/seller/bulk-products/template", {
@@ -188,7 +185,7 @@ function SellerProductsPage() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setResult(data);
-      toast.success("Import finished.");
+      toast.success("Import finished");
       fetchMine();
     } catch (e: any) {
       toast.error(e?.response?.data?.message || "Import failed");
@@ -214,27 +211,32 @@ function SellerProductsPage() {
           scope="seller"
           perm="seller:products:read"
           fallback={
-            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">
-              You don&apos;t have access to Products.
+            <div className="bg-card/60 backdrop-blur-md border border-border/40 p-12 text-center rounded-xl shadow-soft">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">You do not have permission to view store products.</p>
             </div>
           }
         >
-          {/* Header + actions */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
-            <h1 className="text-3xl text-foreground">
-              My Products
-            </h1>
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/40 pb-5 mb-8">
+            <div>
+              <h1 className="display-font text-3xl font-semibold tracking-wide text-foreground">
+                My Products
+              </h1>
+              <p className="text-xs text-muted-foreground mt-1">
+                Manage your product catalog, monitor stock availability, and configure metadata.
+              </p>
+            </div>
             <div className="flex flex-wrap items-center gap-3">
               <button
                 onClick={exportCsv}
-                className="px-4 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-xs"
+                className="btn py-2.5 px-4 text-xs font-semibold uppercase tracking-wider"
               >
                 Export CSV
               </button>
               <PermissionGate scope="seller" perm="seller:products:write">
                 <Link
                   href="/seller/products/new"
-                  className="px-6 py-2 border-[3px] border-primary bg-primary text-primary-foreground shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 block"
+                  className="btn-primary py-2.5 px-4 text-xs"
                 >
                   + Add Product
                 </Link>
@@ -242,134 +244,70 @@ function SellerProductsPage() {
             </div>
           </div>
 
-          {/* Bulk Upload */}
+          {/* Bulk Upload Section */}
           <PermissionGate scope="seller" perm="seller:products:write">
-            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 mb-8 space-y-6">
+            <div className="bg-card/60 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft mb-8 space-y-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <h2 className="text-xl font-black uppercase tracking-widest text-foreground">
-                  Bulk Upload (CSV + ZIP)
-                </h2>
-                <div className="flex flex-wrap gap-3">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">Bulk Inventory Upload (CSV)</h2>
+                <div className="flex flex-wrap gap-2.5">
                   <button
                     onClick={downloadTemplate}
-                    className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-xs"
+                    className="btn py-1.5 px-3 text-[10px]"
                   >
                     Download Template
                   </button>
                   <button
                     onClick={downloadCategoriesCsv}
-                    className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-xs"
+                    className="btn py-1.5 px-3 text-[10px]"
                     title="Use this to find category IDs or slugs"
                   >
-                    Download Categories
+                    Categories Reference
                   </button>
                   <button
                     onClick={() => setShowGuide((s) => !s)}
-                    className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-xs"
+                    className="btn py-1.5 px-3 text-[10px]"
                   >
-                    {showGuide ? "Hide Guide" : "How to format CSV"}
+                    {showGuide ? "Hide Instructions" : "Formatting Guide"}
                   </button>
                 </div>
               </div>
 
               {showGuide && (
-                <div className="border border-gray-200 rounded-md bg-gray-50 p-3 text-sm text-gray-700 space-y-2">
-                  <div className="font-medium text-gray-900">
-                    CSV/Excel formatting guide
-                  </div>
+                <div className="border border-border/40 rounded-lg bg-secondary/15 p-4 text-xs text-muted-foreground space-y-2.5 leading-relaxed">
+                  <div className="font-semibold text-foreground text-[13px]">CSV/Excel Formatting Guidelines</div>
                   <ul className="list-disc pl-5 space-y-1">
                     <li>
-                      Required columns: <strong>title</strong>,{" "}
-                      <strong>price</strong>, <strong>stock</strong>, and either{" "}
-                      <strong>category_id</strong> or{" "}
-                      <strong>category_slug</strong> (ID takes precedence).
+                      Required Columns: <strong className="text-foreground">title</strong>,{" "}
+                      <strong className="text-foreground">price</strong>, <strong className="text-foreground">stock</strong>, and either{" "}
+                      <strong className="text-foreground">category_id</strong> or{" "}
+                      <strong className="text-foreground">category_slug</strong>.
                     </li>
                     <li>
-                      Optional columns: description, sku, brand, discountPrice,
-                      tags (comma separated), attributes (JSON or
-                      key=value|key2=value2), seoTitle, seoDescription,
-                      shipWeight, shipLength, shipWidth, shipHeight, images
-                      (pipe-delimited), video (single).
+                      Optional Columns: description, sku, brand, discountPrice,
+                      tags (comma separated), attributes (JSON string), seoTitle, seoDescription,
+                      shipWeight, shipLength, shipWidth, shipHeight, images (pipe-separated).
                     </li>
                     <li>
-                      Categories: download <em>categories.csv</em> to find IDs
-                      and slugs. Unknown category → row error (no auto-create).
+                      Media Attachments: image columns can reference absolute URL addresses, or local file names included in the optional ZIP attachment.
                     </li>
                     <li>
-                      Media: up to <strong>5 images</strong> (pipe-delimited)
-                      plus <strong>1 video</strong> per product.
-                      <br />
-                      Each item can be an absolute URL or a filename that exists
-                      in your uploaded ZIP.
-                    </li>
-                    <li>
-                      ZIP: max size <strong>50MB</strong>. Allowed image types:
-                      jpg/jpeg/png/webp/gif; video: mp4/webm/mov/mkv.
-                    </li>
-                    <li>
-                      Updates: if <strong>sku</strong> matches an existing item,
-                      that product is updated. New images are{" "}
-                      <strong>appended</strong>; video is replaced only if you
-                      provide one in the CSV/ZIP.
+                      Media ZIP constraints: maximum 50MB file size limit.
                     </li>
                   </ul>
-                  <div className="mt-2">
-                    <div className="font-medium text-gray-900">
-                      Example (header + one row)
-                    </div>
-                    <pre className="overflow-auto bg-white border border-gray-200 rounded p-2 text-xs">
-                      {`title,price,stock,category_id,category_slug,description,sku,brand,discountPrice,tags,attributes,seoTitle,seoDescription,shipWeight,shipLength,shipWidth,shipHeight,images,video
-"Wireless Noise-Cancelling Headphones","4999","25","","accessories","Immersive sound with ANC","WH-1000XM-sku","Luxora","4499","featured, limited","{\\"color\\":\\"Black\\",\\"battery\\":\\"30h\\"}","Premium ANC Headphones","Best-in-class noise cancellation","0.45","20","18","5","image1.jpg|https://cdn.example.com/hero.png","demo.mp4"`}
+                  <div className="pt-2">
+                    <div className="font-semibold text-foreground mb-1.5">Example Row Preview:</div>
+                    <pre className="overflow-auto bg-card border border-border/40 rounded-lg p-3 text-[11px] font-mono text-foreground leading-normal whitespace-pre">
+                      {`title,price,stock,category_id,category_slug,description,sku,brand,discountPrice,tags,images
+"Premium Silk Scarf","2999","15","","scarves","100% genuine Mulberry silk scarf","SLK-SCRF-001","Luxora","2499","accessories, luxury","scarf1.jpg|scarf2.jpg"`}
                     </pre>
-                  </div>
-                  <div className="mt-1">
-                    <div className="font-medium text-gray-900">
-                      Tips for Excel/Numbers/Sheets
-                    </div>
-                    <ul className="list-disc pl-5 space-y-1">
-                      <li>
-                        Format <strong>SKU</strong> column as{" "}
-                        <strong>Text</strong> to preserve leading zeros.
-                      </li>
-                      <li>
-                        Save as <strong>CSV (UTF‑8)</strong>. Avoid XLS/XLSX
-                        when uploading.
-                      </li>
-                      <li>
-                        Don’t include currency symbols in price; use plain
-                        numbers (e.g., 4999).
-                      </li>
-                      <li>Avoid extra commas or line breaks inside cells.</li>
-                    </ul>
-                  </div>
-                  <div className="mt-1">
-                    <div className="font-medium text-gray-900">
-                      Common errors & fixes
-                    </div>
-                    <ul className="list-disc pl-5 space-y-1">
-                      <li>
-                        Unknown category → use valid category_id or
-                        category_slug from categories.csv.
-                      </li>
-                      <li>
-                        Images exceed limit → only first 5 used; extras ignored.
-                      </li>
-                      <li>
-                        Referenced filename missing in ZIP → ensure the exact
-                        filename is included.
-                      </li>
-                      <li>
-                        Invalid price/stock → use non‑negative numbers only.
-                      </li>
-                    </ul>
                   </div>
                 </div>
               )}
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
-                    CSV ZIP
+              <div className="grid md:grid-cols-2 gap-6 pt-2">
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                    Product CSV File
                   </label>
                   <input
                     type="file"
@@ -380,26 +318,25 @@ function SellerProductsPage() {
                   />
                   <label
                     htmlFor="csv-upload"
-                    className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all cursor-pointer font-bold uppercase tracking-widest text-sm"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md border border-border/85 bg-card/50 text-xs font-semibold uppercase tracking-wider text-foreground hover:bg-card hover:border-primary/40 cursor-pointer transition-all duration-200"
                   >
                     <svg
-                      className="w-4 h-4 text-foreground"
+                      className="w-4 h-4 text-primary"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
                       <path d="M4 3a2 2 0 00-2 2v2h2V5h12v10H4v-2H2v2a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4z" />
                       <path d="M9 7v3H6l4 4 4-4h-3V7H9z" />
                     </svg>
-                    Choose file
+                    {csvFile ? csvFile.name : "Select CSV file"}
                   </label>
-                  <p className="text-xs text-muted-foreground mt-2 font-bold tracking-widest px-1">
-                    Required: title, price, stock, and category_id or
-                    category_slug.
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Select a UTF-8 encoded product sheet.
                   </p>
                 </div>
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-widest text-foreground mb-2">
-                    Media ZIP (optional)
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                    Image Media ZIP (optional)
                   </label>
                   <input
                     type="file"
@@ -410,60 +347,61 @@ function SellerProductsPage() {
                   />
                   <label
                     htmlFor="zip-upload"
-                    className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all cursor-pointer font-bold uppercase tracking-widest text-sm"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md border border-border/85 bg-card/50 text-xs font-semibold uppercase tracking-wider text-foreground hover:bg-card hover:border-primary/40 cursor-pointer transition-all duration-200"
                   >
                     <svg
-                      className="w-4 h-4 text-foreground"
+                      className="w-4 h-4 text-primary"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
                       <path d="M4 3a2 2 0 00-2 2v2h2V5h12v10H4v-2H2v2a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4z" />
                       <path d="M9 7v3H6l4 4 4-4h-3V7H9z" />
                     </svg>
-                    Choose file
+                    {zipFile ? zipFile.name : "Select ZIP archive"}
                   </label>
-                  <p className="text-xs text-muted-foreground mt-2 font-bold tracking-widest px-1">
-                    Up to 5 images and 1 video per product. Max 50MB.
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Contains referenced images in CSV. Max 50MB.
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4 border-t-[3px] border-border">
+              <div className="flex gap-3 pt-5 border-t border-border/20">
                 <button
                   onClick={handleImport}
                   disabled={importing || !csvFile}
-                  className="px-6 py-2 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50"
+                  className="btn-primary py-2 px-5 text-xs"
                 >
-                  {importing ? "Importing..." : "Import"}
+                  {importing ? "Importing Data..." : "Run Import"}
                 </button>
                 {result?.errors?.length ? (
                   <button
                     onClick={downloadErrorsCsv}
-                    className="px-6 py-2 border-[3px] border-border bg-card text-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1"
+                    className="btn py-2 px-4 text-xs"
                   >
-                    Download errors CSV
+                    Download Error Log
                   </button>
                 ) : null}
               </div>
 
               {result && (
-                <div className="text-sm text-gray-700">
+                <div className="text-xs text-muted-foreground bg-secondary/10 p-3.5 rounded-lg border border-border/20 space-y-1">
+                  <div className="font-semibold text-foreground">Import Results:</div>
                   <div>
-                    Processed: {result.summary.rows} · Created:{" "}
+                    Processed Rows: {result.summary.rows} · Created:{" "}
                     {result.summary.created} · Updated: {result.summary.updated}{" "}
-                    · Errors: {result.summary.errors}
+                    · Errors encountered: {result.summary.errors}
                   </div>
                   {result.errors?.length > 0 && (
-                    <ul className="mt-2 list-disc pl-5 space-y-1">
+                    <ul className="mt-2 space-y-1 list-disc pl-5">
                       {result.errors.slice(0, 5).map((e, idx) => (
-                        <li key={idx}>
+                        <li key={idx} className="text-rose-400 font-mono text-[10px]">
                           Row {e.row}: {e.error}
                           {e.sku ? ` (SKU: ${e.sku})` : ""}
                           {e.title ? ` — ${e.title}` : ""}
                         </li>
                       ))}
                       {result.errors.length > 5 && (
-                        <li>...and {result.errors.length - 5} more</li>
+                        <li>...and {result.errors.length - 5} more errors.</li>
                       )}
                     </ul>
                   )}
@@ -472,91 +410,91 @@ function SellerProductsPage() {
             </div>
           </PermissionGate>
 
-          {/* Filters */}
-          <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          {/* Search and Filters */}
+          <div className="bg-card/65 backdrop-blur-md border border-border/40 p-5 rounded-xl shadow-soft flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full">
               <input
-                placeholder="Search title..."
+                placeholder="Search products by title..."
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all flex-1 md:max-w-xs"
+                className="bg-card/60 border border-border/80 rounded-md px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/45 flex-1 md:max-w-xs"
               />
               <div className="flex items-center gap-3">
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as any)}
-                  className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
+                  className="bg-card/60 border border-border/80 rounded-md px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary w-[140px]"
                 >
-                  <option value="all">All statuses</option>
-                  <option value="active">Active</option>
-                  <option value="blocked">Blocked</option>
+                  <option value="all">All Statuses</option>
+                  <option value="active">ACTIVE</option>
+                  <option value="blocked">BLOCKED</option>
                 </select>
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as any)}
-                  className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
+                  className="bg-card/60 border border-border/80 rounded-md px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary w-[160px]"
                 >
-                  <option value="newest">Newest</option>
-                  <option value="priceAsc">Price: Low → High</option>
-                  <option value="priceDesc">Price: High → Low</option>
+                  <option value="newest">NEWEST</option>
+                  <option value="priceAsc">PRICE: LOW TO HIGH</option>
+                  <option value="priceDesc">PRICE: HIGH TO LOW</option>
                 </select>
               </div>
             </div>
-            <div className="text-sm font-black uppercase tracking-widest text-muted-foreground self-end sm:self-auto shrink-0 px-2 flex items-center h-full">
-              {filtered.length} item{filtered.length === 1 ? "" : "s"}
+            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground self-end sm:self-auto shrink-0 px-2">
+              {filtered.length} item{filtered.length === 1 ? "" : "s"} found
             </div>
           </div>
 
           {/* Mobile list */}
-          <div className="md:hidden space-y-4 mt-4">
+          <div className="md:hidden space-y-4">
             {loading ? (
-              <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-bold uppercase tracking-widest text-sm">Loading...</div>
+              <div className="bg-card/60 border border-border/40 p-8 text-center rounded-xl">
+                <div className="h-5 w-5 animate-spin border-2 border-primary/20 border-t-primary rounded-full mx-auto" />
+              </div>
             ) : filtered.length === 0 ? (
-              <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-bold uppercase tracking-widest text-sm text-center">No products found.</div>
+              <div className="bg-card/60 border border-border/40 p-8 text-center rounded-xl text-xs font-semibold uppercase tracking-wider text-muted-foreground italic">No products found.</div>
             ) : (
               filtered.map((p) => {
                 const thumb = getImageUrl(p.images?.[0]);
                 return (
-                  <div key={p._id} className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-4 flex flex-col gap-3">
+                  <div key={p._id} className="bg-card/60 border border-border/40 p-5 rounded-xl shadow-soft flex flex-col gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-16 h-16 border-[3px] border-border bg-muted overflow-hidden shrink-0">
-                        <img
-                          src={thumb}
-                          alt={p.title}
-                          className="w-full h-full object-cover"
-                          onError={(e) =>
-                            ((e.currentTarget as HTMLImageElement).src =
-                              "/fallback.png")
-                          }
-                        />
-                      </div>
+                      <img
+                        src={thumb}
+                        alt={p.title}
+                        className="w-16 h-16 border border-border/40 rounded-lg object-cover bg-card"
+                        onError={(e) =>
+                          ((e.currentTarget as HTMLImageElement).src =
+                            "/fallback.png")
+                        }
+                      />
                       <div className="min-w-0 flex-1">
-                        <div className="font-black text-foreground uppercase tracking-widest text-sm truncate">{p.title}</div>
-                        <div className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase truncate mt-1">
+                        <div className="font-semibold text-foreground text-sm truncate">{p.title}</div>
+                        <div className="text-[10px] font-semibold text-muted-foreground tracking-wider uppercase truncate mt-0.5">
                           {p.brand ? `${p.brand} · ` : ""}
                           {p.category || ""}
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-2 grid grid-cols-2 gap-3 border-y-[3px] border-border py-3">
+                    <div className="mt-2 grid grid-cols-2 gap-3 border-y border-border/20 py-3 text-xs">
                       <div>
-                        <div className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase mb-1">Price</div>
-                        <div className="text-sm font-black text-primary">{currency(p.price)}</div>
+                        <div className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase mb-0.5">Price</div>
+                        <div className="font-semibold text-primary">{currency(p.price)}</div>
                       </div>
                       <div>
-                        <div className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase mb-1">Stock</div>
-                        <div className="text-sm font-black text-foreground">{p.stock}</div>
+                        <div className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase mb-0.5">Stock</div>
+                        <div className="font-semibold text-foreground">{p.stock}</div>
                       </div>
                       <div>
-                        <div className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase mb-1">Status</div>
+                        <div className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase mb-1">Status</div>
                         <div>
                           <StatusBadge status={p.status} />
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase mb-1">Created</div>
-                        <div className="text-xs font-bold text-foreground">
+                        <div className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase mb-0.5">Created</div>
+                        <div className="text-muted-foreground">
                           {shortDate(p.createdAt)}
                         </div>
                       </div>
@@ -565,19 +503,19 @@ function SellerProductsPage() {
                     <div className="mt-1 flex flex-wrap gap-2 pt-2">
                       <Link
                         href={`/seller/products/${p._id}`}
-                        className="flex-1 text-center py-2 px-3 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-bold uppercase text-[10px]"
+                        className="btn flex-1 text-center py-2 px-3 text-[10px] font-semibold uppercase tracking-wider"
                       >
                         Details
                       </Link>
                       <Link
                         href={`/seller/products/edit/${p._id}`}
-                        className="flex-1 text-center py-2 px-3 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-bold uppercase text-[10px]"
+                        className="btn flex-1 text-center py-2 px-3 text-[10px] font-semibold uppercase tracking-wider"
                       >
                         Edit
                       </Link>
                       <button
                         onClick={() => remove(p._id)}
-                        className="flex-1 text-center py-2 px-3 border-[3px] border-rose-600 bg-rose-600 text-white shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all font-bold uppercase text-[10px]"
+                        className="flex-1 text-center py-2 px-3 border border-rose-500/20 bg-rose-500/10 text-rose-400 rounded-md font-semibold uppercase tracking-wider text-[10px] hover:bg-rose-500/25"
                       >
                         Delete
                       </button>
@@ -588,29 +526,29 @@ function SellerProductsPage() {
             )}
           </div>
 
-          {/* Desktop table */}
-          <div className="hidden md:block bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] overflow-x-auto mt-4">
-            <table className="min-w-full text-sm">
-              <thead className="bg-muted border-b-[3px] border-border">
-                <tr className="text-left font-black uppercase tracking-widest text-[10px] text-foreground">
-                  <th className="px-6 py-4 border-r-[3px] border-border">Item</th>
-                  <th className="px-6 py-4 border-r-[3px] border-border text-center">Price</th>
-                  <th className="px-6 py-4 border-r-[3px] border-border text-center">Stock</th>
-                  <th className="px-6 py-4 border-r-[3px] border-border text-center">Status</th>
-                  <th className="px-6 py-4 border-r-[3px] border-border text-center">Created</th>
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft overflow-hidden">
+            <table className="min-w-full text-xs">
+              <thead className="bg-secondary/25 border-b border-border/35">
+                <tr className="text-left font-bold uppercase tracking-wider text-[10px] text-muted-foreground">
+                  <th className="px-6 py-4 border-r border-border/20">Product details</th>
+                  <th className="px-6 py-4 border-r border-border/20 text-center">Price</th>
+                  <th className="px-6 py-4 border-r border-border/20 text-center">Stock</th>
+                  <th className="px-6 py-4 border-r border-border/20 text-center">Status</th>
+                  <th className="px-6 py-4 border-r border-border/20 text-center">Created Date</th>
                   <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y-[3px] divide-border">
+              <tbody className="divide-y divide-border/20">
                 {loading ? (
                   <tr>
-                    <td className="px-6 py-8 text-foreground font-bold uppercase tracking-widest text-[10px] text-center bg-muted/30" colSpan={6}>
-                      Loading...
+                    <td className="px-6 py-10 text-center bg-secondary/5" colSpan={6}>
+                      <div className="h-5 w-5 animate-spin border-2 border-primary/20 border-t-primary rounded-full mx-auto" />
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td className="px-6 py-8 text-foreground font-bold uppercase tracking-widest text-[10px] text-center bg-muted/30" colSpan={6}>
+                    <td className="px-6 py-10 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground italic bg-secondary/5" colSpan={6}>
                       No products found.
                     </td>
                   </tr>
@@ -620,55 +558,53 @@ function SellerProductsPage() {
                     return (
                       <tr
                         key={p._id}
-                        className="hover:bg-muted/50 transition-colors"
+                        className="hover:bg-secondary/10 transition-colors"
                       >
-                        <td className="px-6 py-4 border-r-[3px] border-border">
+                        <td className="px-6 py-4 border-r border-border/20">
                           <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 border-[3px] border-border bg-muted overflow-hidden shrink-0">
-                              <img
-                                src={thumb}
-                                alt={p.title}
-                                className="w-full h-full object-cover"
-                                onError={(e) =>
-                                  ((e.currentTarget as HTMLImageElement).src =
-                                    "/fallback.png")
-                                }
-                              />
-                            </div>
+                            <img
+                              src={thumb}
+                              alt={p.title}
+                              className="w-12 h-12 border border-border/40 rounded-lg object-cover bg-card shrink-0"
+                              onError={(e) =>
+                                ((e.currentTarget as HTMLImageElement).src =
+                                  "/fallback.png")
+                              }
+                            />
                             <div className="min-w-0">
-                              <div className="font-black text-xs text-foreground uppercase tracking-widest truncate max-w-[250px]" title={p.title}>
+                              <div className="font-semibold text-xs text-foreground truncate max-w-[250px]" title={p.title}>
                                 {p.title}
                               </div>
-                              <div className="font-bold text-[10px] text-muted-foreground tracking-widest uppercase truncate mt-1">
+                              <div className="text-[10px] text-muted-foreground tracking-wider uppercase truncate mt-0.5">
                                 {p.brand ? `${p.brand} · ` : ""}
                                 {p.category || ""}
                               </div>
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 border-r-[3px] border-border text-center font-black text-primary text-sm">{currency(p.price)}</td>
-                        <td className="px-6 py-4 border-r-[3px] border-border text-center font-black text-foreground text-sm">{p.stock}</td>
-                        <td className="px-6 py-4 border-r-[3px] border-border text-center">
+                        <td className="px-6 py-4 border-r border-border/20 text-center font-semibold text-primary text-sm">{currency(p.price)}</td>
+                        <td className="px-6 py-4 border-r border-border/20 text-center font-semibold text-foreground text-sm">{p.stock}</td>
+                        <td className="px-6 py-4 border-r border-border/20 text-center">
                           <StatusBadge status={p.status} />
                         </td>
-                        <td className="px-6 py-4 border-r-[3px] border-border text-center font-bold text-[10px] tracking-widest text-foreground">{shortDate(p.createdAt)}</td>
+                        <td className="px-6 py-4 border-r border-border/20 text-center font-semibold text-muted-foreground">{shortDate(p.createdAt)}</td>
                         <td className="px-6 py-4 text-center">
                           <div className="flex gap-2 justify-center flex-wrap">
                             <Link
                               href={`/seller/products/${p._id}`}
-                              className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-[10px] flex items-center h-8"
+                              className="btn px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider flex items-center"
                             >
                               Details
                             </Link>
                             <Link
                               href={`/seller/products/edit/${p._id}`}
-                              className="px-3 py-1.5 border-[3px] border-border bg-card shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold uppercase text-[10px] flex items-center h-8"
+                              className="btn px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider flex items-center"
                             >
                               Edit
                             </Link>
                             <button
                               onClick={() => remove(p._id)}
-                              className="px-3 py-1.5 border-[3px] border-rose-600 bg-rose-600 shadow-[2px_2px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-white font-bold uppercase text-[10px] h-8"
+                              className="px-3.5 py-1.5 border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 rounded-md font-semibold uppercase tracking-wider text-[10px] flex items-center"
                             >
                               Delete
                             </button>

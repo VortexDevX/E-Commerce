@@ -23,7 +23,7 @@ function AdminSellerRequestDetailPage() {
   const decide = async (action: "approve" | "reject") => {
     try {
       await api.patch(`/admin/seller-requests/${id}`, { action });
-      toast.success(`Request ${action}d`);
+      toast.success(`Request ${action}d successfully`);
       router.push("/admin/seller-requests");
     } catch (e: any) {
       toast.error(e?.response?.data?.message || "Failed");
@@ -34,7 +34,10 @@ function AdminSellerRequestDetailPage() {
     return (
       <ProtectedRoute roles={["admin"]}>
         <AdminLayout>
-          <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-center">Loading...</div>
+          <div className="bg-card/60 backdrop-blur-md border border-border/40 p-12 text-center rounded-xl shadow-soft">
+            <div className="h-6 w-6 animate-spin border-2 border-primary/20 border-t-primary rounded-full mx-auto" />
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-3">Loading details...</p>
+          </div>
         </AdminLayout>
       </ProtectedRoute>
     );
@@ -45,43 +48,50 @@ function AdminSellerRequestDetailPage() {
   return (
     <ProtectedRoute roles={["admin"]}>
       <AdminLayout>
-        <div className="flex items-center justify-between font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
-          <h1 className="text-3xl text-foreground">
+        <div className="border-b border-border/40 pb-5 mb-8">
+          <h1 className="display-font text-3xl font-semibold tracking-wide text-foreground">
             Review Seller Application
           </h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Review credentials, business detail forms, tax documents, and applicant status.
+          </p>
         </div>
 
-        <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 mt-4 mb-8">
-          <h3 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4 mb-6">
-            Applicant
+        <section className="bg-card/60 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft mb-8">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/30 pb-2 mb-4">
+            Applicant Information
           </h3>
           <div className="grid md:grid-cols-3 gap-6">
             <div>
-              <div className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">Name</div>
-              <div className="text-foreground font-bold text-lg">{user.name}</div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Full Name</div>
+              <div className="text-foreground font-semibold text-base">{user.name}</div>
             </div>
             <div>
-              <div className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">Email</div>
-              <div className="text-foreground font-bold text-lg">{user.email}</div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Email Address</div>
+              <div className="text-foreground font-semibold text-base">{user.email}</div>
             </div>
             <div>
-              <div className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">Status</div>
-              <div className={`text-xs font-black uppercase tracking-widest px-3 py-1 border-[3px] border-border shadow-[2px_2px_0px_#111] w-fit ${
-                user.sellerRequest === 'pending' ? 'bg-amber-400 text-amber-950' :
-                user.sellerRequest === 'approved' ? 'bg-emerald-400 text-emerald-950' :
-                'bg-rose-400 text-rose-950'
-              }`}>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Application Status</div>
+              <span className={`px-2 py-0.5 rounded-sm border font-semibold uppercase tracking-wider text-[10px] mt-1 inline-block
+                ${
+                  user.sellerRequest === "approved"
+                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                    : user.sellerRequest === "rejected"
+                    ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                    : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                }
+              `}>
                 {user.sellerRequest}
-              </div>
+              </span>
             </div>
           </div>
         </section>
 
-        <section className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 mt-4 mb-8">
-          <h3 className="text-2xl font-black uppercase tracking-widest text-foreground border-b-[3px] border-border pb-4 mb-6">
-            Application
+        <section className="bg-card/60 backdrop-blur-md border border-border/40 p-6 rounded-xl shadow-soft mb-8">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/30 pb-2 mb-4">
+            Business Details
           </h3>
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-4">
             {[
               "businessName",
               "legalName",
@@ -91,22 +101,23 @@ function AdminSellerRequestDetailPage() {
               "address",
               "message",
             ].map((k) => (
-              <div key={k} className="bg-primary/5 border-[3px] border-border p-4 shadow-[4px_4px_0px_#111]">
-                <div className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-2">{k}</div>
-                <div className="text-foreground font-bold break-words">
-                  {sellerApplication?.[k] || "-"}
+              <div key={k} className="bg-secondary/10 border border-border/30 rounded-lg p-4">
+                <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">{k}</div>
+                <div className="text-foreground font-semibold text-sm break-words">
+                  {sellerApplication?.[k] || "—"}
                 </div>
               </div>
             ))}
           </div>
+
           {sellerApplication?.documents?.length ? (
-            <div className="mt-8 pt-6 border-t-[3px] border-border">
-              <h4 className="text-xl font-black uppercase tracking-widest text-foreground mb-4">Documents</h4>
+            <div className="mt-8 pt-6 border-t border-border/20">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Verification Documents</h4>
               <ul className="grid gap-3">
                 {sellerApplication.documents.map((d: any, i: number) => (
                   <li key={i}>
                     <a
-                      className="block p-4 border-[3px] border-border bg-card shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all text-primary font-bold break-words"
+                      className="block p-4 border border-border/35 bg-card/40 rounded-xl text-primary font-semibold text-xs hover:border-primary/50 transition-all break-words"
                       href={d.url}
                       target="_blank"
                       rel="noreferrer"
@@ -123,21 +134,22 @@ function AdminSellerRequestDetailPage() {
         <div className="flex gap-4 mt-8">
           <button
             onClick={() => decide("approve")}
-            className="px-6 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all flex-1 sm:flex-none"
+            className="btn-primary py-3 px-8 text-xs font-semibold uppercase tracking-wider"
           >
-            Approve
+            Approve Merchant
           </button>
           <button
             onClick={() => decide("reject")}
-            className="px-6 py-3 border-[3px] border-border bg-card text-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all flex-1 sm:flex-none"
+            className="btn py-3 px-8 text-xs font-semibold uppercase tracking-wider text-rose-400 border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/25"
           >
-            Reject
+            Reject Application
           </button>
         </div>
       </AdminLayout>
     </ProtectedRoute>
   );
 }
+
 export default dynamic(() => Promise.resolve(AdminSellerRequestDetailPage), {
   ssr: false,
 });

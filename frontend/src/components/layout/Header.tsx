@@ -13,6 +13,7 @@ import {
 import type { AppDispatch, RootState } from "../../store";
 import { logoutAsync } from "../../store/slices/authSlice";
 import SearchBar from "../SearchBar";
+import ThemeToggle from "./ThemeToggle";
 
 type Role = "user" | "seller" | "admin" | "subadmin" | "seller_assistant";
 type NavLink = { href: string; label: string; badge?: number };
@@ -137,21 +138,21 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
-      <div className="border-b border-border bg-foreground text-white">
-        <div className="page-shell flex flex-col gap-2 !py-2 text-xs sm:flex-row sm:items-center sm:justify-between">
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
+      <div className="border-b border-border/40 bg-secondary/30 text-muted-foreground">
+        <div className="page-shell flex flex-col gap-2 !py-2 text-[11px] uppercase tracking-wider font-semibold sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <TruckIcon className="h-4 w-4 text-[#f4c56a]" />
+            <TruckIcon className="h-4 w-4 text-primary" />
             <span>Curated marketplace shipping across India</span>
           </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-white/78">
-            <Link href={{ pathname: "/products", query: { sort: "newest" } }} className="hover:text-white">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            <Link href={{ pathname: "/products", query: { sort: "newest" } }} className="hover:text-primary transition-colors">
               New arrivals
             </Link>
-            <Link href={{ pathname: "/products", query: { inStock: "true" } }} className="hover:text-white">
+            <Link href={{ pathname: "/products", query: { inStock: "true" } }} className="hover:text-primary transition-colors">
               Ready to ship
             </Link>
-            <Link href="/seller" className="hover:text-white">
+            <Link href="/seller" className="hover:text-primary transition-colors">
               Seller studio
             </Link>
           </div>
@@ -159,12 +160,12 @@ export default function Header() {
       </div>
 
       <div className="page-shell !py-4">
-        <div className="grid items-center gap-4 md:grid-cols-[210px_minmax(320px,1fr)_auto_auto]">
+        <div className="grid items-center gap-4 md:grid-cols-[230px_minmax(300px,1fr)_auto_auto]">
           <Link href="/" className="group flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center border border-foreground bg-foreground text-white shadow-[6px_6px_0_rgba(228,82,55,0.22)]">
-              <ShoppingBagIcon className="h-5 w-5 transition-transform group-hover:-rotate-6" />
+            <span className="grid h-10 w-10 place-items-center border border-primary bg-primary text-primary-foreground rounded shadow-[3px_3px_0_rgba(var(--primary-rgb),0.3)]">
+              <ShoppingBagIcon className="h-5 w-5 transition-transform duration-300 group-hover:-rotate-6" />
             </span>
-            <span className="display-font text-3xl font-semibold leading-none text-foreground">
+            <span className="display-font text-2xl font-bold tracking-[0.18em] uppercase text-foreground transition-colors group-hover:text-primary">
               Luxora
             </span>
           </Link>
@@ -178,21 +179,22 @@ export default function Header() {
           </nav>
 
           <div className="hidden items-center gap-2 md:flex">
+            <ThemeToggle />
             {user ? (
               <>
-                <button type="button" className="btn h-10 px-3" onClick={handleLogout}>
+                <button type="button" className="btn h-10 px-3 py-1.5" onClick={handleLogout}>
                   Logout
                 </button>
-                <Link href="/profile" className="btn h-10 w-10 px-0" aria-label="Account">
+                <Link href="/profile" className="btn h-10 w-10 px-0 flex items-center justify-center" aria-label="Account">
                   <UserCircleIcon className="h-5 w-5" />
                 </Link>
               </>
             ) : (
               <>
-                <Link href="/auth/login" className="btn h-10">
+                <Link href="/auth/login" className="btn h-10 px-4 py-1.5">
                   Sign in
                 </Link>
-                <Link href="/auth/register" className="btn-primary h-10">
+                <Link href="/auth/register" className="btn-primary h-10 px-4 py-1.5">
                   Join
                 </Link>
               </>
@@ -200,25 +202,26 @@ export default function Header() {
           </div>
 
           <div className="ml-auto flex items-center gap-2 md:hidden">
+            <ThemeToggle />
             <button
               type="button"
-              className="btn h-10 w-10 px-0"
+              className="btn h-10 w-10 px-0 flex items-center justify-center"
               aria-label="Open search"
               onClick={() => setMobileSearchOpen(true)}
             >
               <MagnifyingGlassIcon className="h-5 w-5" />
             </button>
-            <Link href="/cart" className="btn relative h-10 w-10 px-0" aria-label="Cart">
+            <Link href="/cart" className="btn relative h-10 w-10 px-0 flex items-center justify-center" aria-label="Cart">
               <ShoppingBagIcon className="h-5 w-5" />
               {cartCount > 0 ? (
-                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-semibold text-white">
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
                   {cartCount}
                 </span>
               ) : null}
             </Link>
             <button
               type="button"
-              className="btn h-10 w-10 px-0"
+              className="btn h-10 w-10 px-0 flex items-center justify-center"
               aria-label="Open menu"
               onClick={() => setOpen((value) => !value)}
             >
@@ -228,13 +231,13 @@ export default function Header() {
         </div>
       </div>
 
-      <div className="hidden border-t border-border bg-white/70 md:block">
+      <div className="hidden border-t border-border/50 bg-card/60 md:block">
         <div className="page-shell flex items-center gap-2 overflow-x-auto !py-2">
           {departments.map((department) => (
             <Link
               key={department}
               href={{ pathname: "/products", query: getDepartmentQuery(department) }}
-              className="rounded-full border border-transparent px-4 py-2 text-sm font-semibold text-muted-foreground hover:border-accent/40 hover:bg-secondary hover:text-foreground"
+              className="rounded-full border border-transparent px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:border-primary/30 hover:bg-primary/5 hover:text-primary transition-all duration-200"
             >
               {department}
             </Link>

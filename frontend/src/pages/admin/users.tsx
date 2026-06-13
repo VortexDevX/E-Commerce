@@ -56,7 +56,7 @@ function AdminUsersPage() {
   const changeRole = async (id: string, newRole: AdminUser["role"]) => {
     try {
       await api.patch(`/admin/users/${id}/role`, { role: newRole });
-      toast.success("Role updated");
+      toast.success("Role updated successfully");
       fetchUsers();
     } catch (e: any) {
       toast.error(e?.response?.data?.message || "Failed to update role");
@@ -66,7 +66,7 @@ function AdminUsersPage() {
   const toggleStatus = async (id: string, newStatus: AdminUser["status"]) => {
     try {
       await api.patch(`/admin/users/${id}/status`, { status: newStatus });
-      toast.success(`User ${newStatus}`);
+      toast.success(`User status updated to ${newStatus}`);
       fetchUsers();
     } catch (e: any) {
       toast.error(e?.response?.data?.message || "Failed to update status");
@@ -79,7 +79,7 @@ function AdminUsersPage() {
   ) => {
     try {
       await api.patch(`/admin/seller-requests/${id}`, { action });
-      toast.success(`Seller request ${action}d`);
+      toast.success(`Seller request ${action}d successfully`);
       fetchUsers();
     } catch (e: any) {
       toast.error(e?.response?.data?.message || `Failed to ${action}`);
@@ -89,23 +89,27 @@ function AdminUsersPage() {
   return (
     <ProtectedRoute roles={["admin"]}>
       <AdminLayout>
-        <div className="flex items-center justify-between font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
-          <h1 className="text-3xl text-foreground">Manage Users</h1>
+        <div className="border-b border-border/40 pb-5 mb-8">
+          <h1 className="display-font text-3xl font-semibold tracking-wide text-foreground">Manage Users</h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Configure system roles, permissions, block status, and seller requests.
+          </p>
         </div>
 
         {/* Filters */}
-        <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-4 flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-8">
+        <div className="bg-card/65 backdrop-blur-md border border-border/40 p-5 rounded-xl shadow-soft flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-8">
           <input
             placeholder="Search by name or email..."
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all w-full md:w-80"
+            className="bg-card/60 border border-border/88 rounded-md px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/45 w-full md:w-80"
           />
           <div className="flex gap-3">
             <select
               value={role}
+              aria-label="Filter role"
               onChange={(e) => setRole(e.target.value as AdminUser["role"])}
-              className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
+              className="bg-card/60 border border-border/80 rounded-md px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary transition-all duration-200"
             >
               <option value="all">All roles</option>
               <option value="user">User</option>
@@ -116,8 +120,9 @@ function AdminUsersPage() {
             </select>
             <select
               value={status}
+              aria-label="Filter status"
               onChange={(e) => setStatus(e.target.value as any)}
-              className="bg-card border-[3px] border-border rounded-none px-3 py-2 text-foreground font-bold shadow-[4px_4px_0px_#111] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all"
+              className="bg-card/60 border border-border/80 rounded-md px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary transition-all duration-200"
             >
               <option value="all">All status</option>
               <option value="active">Active</option>
@@ -127,140 +132,141 @@ function AdminUsersPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="text-left bg-primary/5 text-foreground border-b-[3px] border-border">
-                <th className="px-4 py-4 font-black uppercase tracking-widest">Name</th>
-                <th className="px-4 py-4 font-black uppercase tracking-widest">Email</th>
-                <th className="px-4 py-4 font-black uppercase tracking-widest">Role</th>
-                <th className="px-4 py-4 font-black uppercase tracking-widest">Status</th>
-                <th className="px-4 py-4 font-black uppercase tracking-widest">Seller</th>
-                <th className="px-4 py-4 font-black uppercase tracking-widest text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td className="px-4 py-6 text-foreground font-bold uppercase tracking-widest text-sm" colSpan={6}>
-                    Loading...
-                  </td>
+        <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-xs">
+              <thead className="bg-secondary/25 border-b border-border/35">
+                <tr className="text-left font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+                  <th className="px-6 py-4 border-r border-border/20">Name</th>
+                  <th className="px-6 py-4 border-r border-border/20">Email</th>
+                  <th className="px-6 py-4 border-r border-border/20 text-center">Role</th>
+                  <th className="px-6 py-4 border-r border-border/20 text-center">Status</th>
+                  <th className="px-6 py-4 border-r border-border/20 text-center">Seller Status</th>
+                  <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td className="px-4 py-6 text-foreground font-bold uppercase tracking-widest text-sm" colSpan={6}>
-                    No users found.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((u) => (
-                  <tr
-                    key={u._id}
-                    className="border-b-[3px] border-border/50 text-foreground font-bold hover:bg-muted/50 transition-colors"
-                  >
-                    <td className="px-4 py-4">{u.name}</td>
-                    <td className="px-4 py-4">{u.email}</td>
-                    <td className="px-4 py-4">
-                      <select
-                        value={u.role}
-                        onChange={(e) =>
-                          changeRole(u._id, e.target.value as AdminUser["role"])
-                        }
-                        className="bg-card border-[3px] border-border rounded-none px-2 py-1 text-foreground font-bold shadow-[2px_2px_0px_#111] focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] hover:shadow-none transition-all text-xs uppercase"
-                      >
-                        <option value="user">User</option>
-                        <option value="seller">Seller</option>
-                        <option value="admin">Admin</option>
-                        <option value="subadmin">Sub-admin</option>
-                        <option value="seller_assistant">
-                          Seller Assistant
-                        </option>
-                      </select>
-                    </td>
-                    <td className="px-4 py-4">
-                      <span
-                        className={`px-3 py-1 border-[3px] border-border shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111] text-xs font-black uppercase tracking-widest transition-all ${
-                          u.status === "active"
-                            ? "bg-emerald-400 text-emerald-950"
-                            : "bg-rose-400 text-rose-950"
-                        }`}
-                      >
-                        {u.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      {u.sellerRequest === "pending" ? (
-                        <span className="text-amber-950 bg-amber-400 border-[3px] border-border shadow-[2px_2px_0px_#111] font-black uppercase tracking-widest px-3 py-1 text-xs">
-                          Pending
-                        </span>
-                      ) : u.role === "seller" && u.seller?.approved ? (
-                        <span className="text-emerald-950 bg-emerald-400 border-[3px] border-border shadow-[2px_2px_0px_#111] font-black uppercase tracking-widest px-3 py-1 text-xs">
-                          Approved
-                        </span>
-                      ) : (
-                        <span className="text-foreground font-black uppercase tracking-widest text-xs px-3 py-1 border-[3px] border-transparent">
-                          {u.sellerRequest || "none"}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <div className="flex gap-2 justify-end flex-wrap">
-                        <a
-                          href={`/admin/users/${u._id}`}
-                          className="px-4 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all font-black uppercase text-xs flex items-center"
-                        >
-                          Details
-                        </a>
-
-                        {u.status === "active" ? (
-                          <button
-                            onClick={() => toggleStatus(u._id, "blocked")}
-                            className="px-4 py-2 border-[3px] border-rose-600 bg-rose-600 shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all text-white font-black uppercase text-xs"
-                          >
-                            Block
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => toggleStatus(u._id, "active")}
-                            className="px-4 py-2 border-[3px] border-emerald-600 bg-emerald-600 shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all text-white font-black uppercase text-xs"
-                          >
-                            Unblock
-                          </button>
-                        )}
-
-                        {u.sellerRequest === "pending" && (
-                          <>
-                            <a
-                              href={`/admin/seller-requests/${u._id}`}
-                              className="px-4 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all font-black uppercase text-xs flex items-center"
-                            >
-                              Review
-                            </a>
-                            <button
-                              onClick={() =>
-                                handleSellerRequest(u._id, "approve")
-                              }
-                              className="px-4 py-2 border-[3px] border-primary bg-primary shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all text-primary-foreground font-black uppercase text-xs"
-                            >
-                              Approve
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleSellerRequest(u._id, "reject")
-                              }
-                              className="px-4 py-2 border-[3px] border-border bg-card shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] hover:-translate-y-1 transition-all font-black uppercase text-xs flex items-center"
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-                      </div>
+              </thead>
+              <tbody className="divide-y divide-border/20">
+                {loading ? (
+                  <tr>
+                    <td className="px-6 py-10 text-center bg-secondary/5" colSpan={6}>
+                      <div className="h-5 w-5 animate-spin border-2 border-primary/20 border-t-primary rounded-full mx-auto" />
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td className="px-6 py-10 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground italic bg-secondary/5" colSpan={6}>
+                      No users found.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((u) => (
+                    <tr
+                      key={u._id}
+                      className="hover:bg-secondary/5 transition-colors"
+                    >
+                      <td className="px-6 py-4 border-r border-border/20 font-semibold text-foreground text-sm">{u.name}</td>
+                      <td className="px-6 py-4 border-r border-border/20 text-muted-foreground font-semibold">{u.email}</td>
+                      <td className="px-6 py-4 border-r border-border/20 text-center">
+                        <select
+                          value={u.role}
+                          aria-label="Update role"
+                          onChange={(e) =>
+                            changeRole(u._id, e.target.value as AdminUser["role"])
+                          }
+                          className="bg-card/60 border border-border/80 rounded-md px-2 py-1 text-xs font-semibold uppercase tracking-wider text-foreground focus:outline-none focus:border-primary text-center"
+                        >
+                          <option value="user">User</option>
+                          <option value="seller">Seller</option>
+                          <option value="admin">Admin</option>
+                          <option value="subadmin">Sub-admin</option>
+                          <option value="seller_assistant">Seller Asst.</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 border-r border-border/20 text-center">
+                        <span
+                          className={`px-2 py-0.5 rounded-sm border font-semibold uppercase tracking-wider text-[10px] ${
+                            u.status === "active"
+                              ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                              : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                          }`}
+                        >
+                          {u.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 border-r border-border/20 text-center">
+                        {u.sellerRequest === "pending" ? (
+                          <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded-sm font-semibold uppercase tracking-wider text-[10px]">
+                            Pending
+                          </span>
+                        ) : u.role === "seller" && u.seller?.approved ? (
+                          <span className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded-sm font-semibold uppercase tracking-wider text-[10px]">
+                            Approved
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">
+                            {u.sellerRequest || "none"}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex gap-2 justify-center items-center flex-wrap">
+                          <a
+                            href={`/admin/users/${u._id}`}
+                            className="btn px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider inline-flex"
+                          >
+                            Details
+                          </a>
+
+                          {u.status === "active" ? (
+                            <button
+                              onClick={() => toggleStatus(u._id, "blocked")}
+                              className="btn px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-rose-400 border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/25"
+                            >
+                              Block
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => toggleStatus(u._id, "active")}
+                              className="btn px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-emerald-400 border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/25"
+                            >
+                              Unblock
+                            </button>
+                          )}
+
+                          {u.sellerRequest === "pending" && (
+                            <>
+                              <a
+                                href={`/admin/seller-requests/${u._id}`}
+                                className="btn px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider inline-flex"
+                              >
+                                Review
+                              </a>
+                              <button
+                                onClick={() =>
+                                  handleSellerRequest(u._id, "approve")
+                                }
+                                className="btn-primary px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider"
+                              >
+                                Approve
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleSellerRequest(u._id, "reject")
+                                }
+                                className="btn px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-rose-400 border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/25"
+                              >
+                                Reject
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </AdminLayout>
     </ProtectedRoute>

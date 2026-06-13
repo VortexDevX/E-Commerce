@@ -34,7 +34,6 @@ import {
   CubeIcon,
 } from "@heroicons/react/24/outline";
 
-// Types aligned with seller analytics
 type Overview = {
   totalProducts: number;
   totalOrders: number;
@@ -50,7 +49,6 @@ type SellerOrder = {
 };
 type TopProduct = { product: string; sold: number; revenue: number };
 
-// Helpers
 function useDebounced<T>(value: T, delay = 350) {
   const [v, setV] = useState(value);
   useEffect(() => {
@@ -63,12 +61,6 @@ const fmt = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
     d.getDate()
   ).padStart(2, "0")}`;
-function lastNDaysRange(n: number) {
-  const to = new Date();
-  const from = new Date();
-  from.setDate(to.getDate() - (n - 1));
-  return { from: fmt(from), to: fmt(to) };
-}
 
 const isCanceled = (e: any) =>
   e?.code === "ERR_CANCELED" ||
@@ -78,8 +70,8 @@ const isCanceled = (e: any) =>
 function UpdatingOverlay({ show }: { show: boolean }) {
   if (!show) return null;
   return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-      <div className="rounded-full border-2 border-gray-300 border-t-purple-500 h-6 w-6 animate-spin bg-white/60 backdrop-blur-[1px]" />
+    <div className="pointer-events-none absolute inset-0 flex items-center justify-center z-55 bg-background/5 backdrop-blur-[1px]">
+      <div className="rounded-full border-2 border-primary/20 border-t-primary h-6 w-6 animate-spin" />
     </div>
   );
 }
@@ -97,14 +89,13 @@ function SellerHomePage() {
 
   const debouncedDays = useDebounced(days, 350);
 
-  // Data
   const [overview, setOverview] = useState<Overview | null>(null);
   const [salesRaw, setSalesRaw] = useState<SalesPoint[]>([]);
   const [orders, setOrders] = useState<SellerOrder[]>([]);
   const [top, setTop] = useState<TopProduct[]>([]);
 
-  const [loading, setLoading] = useState(true); // first render
-  const [fetching, setFetching] = useState(false); // subsequent filter changes
+  const [loading, setLoading] = useState(true);
+  const [fetching, setFetching] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
   const initialRef = useRef(true);
 
@@ -124,7 +115,6 @@ function SellerHomePage() {
     try {
       const calls: Promise<any>[] = [];
 
-      // Only fetch analytics if allowed
       if (canAnalytics) {
         calls.push(api.get("/seller/analytics/overview", { signal: c.signal }));
         calls.push(
@@ -138,7 +128,6 @@ function SellerHomePage() {
         calls.push(Promise.resolve({ data: [] }));
       }
 
-      // Common data
       calls.push(
         api.get("/seller/orders", { params: { days: d }, signal: c.signal })
       );
@@ -151,7 +140,7 @@ function SellerHomePage() {
 
       const [ovRes, salRes, ordRes, topRes] = await Promise.all(calls);
 
-      if (controllerRef.current !== current) return; // canceled
+      if (controllerRef.current !== current) return;
 
       setOverview(ovRes.data || null);
       setSalesRaw(salRes.data || []);
@@ -171,7 +160,6 @@ function SellerHomePage() {
 
   useEffect(() => {
     fetchAll(debouncedDays);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedDays, canAnalytics]);
 
   const sales = useMemo(
@@ -195,7 +183,6 @@ function SellerHomePage() {
     [sales]
   );
 
-  // Exports
   const exportSalesCSV = () =>
     downloadCSV(
       "seller-dashboard-sales.csv",
@@ -240,23 +227,22 @@ function SellerHomePage() {
       { product: "Product", sold: "Sold", revenue: "Revenue" }
     );
 
-  // Shortcuts
   const shortcuts = [
     {
       href: "/seller/analytics",
-      label: "Analytics",
+      label: "Analytics Dashboard",
       icon: ChartBarIcon,
       perm: "seller:analytics:read",
     },
     {
       href: "/seller/orders",
-      label: "Orders",
+      label: "Manage Orders",
       icon: ShoppingCartIcon,
       perm: "seller:orders:read",
     },
     {
       href: "/seller/products",
-      label: "Products",
+      label: "My Products",
       icon: CubeIcon,
       perm: "seller:products:read",
     },
@@ -265,15 +251,18 @@ function SellerHomePage() {
   return (
     <ProtectedRoute roles={["seller", "admin"]}>
       <SellerLayout>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 font-black uppercase tracking-widest border-b-[3px] border-border pb-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border/40 pb-5 mb-8">
           <div>
-            <h1 className="text-3xl text-foreground">
-              Seller Dashboard
+            <h1 className="display-font text-3xl font-semibold tracking-wide text-foreground">
+              Seller Hub
             </h1>
-            {!canAnalytics && (
-              <p className="text-muted-foreground font-bold tracking-widest text-[10px] mt-1">
-                Analytics restricted for your role. You can still access the
-                tools below.
+            {!canAnalytics ? (
+              <p className="text-xs text-muted-foreground mt-1 font-semibold uppercase tracking-wider">
+                Analytics restricted for your account. You can still access management options.
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground mt-1">
+                Overview of your store performance, recent activities, and metrics.
               </p>
             )}
           </div>
@@ -281,7 +270,10 @@ function SellerHomePage() {
 
         {/* KPIs / Loading */}
         {loading ? (
-          <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-bold uppercase tracking-widest text-sm">Loading…</div>
+          <div className="bg-card/60 backdrop-blur-md border border-border/40 p-12 text-center rounded-xl shadow-soft">
+            <div className="h-6 w-6 animate-spin border-2 border-primary/20 border-t-primary rounded-full mx-auto" />
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-3">Loading store metrics...</p>
+          </div>
         ) : canAnalytics ? (
           <OverviewCards
             stats={{
@@ -295,96 +287,77 @@ function SellerHomePage() {
         ) : null}
 
         {/* Filters */}
-        <div className="mt-6 flex items-center justify-between gap-4 flex-wrap bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-4 font-bold">
-          <h2 className="text-xl font-black uppercase tracking-widest text-foreground">Performance</h2>
+        <div className="mt-8 flex items-center justify-between gap-4 flex-wrap bg-card/65 backdrop-blur-md border border-border/40 p-5 rounded-xl shadow-soft">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">Store Performance</h2>
           <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-2">
-              <button
-                onClick={() => setTab("7d")}
-                className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
-                  tab === "7d"
-                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
-                    : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
-                }`}
-              >
-                7d
-              </button>
-              <button
-                onClick={() => setTab("14d")}
-                className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
-                  tab === "14d"
-                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
-                    : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
-                }`}
-              >
-                14d
-              </button>
-              <button
-                onClick={() => setTab("30d")}
-                className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
-                  tab === "30d"
-                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
-                    : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
-                }`}
-              >
-                30d
-              </button>
+            <div className="flex bg-secondary/35 border border-border/40 rounded-full p-1">
+              {(["7d", "14d", "30d"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+                    tab === t
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Charts + Lists with overlay for smooth updates */}
+        {/* Charts + Lists */}
         <div className="relative">
           <UpdatingOverlay show={fetching} />
 
-          <div className="mt-4 grid grid-cols-1 xl:grid-cols-12 gap-6">
-            {/* Left: small dual series + AOV */}
+          <div className="mt-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
+            {/* Charts Column */}
             <div className="xl:col-span-7 space-y-6">
-              <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
-                <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
-                  <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Revenue & Orders (last {days} days)</h3>
-                  <button onClick={exportSalesCSV} className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all">
-                    Export Sales CSV
+              <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+                <div className="flex flex-row items-center justify-between p-5 border-b border-border/35 bg-secondary/15">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Revenue & Orders ({days} days)</h3>
+                  <button onClick={exportSalesCSV} className="btn py-1.5 px-3 text-[10px]">
+                    Export CSV
                   </button>
                 </div>
-                <div className="p-6 pt-6">
+                <div className="p-5">
                   <div className="w-full h-[280px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart
                         data={sales}
                         margin={{ top: 12, right: 16, left: 8, bottom: 8 }}
                       >
-                        <CartesianGrid stroke="#e5e7eb" vertical={false} strokeDasharray="3 3" />
+                        <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} strokeDasharray="3 3" />
                         <XAxis
                           dataKey="date"
-                          tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
-                          axisLine={{ stroke: "#000", strokeWidth: 3 }}
-                          tickLine={{ stroke: "#000", strokeWidth: 3 }}
+                          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10, fontWeight: "500" }}
+                          axisLine={{ stroke: "rgba(255,255,255,0.1)", strokeWidth: 1 }}
+                          tickLine={{ stroke: "rgba(255,255,255,0.1)", strokeWidth: 1 }}
                         />
                         <YAxis
                           yAxisId="left"
-                          tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
-                          axisLine={{ stroke: "#000", strokeWidth: 3 }}
-                          tickLine={{ stroke: "#000", strokeWidth: 3 }}
+                          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                          axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                          tickLine={{ stroke: "rgba(255,255,255,0.1)" }}
                         />
                         <YAxis
                           yAxisId="right"
                           orientation="right"
-                          tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
-                          axisLine={{ stroke: "#000", strokeWidth: 3 }}
-                          tickLine={{ stroke: "#000", strokeWidth: 3 }}
+                          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                          axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                          tickLine={{ stroke: "rgba(255,255,255,0.1)" }}
                         />
                         <Tooltip
                           contentStyle={{
                             backgroundColor: "hsl(var(--card))",
-                            border: "3px solid hsl(var(--border))",
-                            boxShadow: "4px 4px 0px #111",
-                            borderRadius: "0",
-                            fontWeight: "bold",
-                            fontFamily: "Inter",
-                            fontSize: "12px",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.05em",
+                            border: "1px solid border-border/40",
+                            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+                            borderRadius: "8px",
+                            fontWeight: "600",
+                            fontFamily: "Outfit, sans-serif",
+                            fontSize: "11px",
                           }}
                           itemStyle={{ color: "hsl(var(--foreground))" }}
                           formatter={(v: any, n: any) =>
@@ -393,31 +366,29 @@ function SellerHomePage() {
                               : v
                           }
                         />
-                        <Legend wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em' }} />
+                        <Legend wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
                         <Line
                           isAnimationActive
-                          animationDuration={350}
-                          animationEasing="ease-out"
+                          animationDuration={300}
                           yAxisId="left"
                           type="monotone"
                           dataKey="orders"
-                          stroke="#9333ea"
-                          strokeWidth={4}
-                          dot={{ stroke: '#000', strokeWidth: 2, fill: '#fff', r: 4 }}
-                          activeDot={{ stroke: '#000', strokeWidth: 3, r: 6, fill: '#9333ea' }}
+                          stroke="hsl(var(--primary))"
+                          strokeWidth={2}
+                          dot={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, fill: 'hsl(var(--card))', r: 3 }}
+                          activeDot={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, r: 5, fill: 'hsl(var(--primary))' }}
                           name="Orders"
                         />
                         <Line
                           isAnimationActive
-                          animationDuration={350}
-                          animationEasing="ease-out"
+                          animationDuration={300}
                           yAxisId="right"
                           type="monotone"
                           dataKey="revenue"
-                          stroke="#d97706"
-                          strokeWidth={4}
-                          dot={{ stroke: '#000', strokeWidth: 2, fill: '#fff', r: 4 }}
-                          activeDot={{ stroke: '#000', strokeWidth: 3, r: 6, fill: '#d97706' }}
+                          stroke="#c5a059"
+                          strokeWidth={2}
+                          dot={{ stroke: '#c5a059', strokeWidth: 1, fill: 'hsl(var(--card))', r: 3 }}
+                          activeDot={{ stroke: '#c5a059', strokeWidth: 2, r: 5, fill: '#c5a059' }}
                           name="Revenue"
                         />
                       </LineChart>
@@ -426,9 +397,9 @@ function SellerHomePage() {
                 </div>
               </div>
 
-              <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
-                <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
-                  <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Average Order Value (AOV)</h3>
+              <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+                <div className="flex flex-row items-center justify-between p-5 border-b border-border/35 bg-secondary/15">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Average Order Value (AOV)</h3>
                   <button
                     onClick={() =>
                       downloadCSV(
@@ -440,54 +411,51 @@ function SellerHomePage() {
                         { date: "Date", aov: "AOV" }
                       )
                     }
-                    className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all"
+                    className="btn py-1.5 px-3 text-[10px]"
                   >
-                    Export AOV CSV
+                    Export CSV
                   </button>
                 </div>
-                <div className="p-6 pt-6">
+                <div className="p-5">
                   <div className="w-full h-[220px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart
                         data={aovData}
                         margin={{ top: 12, right: 16, left: 8, bottom: 8 }}
                       >
-                        <CartesianGrid stroke="#e5e7eb" vertical={false} strokeDasharray="3 3"/>
+                        <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} strokeDasharray="3 3"/>
                         <XAxis
                           dataKey="date"
-                          tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
-                          axisLine={{ stroke: "#000", strokeWidth: 3 }}
-                          tickLine={{ stroke: "#000", strokeWidth: 3 }}
+                          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                          axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                          tickLine={{ stroke: "rgba(255,255,255,0.1)" }}
                         />
-                        <YAxis tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }} axisLine={{ stroke: "#000", strokeWidth: 3 }} tickLine={{ stroke: "#000", strokeWidth: 3 }} />
+                        <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} axisLine={{ stroke: "rgba(255,255,255,0.1)" }} tickLine={{ stroke: "rgba(255,255,255,0.1)" }} />
                         <Tooltip
                           contentStyle={{
                             backgroundColor: "hsl(var(--card))",
-                            border: "3px solid hsl(var(--border))",
-                            boxShadow: "4px 4px 0px #111",
-                            borderRadius: "0",
-                            fontWeight: "bold",
-                            fontFamily: "Inter",
-                            fontSize: "12px",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.05em",
+                            border: "1px solid border-border/40",
+                            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+                            borderRadius: "8px",
+                            fontWeight: "600",
+                            fontFamily: "Outfit, sans-serif",
+                            fontSize: "11px",
                           }}
                           itemStyle={{ color: "hsl(var(--foreground))" }}
                           formatter={(v: any) =>
                             `₹${Number(v).toLocaleString("en-IN")}`
                           }
                         />
-                        <Legend wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em' }} />
+                        <Legend wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
                         <Line
                           isAnimationActive
-                          animationDuration={350}
-                          animationEasing="ease-out"
+                          animationDuration={300}
                           type="monotone"
                           dataKey="aov"
-                          stroke="#9333ea"
-                          strokeWidth={4}
-                          dot={{ stroke: '#000', strokeWidth: 2, fill: '#fff', r: 4 }}
-                          activeDot={{ stroke: '#000', strokeWidth: 3, r: 6, fill: '#9333ea' }}
+                          stroke="hsl(var(--primary))"
+                          strokeWidth={2}
+                          dot={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, fill: 'hsl(var(--card))', r: 3 }}
+                          activeDot={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, r: 5, fill: 'hsl(var(--primary))' }}
                           name="AOV"
                         />
                       </LineChart>
@@ -497,36 +465,36 @@ function SellerHomePage() {
               </div>
             </div>
 
-            {/* Right: Top products + Quick links */}
-            <div className="xl:col-span-5 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
-              <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
-                <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Top Products</h3>
-                <button onClick={exportTopProductsCSV} className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all">
+            {/* Top Products + Quick actions */}
+            <div className="xl:col-span-5 bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+              <div className="flex flex-row items-center justify-between p-5 border-b border-border/35 bg-secondary/15">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Top Performing Products</h3>
+                <button onClick={exportTopProductsCSV} className="btn py-1.5 px-3 text-[10px]">
                   Export CSV
                 </button>
               </div>
-              <div className="p-6">
+              <div className="p-5 flex-1 flex flex-col justify-between">
                 {top.length === 0 ? (
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-4 text-center">No data</div>
+                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground p-12 text-center italic">No sales recorded in this interval</div>
                 ) : (
-                  <div className="overflow-x-auto border-[3px] border-border">
-                    <table className="min-w-full text-sm">
-                      <thead className="bg-muted border-b-[3px] border-border">
-                        <tr className="text-left font-black uppercase tracking-widest text-foreground text-[10px]">
-                          <th className="px-4 py-3 border-r-[3px] border-border">Product</th>
-                          <th className="px-4 py-3 border-r-[3px] border-border">Sold</th>
+                  <div className="overflow-x-auto rounded-lg border border-border/30">
+                    <table className="min-w-full text-xs">
+                      <thead className="bg-secondary/25 border-b border-border/30">
+                        <tr className="text-left font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+                          <th className="px-4 py-3 border-r border-border/20">Product</th>
+                          <th className="px-4 py-3 border-r border-border/20">Sold</th>
                           <th className="px-4 py-3">Revenue</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y-[3px] divide-border">
+                      <tbody className="divide-y divide-border/20">
                         {top.slice(0, 8).map((t, idx) => (
                           <tr
                             key={idx}
-                            className="hover:bg-muted/50 transition-colors"
+                            className="hover:bg-secondary/10 transition-colors"
                           >
-                            <td className="px-4 py-3 border-r-[3px] border-border font-bold text-[10px] tracking-widest text-foreground truncate max-w-[200px]" title={t.product}>{t.product}</td>
-                            <td className="px-4 py-3 border-r-[3px] border-border font-black text-xs text-foreground">{t.sold}</td>
-                            <td className="px-4 py-3 font-black text-xs text-primary">
+                            <td className="px-4 py-3 border-r border-border/20 font-semibold text-foreground truncate max-w-[200px]" title={t.product}>{t.product}</td>
+                            <td className="px-4 py-3 border-r border-border/20 font-bold text-foreground">{t.sold}</td>
+                            <td className="px-4 py-3 font-semibold text-primary">
                               ₹{t.revenue.toLocaleString("en-IN")}
                             </td>
                           </tr>
@@ -536,16 +504,16 @@ function SellerHomePage() {
                   </div>
                 )}
 
-                {/* Quick links */}
-                <div className="mt-4 grid grid-cols-2 gap-3">
+                {/* Shortcuts */}
+                <div className="mt-6 grid grid-cols-1 gap-2.5">
                   {shortcuts.map((s) => (
                     <Link
                       key={s.href}
                       href={s.href}
-                      className="flex items-center gap-3 p-4 border-[3px] border-border bg-card shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none bg-muted/30 hover:bg-muted"
+                      className="flex items-center gap-3 p-4 border border-border/40 rounded-xl bg-secondary/15 hover:bg-secondary/25 transition-all duration-200"
                     >
-                      <s.icon className="w-5 h-5 text-primary" strokeWidth={3} />
-                      <span className="text-foreground font-black uppercase tracking-widest text-[10px]">{s.label}</span>
+                      <s.icon className="w-5 h-5 text-primary" strokeWidth={2} />
+                      <span className="text-foreground font-bold uppercase tracking-wider text-xs">{s.label}</span>
                     </Link>
                   ))}
                 </div>
@@ -553,31 +521,31 @@ function SellerHomePage() {
             </div>
           </div>
 
-          {/* Recent Orders */}
-          <div className="mt-6 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-0 flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b-[3px] border-border bg-muted">
-              <h3 className="text-xl font-black uppercase tracking-widest text-foreground">
-                Recent Orders
+          {/* Recent Orders Table */}
+          <div className="mt-8 bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between p-5 border-b border-border/35 bg-secondary/15">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                Recent Store Orders
               </h3>
-              <button onClick={exportOrdersCSV} className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all">
+              <button onClick={exportOrdersCSV} className="btn py-1.5 px-3 text-[10px]">
                 Export CSV
               </button>
             </div>
             {orders.length === 0 ? (
-              <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-8 text-center">No orders found.</div>
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground p-12 text-center italic">No orders received in this interval</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-muted border-b-[3px] border-border">
-                    <tr className="text-left font-black uppercase tracking-widest text-foreground text-[10px]">
-                      <th className="px-6 py-4 border-r-[3px] border-border">Order</th>
-                      <th className="px-6 py-4 border-r-[3px] border-border">Date</th>
-                      <th className="px-6 py-4 border-r-[3px] border-border">Status</th>
-                      <th className="px-6 py-4 border-r-[3px] border-border">Total</th>
+                <table className="min-w-full text-xs">
+                  <thead className="bg-secondary/25 border-b border-border/35">
+                    <tr className="text-left font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+                      <th className="px-6 py-4 border-r border-border/20">Order</th>
+                      <th className="px-6 py-4 border-r border-border/20">Date</th>
+                      <th className="px-6 py-4 border-r border-border/20">Status</th>
+                      <th className="px-6 py-4 border-r border-border/20">Total</th>
                       <th className="px-6 py-4">Customer</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y-[3px] divide-border">
+                  <tbody className="divide-y divide-border/20">
                     {orders.slice(0, 10).map((o) => {
                       const total = (o.items || []).reduce(
                         (s, it) => s + it.qty * it.price,
@@ -586,31 +554,31 @@ function SellerHomePage() {
                       return (
                         <tr
                           key={o._id}
-                          className="hover:bg-muted/50 transition-colors"
+                          className="hover:bg-secondary/10 transition-colors"
                         >
-                          <td className="px-6 py-4 border-r-[3px] border-border font-black text-xs text-foreground uppercase tracking-widest">
-                            #{(o._id || "").slice(-6)}
+                          <td className="px-6 py-4 border-r border-border/20 font-mono text-xs font-semibold text-foreground uppercase tracking-wider">
+                            #{(o._id || "").slice(-6).toUpperCase()}
                           </td>
-                          <td className="px-6 py-4 border-r-[3px] border-border font-bold text-[10px] tracking-widest text-foreground">
+                          <td className="px-6 py-4 border-r border-border/20 font-semibold text-muted-foreground">
                             {o.createdAt ? csvDate(o.createdAt) : "—"}
                           </td>
-                          <td className="px-6 py-4 border-r-[3px] border-border">
-                             <span className={`px-2 py-1 border-[2px] font-bold uppercase tracking-widest text-[10px]
+                          <td className="px-6 py-4 border-r border-border/20">
+                             <span className={`px-2 py-0.5 rounded-sm border font-semibold uppercase tracking-wider text-[10px]
                               ${
                                 o.status === "delivered"
-                                  ? "bg-emerald-400 text-emerald-950 border-emerald-950"
+                                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                                   : o.status === "cancelled"
-                                  ? "bg-rose-400 text-rose-950 border-rose-950"
+                                  ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
                                   : o.status === "processing"
-                                  ? "bg-blue-400 text-blue-950 border-blue-950"
-                                  : "bg-amber-400 text-amber-950 border-amber-950"
+                                  ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                                  : "bg-amber-500/10 text-amber-500 border-amber-500/20"
                               }
                             `}>
                               {o.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 border-r-[3px] border-border font-black text-xs text-foreground">{currency(total)}</td>
-                          <td className="px-6 py-4 font-bold text-[10px] tracking-widest text-muted-foreground truncate max-w-[200px]">{o.user?.email || "—"}</td>
+                          <td className="px-6 py-4 border-r border-border/20 font-semibold text-foreground">{currency(total)}</td>
+                          <td className="px-6 py-4 font-semibold text-muted-foreground truncate max-w-[200px]">{o.user?.email || "—"}</td>
                         </tr>
                       );
                     })}
@@ -626,4 +594,3 @@ function SellerHomePage() {
 }
 
 export default dynamic(() => Promise.resolve(SellerHomePage), { ssr: false });
-

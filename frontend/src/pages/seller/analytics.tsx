@@ -31,7 +31,6 @@ import {
   Cell,
 } from "recharts";
 
-// Types
 type Overview = {
   totalProducts: number;
   totalOrders: number;
@@ -67,7 +66,6 @@ type ReviewsAnalytics = {
   }[];
 };
 
-// Helpers
 function useDebounced<T>(value: T, delay = 400) {
   const [v, setV] = useState(value);
   useEffect(() => {
@@ -91,26 +89,24 @@ const isCanceled = (e: any) =>
   e?.name === "CanceledError" ||
   e?.message === "canceled";
 
-// Deterministic unlimited color generator (no manual mapping)
 const categoryColor = (name: string) => {
   const s = String(name || "Other");
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
   const hue = Math.abs(h) % 360;
-  return `hsl(${hue} 70% 55%)`;
+  return `hsl(${hue} 60% 50%)`;
 };
 
 function UpdatingOverlay({ show }: { show: boolean }) {
   if (!show) return null;
   return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-      <div className="rounded-full border-2 border-gray-300 border-t-purple-500 h-6 w-6 animate-spin bg-white/60 backdrop-blur-[1px]" />
+    <div className="pointer-events-none absolute inset-0 flex items-center justify-center z-55 bg-background/5 backdrop-blur-[1px]">
+      <div className="rounded-full border-2 border-primary/20 border-t-primary h-6 w-6 animate-spin" />
     </div>
   );
 }
 
 function SellerAnalyticsPage() {
-  // Range controls
   const [tab, setTab] = useState("30d");
   const [days, setDays] = useState(30);
   const [{ from, to }, setRange] = useState(lastNDaysRange(30));
@@ -126,14 +122,11 @@ function SellerAnalyticsPage() {
   );
   const debounced = useDebounced(params, 400);
 
-  // Data + flags
   const [overview, setOverview] = useState<Overview | null>(null);
   const [salesRaw, setSalesRaw] = useState<SalesPoint[]>([]);
   const [orders, setOrders] = useState<SellerOrder[]>([]);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [reviews, setReviews] = useState<ReviewsAnalytics | null>(null);
-
-  // Category dictionary: id/slug -> name
   const [catDict, setCatDict] = useState<Record<string, string>>({});
 
   const [loading, setLoading] = useState(true);
@@ -141,14 +134,12 @@ function SellerAnalyticsPage() {
   const controllerRef = useRef<AbortController | null>(null);
   const initialRef = useRef(true);
 
-  // Fetch categories once
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
         const { data } = await api.get("/categories");
         if (!mounted) return;
-        // Build id and slug map
         const map: Record<string, string> = {};
         (data || []).forEach((c: any) => {
           if (c?._id) map[String(c._id)] = c?.name || "";
@@ -218,10 +209,8 @@ function SellerAnalyticsPage() {
       if (!debounced.from || !debounced.to) return;
     }
     fetchAll(debounced);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(debounced)]);
 
-  // Continuous series
   const sales = useMemo(() => {
     if (
       "from" in debounced &&
@@ -234,7 +223,6 @@ function SellerAnalyticsPage() {
     return fillSalesSeries((debounced as any).days || days, salesRaw);
   }, [debounced, salesRaw, days]);
 
-  // Derived
   const ordersSeries = sales.map((d) => d.orders);
   const revenueSeries = sales.map((d) => d.revenue);
   const aovData = useMemo(
@@ -246,25 +234,10 @@ function SellerAnalyticsPage() {
     [sales]
   );
 
-  const statusCounts = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const o of orders) map.set(o.status, (map.get(o.status) || 0) + 1);
-    return Array.from(map.entries()).reduce<Record<string, number>>(
-      (acc, [k, v]) => {
-        acc[k] = v;
-        return acc;
-      },
-      {}
-    );
-  }, [orders]);
-
-  // Resolve raw category (ObjectId or slug or plain string) to a name
   const resolveCategoryName = (raw: any): string => {
     if (!raw) return "Other";
     const str = String(raw);
-    // If exact match in dict (id or slug), use it
     if (catDict[str]) return catDict[str];
-    // fallback: prettify slug-ish strings
     const pretty = str.replace(/[-_]+/g, " ").trim();
     return pretty ? pretty.charAt(0).toUpperCase() + pretty.slice(1) : "Other";
   };
@@ -280,10 +253,9 @@ function SellerAnalyticsPage() {
     return Array.from(map.entries())
       .map(([name, qty]) => ({ name, qty }))
       .sort((a, b) => b.qty - a.qty)
-      .slice(0, 12); // show more if you want
+      .slice(0, 12);
   }, [orders, catDict]);
 
-  // Exports
   const exportSalesCSV = () =>
     downloadCSV(
       "seller-sales.csv",
@@ -292,11 +264,7 @@ function SellerAnalyticsPage() {
         orders: d.orders,
         revenue: d.revenue,
       })),
-      {
-        date: "Date",
-        orders: "Orders",
-        revenue: "Revenue",
-      }
+      { date: "Date", orders: "Orders", revenue: "Revenue" }
     );
   const exportOrdersCSV = () =>
     downloadCSV(
@@ -348,156 +316,135 @@ function SellerAnalyticsPage() {
           scope="seller"
           perm="seller:analytics:read"
           fallback={
-            <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-6 text-foreground font-black uppercase tracking-widest text-sm text-center">
-              You don&apos;t have access to Analytics.
+            <div className="bg-card/60 backdrop-blur-md border border-border/40 p-12 text-center rounded-xl shadow-soft">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">You do not have permission to view store analytics.</p>
             </div>
           }
         >
-          {!loading && (
-            <OverviewCards
-              stats={{
-                totalUsers: 0,
-                totalOrders: overview?.totalOrders || 0,
-                totalProducts: overview?.totalProducts || 0,
-                totalRevenue: overview?.totalRevenue || 0,
-              }}
-              trends={{ orders: ordersSeries, revenue: revenueSeries }}
-            />
-          )}
-          {loading && <div className="card p-6 text-gray-600">Loading…</div>}
-
-          {!loading && (
-            <div className="mt-6 flex items-center justify-between gap-4 flex-wrap bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] p-4 font-bold mb-6">
-              <h2 className="text-xl font-black uppercase tracking-widest text-foreground">Performance</h2>
-              <div className="flex items-center gap-2">
-                <div className="inline-flex items-center gap-2">
-                  <button
-                    onClick={() => setTab("7d")}
-                    className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
-                      tab === "7d"
-                        ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
-                        : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
-                    }`}
-                  >
-                    7d
-                  </button>
-                  <button
-                    onClick={() => setTab("14d")}
-                    className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
-                      tab === "14d"
-                        ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
-                        : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
-                    }`}
-                  >
-                    14d
-                  </button>
-                  <button
-                    onClick={() => setTab("30d")}
-                    className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
-                      tab === "30d"
-                        ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
-                        : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
-                    }`}
-                  >
-                    30d
-                  </button>
-                  <button
-                    onClick={() => setTab("90d")}
-                    className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
-                      tab === "90d"
-                        ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
-                        : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
-                    }`}
-                  >
-                    90d
-                  </button>
-                  <button
-                    onClick={() => setTab("custom")}
-                    className={`px-4 py-2 border-[3px] border-border text-xs uppercase tracking-widest font-black transition-all hover:translate-x-[2px] hover:translate-y-[2px] ${
-                      tab === "custom"
-                        ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_#111] hover:shadow-none"
-                        : "bg-card text-foreground shadow-[2px_2px_0px_transparent] hover:shadow-[2px_2px_0px_#111]"
-                    }`}
-                  >
-                    Custom
-                  </button>
-                </div>
-                {tab === "custom" && (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="date"
-                      value={from}
-                      onChange={(e) =>
-                        setRange((r) => ({ ...r, from: e.target.value }))
-                      }
-                      className="bg-card border-[3px] border-border rounded-none px-3 py-1.5 text-foreground font-black uppercase tracking-widest shadow-[2px_2px_0px_#111] focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] hover:shadow-none transition-all text-[10px]"
-                    />
-                    <input
-                      type="date"
-                      value={to}
-                      onChange={(e) =>
-                        setRange((r) => ({ ...r, to: e.target.value }))
-                      }
-                      className="bg-card border-[3px] border-border rounded-none px-3 py-1.5 text-foreground font-black uppercase tracking-widest shadow-[2px_2px_0px_#111] focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] hover:shadow-none transition-all text-[10px]"
-                    />
-                  </div>
-                )}
-              </div>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border/40 pb-5 mb-8">
+            <div>
+              <h1 className="display-font text-3xl font-semibold tracking-wide text-foreground">
+                Store Analytics
+              </h1>
+              <p className="text-xs text-muted-foreground mt-1">
+                Analyze store revenue, customer reviews, category breakdowns, and products.
+              </p>
             </div>
+          </div>
+
+          {loading ? (
+            <div className="bg-card/60 backdrop-blur-md border border-border/40 p-12 text-center rounded-xl shadow-soft">
+              <div className="h-6 w-6 animate-spin border-2 border-primary/20 border-t-primary rounded-full mx-auto" />
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-3">Loading store metrics...</p>
+            </div>
+          ) : (
+            <>
+              <OverviewCards
+                stats={{
+                  totalUsers: 0,
+                  totalOrders: overview?.totalOrders || 0,
+                  totalProducts: overview?.totalProducts || 0,
+                  totalRevenue: overview?.totalRevenue || 0,
+                }}
+                trends={{ orders: ordersSeries, revenue: revenueSeries }}
+              />
+
+              {/* Time Range Filter Bar */}
+              <div className="mt-8 flex items-center justify-between gap-4 flex-wrap bg-card/65 backdrop-blur-md border border-border/40 p-5 rounded-xl shadow-soft">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">Time Period</h2>
+                <div className="flex items-center gap-4 flex-wrap">
+                  <div className="flex bg-secondary/35 border border-border/40 rounded-full p-1">
+                    {["7d", "14d", "30d", "90d", "custom"].map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => setTab(t)}
+                        className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+                          tab === t
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {t === "custom" ? "Custom Range" : t}
+                      </button>
+                    ))}
+                  </div>
+
+                  {tab === "custom" && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="date"
+                        value={from}
+                        onChange={(e) =>
+                          setRange((r) => ({ ...r, from: e.target.value }))
+                        }
+                        className="bg-card/60 border border-border/80 rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
+                      />
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">to</span>
+                      <input
+                        type="date"
+                        value={to}
+                        onChange={(e) =>
+                          setRange((r) => ({ ...r, to: e.target.value }))
+                        }
+                        className="bg-card/60 border border-border/80 rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
           )}
 
           {!loading && (
             <div className="relative">
               <UpdatingOverlay show={fetching} />
 
-              <div className="mt-4 grid grid-cols-1 xl:grid-cols-12 gap-6">
+              <div className="mt-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
                 <div className="xl:col-span-7 space-y-6">
                   {/* Revenue & Orders */}
-                  <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
-                    <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
-                      <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Revenue & Orders {tab !== "custom" && `(last ${days} days)`}</h3>
-                      <button onClick={exportSalesCSV} className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all">
-                        Export Sales CSV
+                  <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+                    <div className="flex flex-row items-center justify-between p-5 border-b border-border/35 bg-secondary/15">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Revenue & Orders {tab !== "custom" && `(last ${days} days)`}</h3>
+                      <button onClick={exportSalesCSV} className="btn py-1.5 px-3 text-[10px]">
+                        Export CSV
                       </button>
                     </div>
-                    <div className="p-6 pt-6">
+                    <div className="p-5">
                       <div className="w-full h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart
                             data={sales}
                             margin={{ top: 12, right: 16, left: 8, bottom: 8 }}
                           >
-                            <CartesianGrid stroke="#e5e7eb" vertical={false} strokeDasharray="3 3" />
+                            <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} strokeDasharray="3 3" />
                             <XAxis
                               dataKey="date"
-                              tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
-                              axisLine={{ stroke: "#000", strokeWidth: 3 }}
-                              tickLine={{ stroke: "#000", strokeWidth: 3 }}
+                              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                              axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                              tickLine={{ stroke: "rgba(255,255,255,0.1)" }}
                             />
                             <YAxis
                               yAxisId="left"
-                              tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
-                              axisLine={{ stroke: "#000", strokeWidth: 3 }}
-                              tickLine={{ stroke: "#000", strokeWidth: 3 }}
+                              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                              axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                              tickLine={{ stroke: "rgba(255,255,255,0.1)" }}
                             />
                             <YAxis
                               yAxisId="right"
                               orientation="right"
-                              tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
-                              axisLine={{ stroke: "#000", strokeWidth: 3 }}
-                              tickLine={{ stroke: "#000", strokeWidth: 3 }}
+                              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                              axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                              tickLine={{ stroke: "rgba(255,255,255,0.1)" }}
                             />
                             <Tooltip
                               contentStyle={{
                                 backgroundColor: "hsl(var(--card))",
-                                border: "3px solid hsl(var(--border))",
-                                boxShadow: "4px 4px 0px #111",
-                                borderRadius: "0",
-                                fontWeight: "bold",
-                                fontFamily: "Inter",
-                                fontSize: "12px",
-                                textTransform: "uppercase",
-                                letterSpacing: "0.05em",
+                                border: "1px solid border-border/40",
+                                boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+                                borderRadius: "8px",
+                                fontWeight: "600",
+                                fontFamily: "Outfit, sans-serif",
+                                fontSize: "11px",
                               }}
                               itemStyle={{ color: "hsl(var(--foreground))" }}
                               formatter={(v: any, n: any) =>
@@ -506,31 +453,29 @@ function SellerAnalyticsPage() {
                                   : v
                               }
                             />
-                            <Legend wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em' }} />
+                            <Legend wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
                             <Line
                               isAnimationActive
-                              animationDuration={350}
-                              animationEasing="ease-out"
+                              animationDuration={300}
                               yAxisId="left"
                               type="monotone"
                               dataKey="orders"
-                              stroke="#9333ea"
-                              strokeWidth={4}
-                              dot={{ stroke: '#000', strokeWidth: 2, fill: '#fff', r: 4 }}
-                              activeDot={{ stroke: '#000', strokeWidth: 3, r: 6, fill: '#9333ea' }}
+                              stroke="hsl(var(--primary))"
+                              strokeWidth={2}
+                              dot={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, fill: 'hsl(var(--card))', r: 3 }}
+                              activeDot={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, r: 5, fill: 'hsl(var(--primary))' }}
                               name="Orders"
                             />
                             <Line
                               isAnimationActive
-                              animationDuration={350}
-                              animationEasing="ease-out"
+                              animationDuration={300}
                               yAxisId="right"
                               type="monotone"
                               dataKey="revenue"
-                              stroke="#d97706"
-                              strokeWidth={4}
-                              dot={{ stroke: '#000', strokeWidth: 2, fill: '#fff', r: 4 }}
-                              activeDot={{ stroke: '#000', strokeWidth: 3, r: 6, fill: '#d97706' }}
+                              stroke="#c5a059"
+                              strokeWidth={2}
+                              dot={{ stroke: '#c5a059', strokeWidth: 1, fill: 'hsl(var(--card))', r: 3 }}
+                              activeDot={{ stroke: '#c5a059', strokeWidth: 2, r: 5, fill: '#c5a059' }}
                               name="Revenue"
                             />
                           </LineChart>
@@ -540,14 +485,14 @@ function SellerAnalyticsPage() {
                   </div>
 
                   {/* AOV */}
-                  <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
-                    <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
-                      <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Average Order Value (AOV)</h3>
-                      <button onClick={exportAOVCSV} className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all">
-                        Export AOV CSV
+                  <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+                    <div className="flex flex-row items-center justify-between p-5 border-b border-border/35 bg-secondary/15">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Average Order Value (AOV)</h3>
+                      <button onClick={exportAOVCSV} className="btn py-1.5 px-3 text-[10px]">
+                        Export CSV
                       </button>
                     </div>
-                    <div className="p-6 pt-6">
+                    <div className="p-5">
                       <div className="w-full h-[240px]">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart
@@ -559,42 +504,39 @@ function SellerAnalyticsPage() {
                             }))}
                             margin={{ top: 12, right: 16, left: 8, bottom: 8 }}
                           >
-                            <CartesianGrid stroke="#e5e7eb" vertical={false} strokeDasharray="3 3"/>
+                            <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} strokeDasharray="3 3"/>
                             <XAxis
                               dataKey="date"
-                              tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
-                              axisLine={{ stroke: "#000", strokeWidth: 3 }}
-                              tickLine={{ stroke: "#000", strokeWidth: 3 }}
+                              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                              axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                              tickLine={{ stroke: "rgba(255,255,255,0.1)" }}
                             />
-                            <YAxis tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }} axisLine={{ stroke: "#000", strokeWidth: 3 }} tickLine={{ stroke: "#000", strokeWidth: 3 }} />
+                            <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} axisLine={{ stroke: "rgba(255,255,255,0.1)" }} tickLine={{ stroke: "rgba(255,255,255,0.1)" }} />
                             <Tooltip
                               contentStyle={{
                                 backgroundColor: "hsl(var(--card))",
-                                border: "3px solid hsl(var(--border))",
-                                boxShadow: "4px 4px 0px #111",
-                                borderRadius: "0",
-                                fontWeight: "bold",
-                                fontFamily: "Inter",
-                                fontSize: "12px",
-                                textTransform: "uppercase",
-                                letterSpacing: "0.05em",
+                                border: "1px solid border-border/40",
+                                boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+                                borderRadius: "8px",
+                                fontWeight: "600",
+                                fontFamily: "Outfit, sans-serif",
+                                fontSize: "11px",
                               }}
                               itemStyle={{ color: "hsl(var(--foreground))" }}
                               formatter={(v: any) =>
                                 `₹${Number(v).toLocaleString("en-IN")}`
                               }
                             />
-                            <Legend wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em' }} />
+                            <Legend wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
                             <Line
                               isAnimationActive
-                              animationDuration={350}
-                              animationEasing="ease-out"
+                              animationDuration={300}
                               type="monotone"
                               dataKey="aov"
-                              stroke="#9333ea"
-                              strokeWidth={4}
-                              dot={{ stroke: '#000', strokeWidth: 2, fill: '#fff', r: 4 }}
-                              activeDot={{ stroke: '#000', strokeWidth: 3, r: 6, fill: '#9333ea' }}
+                              stroke="hsl(var(--primary))"
+                              strokeWidth={2}
+                              dot={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, fill: 'hsl(var(--card))', r: 3 }}
+                              activeDot={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, r: 5, fill: 'hsl(var(--primary))' }}
                               name="AOV"
                             />
                           </LineChart>
@@ -606,18 +548,18 @@ function SellerAnalyticsPage() {
 
                 {/* Orders by Category + Ratings */}
                 <div className="xl:col-span-5 space-y-6">
-                  <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
-                    <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
-                      <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Orders by Category</h3>
-                      <button onClick={exportCategoriesCSV} className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all">
+                  <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+                    <div className="flex flex-row items-center justify-between p-5 border-b border-border/35 bg-secondary/15">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Orders by Category</h3>
+                      <button onClick={exportCategoriesCSV} className="btn py-1.5 px-3 text-[10px]">
                         Export CSV
                       </button>
                     </div>
-                    <div className="p-6">
+                    <div className="p-5">
                       <div className="w-full h-[260px]">
                         {categoryBars.length === 0 ? (
-                          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-4 text-center">
-                            No category data.
+                          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground p-12 text-center italic">
+                            No category data recorded in this interval
                           </div>
                         ) : (
                           <ResponsiveContainer width="100%" height="100%">
@@ -630,39 +572,30 @@ function SellerAnalyticsPage() {
                               <YAxis
                                 type="category"
                                 dataKey="name"
-                                tick={{ fill: "#6b7280", fontSize: 10, fontWeight: "bold" }}
-                                axisLine={{ stroke: "#000", strokeWidth: 3 }}
-                                tickLine={{ stroke: "#000", strokeWidth: 3 }}
+                                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                                axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                                tickLine={{ stroke: "rgba(255,255,255,0.1)" }}
                                 width={120}
                               />
                               <Tooltip
                                 contentStyle={{
                                   backgroundColor: "hsl(var(--card))",
-                                  border: "3px solid hsl(var(--border))",
-                                  boxShadow: "4px 4px 0px #111",
-                                  borderRadius: "0",
-                                  fontWeight: "bold",
-                                  fontFamily: "Inter",
-                                  fontSize: "12px",
-                                  textTransform: "uppercase",
-                                  letterSpacing: "0.05em",
+                                  border: "1px solid border-border/40",
+                                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+                                  borderRadius: "8px",
+                                  fontWeight: "600",
+                                  fontFamily: "Outfit, sans-serif",
+                                  fontSize: "11px",
                                 }}
-                                itemStyle={{ color: "hsl(var(--foreground))", fontWeight: "black" }}
-                                formatter={(value: any) => [
-                                  `${value}`,
-                                  "Units",
-                                ]}
-                                labelFormatter={(label: any) =>
-                                  `Category: ${label}`
-                                }
-                                cursor={{ fill: "rgba(124, 58, 237, 0.06)" }}
+                                itemStyle={{ color: "hsl(var(--foreground))" }}
+                                formatter={(value: any) => [`${value}`, "Units"]}
+                                labelFormatter={(label: any) => `Category: ${label}`}
+                                cursor={{ fill: "rgba(255, 255, 255, 0.03)" }}
                               />
                               <Bar
                                 dataKey="qty"
                                 isAnimationActive
-                                animationDuration={350}
-                                stroke="#000"
-                                strokeWidth={2}
+                                animationDuration={300}
                               >
                                 {categoryBars.map((entry) => (
                                   <Cell
@@ -680,10 +613,10 @@ function SellerAnalyticsPage() {
                           {categoryBars.map((c) => (
                             <span
                               key={c.name}
-                              className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-foreground border-[3px] border-border shadow-[2px_2px_0px_#111] px-2 py-1 bg-card hover:translate-x-[2px] hover:translate-y-[2px] transition-all hover:shadow-none"
+                              className="border border-border/40 rounded-full px-2.5 py-1 text-[9px] font-semibold tracking-wider text-muted-foreground bg-secondary/15 flex items-center gap-1.5"
                             >
                               <span
-                                className="inline-block w-2.5 h-2.5 shadow-[2px_2px_0px_#111] border-[2px] border-border"
+                                className="inline-block w-2 h-2 rounded-full"
                                 style={{ background: categoryColor(c.name) }}
                               />
                               {c.name}
@@ -694,9 +627,9 @@ function SellerAnalyticsPage() {
                     </div>
                   </div>
 
-                  <div className="bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
-                    <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
-                      <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Ratings Overview</h3>
+                  <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+                    <div className="flex flex-row items-center justify-between p-5 border-b border-border/35 bg-secondary/15">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Ratings Overview</h3>
                       <button
                         onClick={() =>
                           downloadCSV(
@@ -713,19 +646,19 @@ function SellerAnalyticsPage() {
                             }
                           )
                         }
-                        className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all"
+                        className="btn py-1.5 px-3 text-[10px]"
                       >
                         Export CSV
                       </button>
                     </div>
-                    <div className="p-6">
+                    <div className="p-5">
                       <StarsBar
                         distribution={reviews?.distribution || {}}
                         avg={reviews?.overallAvgRating || 0}
                       />
-                      <div className="mt-6 font-black uppercase tracking-widest text-xs text-foreground p-3 border-[3px] border-border bg-muted text-center shadow-[4px_4px_0px_#111]">
-                        Total reviews:{" "}
-                        <span className="text-primary text-xl">
+                      <div className="mt-6 font-semibold uppercase tracking-wider text-xs text-muted-foreground p-3.5 border border-border/30 bg-secondary/10 rounded-lg text-center">
+                        Total Reviews:{" "}
+                        <span className="text-primary font-bold text-lg ml-1">
                           {reviews?.totalReviews || 0}
                         </span>
                       </div>
@@ -736,31 +669,31 @@ function SellerAnalyticsPage() {
 
               {/* Recent Orders + Top Products */}
               <div className="mt-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
-                <div className="xl:col-span-7 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
-                  <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
-                    <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Recent Orders</h3>
-                    <button onClick={exportOrdersCSV} className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all">
+                <div className="xl:col-span-7 bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+                  <div className="flex flex-row items-center justify-between p-5 border-b border-border/35 bg-secondary/15">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Recent Orders</h3>
+                    <button onClick={exportOrdersCSV} className="btn py-1.5 px-3 text-[10px]">
                       Export CSV
                     </button>
                   </div>
                   <div className="p-0">
                     {orders.length === 0 ? (
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-8 text-center">
-                        No orders found.
+                      <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground p-12 text-center italic">
+                        No recent orders found
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm">
-                          <thead className="bg-muted border-b-[3px] border-border">
-                            <tr className="text-left font-black uppercase tracking-widest text-foreground text-[10px]">
-                              <th className="px-6 py-4 border-r-[3px] border-border">Order</th>
-                              <th className="px-6 py-4 border-r-[3px] border-border">Date</th>
-                              <th className="px-6 py-4 border-r-[3px] border-border">Status</th>
-                              <th className="px-6 py-4 border-r-[3px] border-border">Total</th>
+                        <table className="min-w-full text-xs">
+                          <thead className="bg-secondary/25 border-b border-border/35">
+                            <tr className="text-left font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+                              <th className="px-6 py-4 border-r border-border/20">Order ID</th>
+                              <th className="px-6 py-4 border-r border-border/20">Date</th>
+                              <th className="px-6 py-4 border-r border-border/20">Status</th>
+                              <th className="px-6 py-4 border-r border-border/20">Total</th>
                               <th className="px-6 py-4">Customer</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y-[3px] divide-border">
+                          <tbody className="divide-y divide-border/20">
                             {orders.slice(0, 10).map((o) => {
                               const total = (o.items || []).reduce(
                                 (s, it) => s + it.qty * it.price,
@@ -769,31 +702,31 @@ function SellerAnalyticsPage() {
                               return (
                                 <tr
                                   key={o._id}
-                                  className="hover:bg-muted/50 transition-colors"
+                                  className="hover:bg-secondary/10 transition-colors"
                                 >
-                                  <td className="px-6 py-4 border-r-[3px] border-border font-black text-xs text-foreground uppercase tracking-widest">
-                                    #{(o._id || "").slice(-6)}
+                                  <td className="px-6 py-4 border-r border-border/20 font-mono text-xs font-semibold text-foreground uppercase tracking-wider">
+                                    #{(o._id || "").slice(-6).toUpperCase()}
                                   </td>
-                                  <td className="px-6 py-4 border-r-[3px] border-border font-bold text-[10px] tracking-widest text-foreground">
+                                  <td className="px-6 py-4 border-r border-border/20 font-semibold text-muted-foreground">
                                     {o.createdAt ? csvDate(o.createdAt) : "—"}
                                   </td>
-                                  <td className="px-6 py-4 border-r-[3px] border-border">
-                                     <span className={`px-2 py-1 border-[2px] font-bold uppercase tracking-widest text-[10px]
+                                  <td className="px-6 py-4 border-r border-border/20">
+                                     <span className={`px-2 py-0.5 rounded-sm border font-semibold uppercase tracking-wider text-[10px]
                                       ${
                                         o.status === "delivered"
-                                          ? "bg-emerald-400 text-emerald-950 border-emerald-950"
+                                          ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                                           : o.status === "cancelled"
-                                          ? "bg-rose-400 text-rose-950 border-rose-950"
+                                          ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
                                           : o.status === "processing"
-                                          ? "bg-blue-400 text-blue-950 border-blue-950"
-                                          : "bg-amber-400 text-amber-950 border-amber-950"
+                                          ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                                          : "bg-amber-500/10 text-amber-500 border-amber-500/20"
                                       }
                                     `}>
                                       {o.status}
                                     </span>
                                   </td>
-                                  <td className="px-6 py-4 border-r-[3px] border-border font-black text-xs text-foreground">{currency(total)}</td>
-                                  <td className="px-6 py-4 font-bold text-[10px] tracking-widest text-muted-foreground truncate max-w-[200px]">{o.user?.email || "—"}</td>
+                                  <td className="px-6 py-4 border-r border-border/20 font-semibold text-foreground">{currency(total)}</td>
+                                  <td className="px-6 py-4 font-semibold text-muted-foreground truncate max-w-[200px]">{o.user?.email || "—"}</td>
                                 </tr>
                               );
                             })}
@@ -804,52 +737,38 @@ function SellerAnalyticsPage() {
                   </div>
                 </div>
 
-                <div className="xl:col-span-5 bg-card border-[3px] border-border shadow-[8px_8px_0px_#111] flex flex-col">
-                  <div className="flex flex-row items-center justify-between p-6 border-b-[3px] border-border bg-muted">
-                    <h3 className="text-xl font-black uppercase tracking-widest text-foreground">Top Products</h3>
+                <div className="xl:col-span-5 bg-card/60 backdrop-blur-md border border-border/40 rounded-xl shadow-soft flex flex-col overflow-hidden">
+                  <div className="flex flex-row items-center justify-between p-5 border-b border-border/35 bg-secondary/15">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Top Performing Products</h3>
                     <button
-                      onClick={() =>
-                        downloadCSV(
-                          "seller-top-products.csv",
-                          (topProducts || []).map((t) => ({
-                            product: t.product,
-                            sold: t.sold,
-                            revenue: t.revenue,
-                          })),
-                          {
-                            product: "Product",
-                            sold: "Sold",
-                            revenue: "Revenue",
-                          }
-                        )
-                      }
-                      className="px-4 py-2 border-[3px] border-border bg-card text-foreground font-bold uppercase tracking-widest text-[10px] shadow-[4px_4px_0px_#111] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all"
+                      onClick={exportTopProductsCSV}
+                      className="btn py-1.5 px-3 text-[10px]"
                     >
                       Export CSV
                     </button>
                   </div>
-                  <div className="p-6">
+                  <div className="p-5">
                     {topProducts.length === 0 ? (
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-4 text-center">No data</div>
+                      <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground p-12 text-center italic">No products sold in this interval</div>
                     ) : (
-                      <div className="overflow-x-auto border-[3px] border-border">
-                        <table className="min-w-full text-sm">
-                          <thead className="bg-muted border-b-[3px] border-border">
-                            <tr className="text-left font-black uppercase tracking-widest text-foreground text-[10px]">
-                              <th className="px-4 py-3 border-r-[3px] border-border">Product</th>
-                              <th className="px-4 py-3 border-r-[3px] border-border">Sold</th>
+                      <div className="overflow-x-auto rounded-lg border border-border/30">
+                        <table className="min-w-full text-xs">
+                          <thead className="bg-secondary/25 border-b border-border/30">
+                            <tr className="text-left font-bold uppercase tracking-wider text-muted-foreground text-[10px]">
+                              <th className="px-4 py-3 border-r border-border/20">Product</th>
+                              <th className="px-4 py-3 border-r border-border/20">Sold</th>
                               <th className="px-4 py-3">Revenue</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y-[3px] divide-border">
+                          <tbody className="divide-y divide-border/20">
                             {topProducts.map((t, idx) => (
                               <tr
                                 key={idx}
-                                className="hover:bg-muted/50 transition-colors"
+                                className="hover:bg-secondary/10 transition-colors"
                               >
-                                <td className="px-4 py-3 border-r-[3px] border-border font-bold text-[10px] tracking-widest text-foreground truncate max-w-[200px]" title={t.product}>{t.product}</td>
-                                <td className="px-4 py-3 border-r-[3px] border-border font-black text-xs text-foreground">{t.sold}</td>
-                                <td className="px-4 py-3 font-black text-xs text-primary">
+                                <td className="px-4 py-3 border-r border-border/20 font-semibold text-foreground truncate max-w-[200px]" title={t.product}>{t.product}</td>
+                                <td className="px-4 py-3 border-r border-border/20 font-bold text-foreground">{t.sold}</td>
+                                <td className="px-4 py-3 font-semibold text-primary">
                                   ₹{t.revenue.toLocaleString("en-IN")}
                                 </td>
                               </tr>
@@ -872,4 +791,3 @@ function SellerAnalyticsPage() {
 export default dynamic(() => Promise.resolve(SellerAnalyticsPage), {
   ssr: false,
 });
-

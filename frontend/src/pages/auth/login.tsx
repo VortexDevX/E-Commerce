@@ -72,7 +72,7 @@ export default function LoginPage() {
       dispatch(
         setMfa({
           mode: flat.twoFARequired ? "verify" : "enroll",
-          challenge: flat.challenge || "", // ✅ ensure string
+          challenge: flat.challenge || "",
         })
       );
     }
@@ -157,33 +157,33 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto px-6 py-16">
-      <h1 className="text-3xl font-black uppercase tracking-tighter text-foreground mb-8 text-center border-b-[3px] border-border pb-4">
-        Sign in to your account
+      <h1 className="display-font text-3xl font-bold tracking-[0.12em] uppercase text-foreground mb-8 text-center border-b border-border/40 pb-4">
+        Sign in
       </h1>
 
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} className="space-y-5">
         <div>
-          <label className="block text-sm text-gray-700 mb-1">Email</label>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Email Address</label>
           <input
             type="email"
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+            className="w-full bg-card/60 backdrop-blur-md border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
             placeholder="you@example.com"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm text-gray-700 mb-1">Password</label>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Password</label>
           <div className="relative">
             <input
               type={show ? "text" : "password"}
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+              className="w-full bg-card/60 backdrop-blur-md border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
               placeholder="••••••••"
               required
             />
@@ -192,7 +192,7 @@ export default function LoginPage() {
               aria-label={show ? "Hide password" : "Show password"}
               aria-pressed={show}
               onClick={() => setShow((s) => !s)}
-              className="absolute inset-y-0 right-2 my-auto p-1 rounded-md text-gray-600"
+              className="absolute inset-y-0 right-2 my-auto p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-colors"
             >
               <span
                 className={`inline-block transition-transform duration-150 ${
@@ -209,12 +209,12 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-1">
           <Link
             href={`/auth/forgot-password${
               email ? `?email=${encodeURIComponent(email)}` : ""
             }`}
-            className="text-sm font-black uppercase tracking-widest border-b-[3px] border-primary text-primary hover:opacity-80 transition-all"
+            className="text-xs font-semibold uppercase tracking-wider text-primary hover:text-primary-hover transition-colors"
           >
             Forgot password?
           </Link>
@@ -232,17 +232,17 @@ export default function LoginPage() {
               onExpire={() => setCaptchaToken(null)}
             />
             {captchaError && (
-              <p className="text-sm text-red-600 mt-2">{captchaError}</p>
+              <p className="text-sm text-rose-500 mt-2">{captchaError}</p>
             )}
           </div>
         )}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-rose-500">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="btn-primary w-full disabled:opacity-50"
+          className="btn-primary w-full disabled:opacity-50 mt-2"
         >
           {loading ? "Signing in..." : "Login"}
         </button>
@@ -250,26 +250,26 @@ export default function LoginPage() {
 
       {mfa.mode && (
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-md bg-card border-[3px] border-border shadow-[8px_8px_0px_transparent] lg:shadow-[8px_8px_0px_#111] p-6 relative">
+          <div className="w-full max-w-md bg-card/95 backdrop-blur-md border border-border/50 shadow-soft p-6 relative rounded-xl">
             <button
               type="button"
               aria-label="Close"
               onClick={closeModal}
-              className="absolute top-3 right-3 p-2 bg-card border-[3px] border-border text-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+              className="absolute top-3 right-3 p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-secondary/40 transition-colors"
             >
-              <XMarkIcon className="w-5 h-5" strokeWidth={3} />
+              <XMarkIcon className="w-5 h-5" strokeWidth={2.5} />
             </button>
 
             {mfa.mode === "verify" && (
               <>
-                <h2 className="text-2xl font-black uppercase tracking-widest text-foreground">
+                <h2 className="display-font text-2xl font-semibold uppercase tracking-wide text-foreground">
                   Two‑Factor Auth
                 </h2>
-                <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground mt-1 mb-4">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mt-1 mb-4">
                   Enter the 6‑digit code.
                 </p>
                 <input
@@ -278,24 +278,24 @@ export default function LoginPage() {
                   maxLength={6}
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                  className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40 text-center tracking-[0.5em] text-2xl"
+                  className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground text-center tracking-[0.5em] text-2xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/30"
                   placeholder="123456"
                   autoFocus
                 />
                 {mfaError && (
-                  <p className="text-sm font-black uppercase tracking-widest text-rose-600 mt-2">{mfaError}</p>
+                  <p className="text-sm font-semibold text-rose-500 mt-2">{mfaError}</p>
                 )}
                 <div className="mt-6 flex flex-col gap-3">
                   <button
                     onClick={verifyMFA}
                     disabled={submittingMFA || !otp}
-                    className="w-full px-6 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50"
+                    className="btn-primary w-full"
                   >
                     {submittingMFA ? "Verifying..." : "Verify and continue"}
                   </button>
                   <button
                     onClick={closeModal}
-                    className="w-full px-6 py-3 border-[3px] border-border bg-card text-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50"
+                    className="btn w-full"
                   >
                     Cancel
                   </button>
@@ -305,21 +305,21 @@ export default function LoginPage() {
 
             {(mfa.mode === "enroll" || mfa.mode === "enroll-verify") && (
               <>
-                <h2 className="text-2xl font-black uppercase tracking-widest text-foreground">
+                <h2 className="display-font text-2xl font-semibold uppercase tracking-wide text-foreground">
                   Enable 2FA
                 </h2>
-                <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground mt-1 mb-4">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mt-1 mb-4">
                   Scan the QR or add manually.
                 </p>
 
                 {enrollInfo ? (
                   <>
                     <div className="mt-4 flex justify-center">
-                      <div className="p-4 bg-white border-[3px] border-border shadow-[4px_4px_0px_#111]">
+                      <div className="p-4 bg-white border border-border/50 rounded-md shadow-card">
                         <QRCode value={enrollInfo.otpauthUrl} size={168} />
                       </div>
                     </div>
-                    <div className="mt-6 text-[10px] font-bold uppercase tracking-widest text-foreground space-y-2 p-4 bg-muted border-[3px] border-border">
+                    <div className="mt-6 text-[10px] font-semibold uppercase tracking-wider text-foreground space-y-2 p-4 bg-secondary/60 border border-border/40 rounded-md">
                       <p>
                         <strong>Issuer:</strong> {enrollInfo.issuer}
                       </p>
@@ -328,7 +328,7 @@ export default function LoginPage() {
                       </p>
                       <p className="truncate" title={enrollInfo.secretBase32}>
                         <strong>Secret:</strong>{" "}
-                        <code className="text-primary px-1 border-[2px] border-primary/20 bg-primary/10">
+                        <code className="text-primary px-1 border border-primary/20 bg-primary/10 rounded-sm">
                           {enrollInfo.secretBase32}
                         </code>
                       </p>
@@ -336,7 +336,7 @@ export default function LoginPage() {
                         Mobile link:{" "}
                         <a
                           href={enrollInfo.otpauthUrl}
-                          className="text-primary border-b-[2px] border-primary hover:opacity-80 transition-all font-black break-all"
+                          className="text-primary hover:underline transition-colors font-semibold break-all"
                         >
                           Add to App
                         </a>
@@ -344,13 +344,13 @@ export default function LoginPage() {
                     </div>
                   </>
                 ) : (
-                  <div className="text-sm font-black uppercase tracking-widest text-muted-foreground mt-6 text-center">
+                  <div className="text-sm font-semibold text-muted-foreground mt-6 text-center">
                     Preparing...
                   </div>
                 )}
 
                 <div className="mt-6">
-                  <label className="block text-sm font-black uppercase tracking-widest text-foreground mb-2">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-foreground mb-2">
                     Enter code
                   </label>
                   <input
@@ -359,24 +359,24 @@ export default function LoginPage() {
                     maxLength={6}
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                    className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40 text-center tracking-[0.5em] text-2xl"
+                    className="w-full bg-card/60 border border-border/80 rounded-md px-4 py-3 text-foreground text-center tracking-[0.5em] text-2xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/30"
                     placeholder="123456"
                   />
                 </div>
                 {mfaError && (
-                  <p className="text-sm font-black uppercase tracking-widest text-rose-600 mt-2">{mfaError}</p>
+                  <p className="text-sm font-semibold text-rose-500 mt-2">{mfaError}</p>
                 )}
                 <div className="mt-6 flex flex-col gap-3">
                   <button
                     onClick={enrollVerifyMFA}
                     disabled={submittingMFA || !otp || !enrollInfo}
-                    className="w-full px-6 py-3 border-[3px] border-primary bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50"
+                    className="btn-primary w-full"
                   >
                     {submittingMFA ? "Enabling..." : "Enable 2FA"}
                   </button>
                   <button
                     onClick={closeModal}
-                    className="w-full px-6 py-3 border-[3px] border-border bg-card text-foreground font-black uppercase tracking-widest shadow-[4px_4px_0px_transparent] hover:shadow-[4px_4px_0px_#111] transition-all hover:-translate-y-1 disabled:opacity-50"
+                    className="btn w-full"
                   >
                     Cancel
                   </button>
@@ -387,11 +387,11 @@ export default function LoginPage() {
         </div>
       )}
 
-      <p className="text-sm text-gray-600 mt-4">
+      <p className="text-sm text-muted-foreground mt-6 text-center">
         Don’t have an account?{" "}
         <Link
           href="/auth/register"
-          className="font-black uppercase tracking-widest pt-1 border-b-[3px] border-primary text-primary hover:opacity-80 transition-all ml-1"
+          className="font-semibold uppercase tracking-wider text-primary hover:text-primary-hover transition-colors ml-1"
         >
           Register
         </Link>

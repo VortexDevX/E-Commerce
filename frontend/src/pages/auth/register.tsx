@@ -7,7 +7,6 @@ import type { AppDispatch } from "../../store";
 import { useRouter } from "next/router";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
-// Load hCaptcha only on client
 const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), {
   ssr: false,
 });
@@ -29,10 +28,9 @@ export default function RegisterPage() {
 
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaError, setCaptchaError] = useState<string | null>(null);
-  const [captchaKey, setCaptchaKey] = useState(0); // re-mount to reset
+  const [captchaKey, setCaptchaKey] = useState(0);
   const siteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || "";
 
-  // Policies acceptance
   const [acceptedPolicies, setAcceptedPolicies] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,7 +75,6 @@ export default function RegisterPage() {
     );
     setSubmitting(false);
 
-    // Reset captcha after attempt
     setCaptchaToken(null);
     setCaptchaKey((k) => k + 1);
 
@@ -90,39 +87,39 @@ export default function RegisterPage() {
 
   return (
     <div className="max-w-md mx-auto px-6 py-16">
-      <h1 className="text-3xl font-black uppercase tracking-tighter text-foreground mb-8 text-center border-b-[3px] border-border pb-4">
-        Create your account
+      <h1 className="display-font text-3xl font-bold tracking-[0.12em] uppercase text-foreground mb-8 text-center border-b border-border/40 pb-4">
+        Register
       </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm text-gray-700 mb-1">Name</label>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Name</label>
           <input
             type="text"
             name="name"
             placeholder="Your name"
             value={form.name}
             onChange={handleChange}
-            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pb-2 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+            className="w-full bg-card/60 backdrop-blur-md border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm text-gray-700 mb-1">Email</label>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Email</label>
           <input
             type="email"
             name="email"
             placeholder="you@example.com"
             value={form.email}
             onChange={handleChange}
-            className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+            className="w-full bg-card/60 backdrop-blur-md border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm text-gray-700 mb-1">Password</label>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Password</label>
           <div className="relative">
             <input
               type={showPwd ? "text" : "password"}
@@ -130,7 +127,7 @@ export default function RegisterPage() {
               placeholder="••••••••"
               value={form.password}
               onChange={handleChange}
-              className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pr-10 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+              className="w-full bg-card/60 backdrop-blur-md border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
               required
             />
             <button
@@ -138,7 +135,7 @@ export default function RegisterPage() {
               aria-label={showPwd ? "Hide password" : "Show password"}
               aria-pressed={showPwd}
               onClick={() => setShowPwd((s) => !s)}
-              className="absolute inset-y-0 right-2 my-auto p-1 rounded-md text-gray-600"
+              className="absolute inset-y-0 right-2 my-auto p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-colors"
             >
               <span
                 className={`inline-block transition-transform duration-150 ${
@@ -153,11 +150,11 @@ export default function RegisterPage() {
               </span>
             </button>
           </div>
-          <p className="text-xs text-gray-500 mt-1">At least 6 characters.</p>
+          <p className="text-[10px] text-muted-foreground mt-1">At least 6 characters.</p>
         </div>
 
         <div>
-          <label className="block text-sm text-gray-700 mb-1">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
             Confirm Password
           </label>
           <div className="relative">
@@ -167,7 +164,7 @@ export default function RegisterPage() {
               placeholder="Repeat password"
               value={form.confirmPassword}
               onChange={handleChange}
-              className="w-full bg-card border-[3px] border-border rounded-none px-4 py-3 pr-10 text-foreground font-bold shadow-[4px_4px_0px_hsl(var(--foreground))] focus:outline-none focus:translate-x-[4px] focus:translate-y-[4px] focus:shadow-none transition-all placeholder:text-foreground/40"
+              className="w-full bg-card/60 backdrop-blur-md border border-border/80 rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 placeholder:text-muted-foreground/40"
               required
               aria-invalid={
                 form.confirmPassword.length > 0 &&
@@ -181,7 +178,7 @@ export default function RegisterPage() {
               }
               aria-pressed={showConfirm}
               onClick={() => setShowConfirm((s) => !s)}
-              className="absolute inset-y-0 right-2 my-auto p-1 rounded-md text-gray-600"
+              className="absolute inset-y-0 right-2 my-auto p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-colors"
             >
               <span
                 className={`inline-block transition-transform duration-150 ${
@@ -198,7 +195,7 @@ export default function RegisterPage() {
           </div>
           {form.confirmPassword.length > 0 &&
             form.password !== form.confirmPassword && (
-              <p className="text-xs text-red-600 mt-1">
+              <p className="text-xs text-rose-500 mt-1">
                 Passwords do not match
               </p>
             )}
@@ -216,35 +213,34 @@ export default function RegisterPage() {
               onExpire={() => setCaptchaToken(null)}
             />
             {captchaError && (
-              <p className="text-sm text-red-600 mt-2">{captchaError}</p>
+              <p className="text-sm text-rose-500 mt-2">{captchaError}</p>
             )}
           </div>
         )}
 
-        {/* Explicit legal acceptance */}
-        <div className="flex items-start gap-2">
+        <div className="flex items-start gap-2.5 pt-1">
           <input
             id="accept-policies"
             type="checkbox"
-            className="w-5 h-5 border-[3px] border-border text-primary rounded-none focus:ring-primary focus:ring-offset-0 mt-0.5"
+            className="w-4 h-4 border border-border/80 text-primary rounded focus:ring-primary mt-0.5"
             checked={acceptedPolicies}
             onChange={(e) => {
               setAcceptedPolicies(e.target.checked);
               if (e.target.checked) setLocalError(null);
             }}
           />
-          <label htmlFor="accept-policies" className="text-sm text-gray-700">
+          <label htmlFor="accept-policies" className="text-xs text-muted-foreground leading-relaxed">
             I agree to the{" "}
             <Link
               href="/policies/terms"
-              className="font-black uppercase tracking-widest border-b-[2px] border-primary text-primary hover:opacity-80 transition-all"
+              className="font-semibold text-primary hover:text-primary-hover hover:underline transition-colors uppercase tracking-wider"
             >
               Terms of Service
             </Link>{" "}
             and{" "}
             <Link
               href="/policies/privacy"
-              className="font-black uppercase tracking-widest border-b-[2px] border-primary text-primary hover:opacity-80 transition-all"
+              className="font-semibold text-primary hover:text-primary-hover hover:underline transition-colors uppercase tracking-wider"
             >
               Privacy Policy
             </Link>
@@ -252,22 +248,22 @@ export default function RegisterPage() {
           </label>
         </div>
 
-        {localError && <p className="text-sm text-red-600">{localError}</p>}
+        {localError && <p className="text-sm text-rose-500">{localError}</p>}
 
         <button
           type="submit"
           disabled={submitting || !acceptedPolicies}
-          className="btn-primary w-full disabled:opacity-50"
+          className="btn-primary w-full disabled:opacity-50 mt-2"
         >
           {submitting ? "Creating account..." : "Register"}
         </button>
       </form>
 
-      <p className="text-sm text-gray-600 mt-4">
+      <p className="text-sm text-muted-foreground mt-6 text-center">
         Already have an account?{" "}
         <Link
           href="/auth/login"
-          className="font-black uppercase tracking-widest pt-1 border-b-[3px] border-primary text-primary hover:opacity-80 transition-all ml-1"
+          className="font-semibold uppercase tracking-wider text-primary hover:text-primary-hover transition-colors ml-1"
         >
           Login
         </Link>
